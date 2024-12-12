@@ -38,22 +38,36 @@ class ChatbotBase(ABC, Generic[T]):
     Provides contract for initialization, API setup, response generation and message formatting
     that concrete chatbot implementations must fulfill.
     """
+    _total_count: int = 0  # Class variable to track total instances
 
-    @property
-    @abstractmethod
-    def bot_index(self) -> int:
-        """Get bot's assigned index number."""
-        pass
-    
-    @abstractmethod
-    def __init__(self, model_version: str, system_prompt: str):
+    def __init__(self, model_version: str, system_prompt: str, name: str):
         """Initialize chatbot with model and system prompt.
 
         Args:
             model_version: Version/name of the AI model to use
             system_prompt: System instruction to set chatbot behavior
+            name: Name of the chatbot
         """
-        pass
+        self.model_version: str = model_version
+        self.system_prompt: str = system_prompt
+        self.name: str = name
+        self.api = self._initialize_api()
+        ChatbotBase._total_count += 1
+        self._bot_index: int = ChatbotBase._total_count
+
+    @property
+    def bot_index(self) -> int:
+        """Get bot's assigned index number."""
+        return self._bot_index
+
+    @classmethod
+    def get_total_bots(cls) -> int:
+        """Get total number of chatbot instances created.
+
+        Returns:
+            Total number of chatbot instances created        
+        """
+        return cls._total_count
 
     @abstractmethod
     def _initialize_api(self) -> Any:
@@ -87,44 +101,8 @@ class ChatbotBase(ABC, Generic[T]):
             List of formatted messages ready for API submission
         """
         pass
-    
 
-class ChatbotCommon(ChatbotBase[T]):
-    """Concrete base class implementing common functionality for all chatbots.
-
-    Provides shared functionality for all chatbot implementations, including
-    tracking total instances and bot index assignment.
-    """
-    _total_count: int = 0  # Class variable to track total instances
-
-    def __init__(self, model_version: str, system_prompt: str):
-        """Initialize chatbot with model and system prompt.
-
-        Args:
-            model_version: Version/name of the AI model to use
-            system_prompt: System instruction to set chatbot behavior
-        """
-        self.model_version: str = model_version
-        self.system_prompt: str = system_prompt
-        self.api = self._initialize_api() # type: ignore
-        ChatbotCommon._total_count += 1
-        self._bot_index: int = ChatbotCommon._total_count
-
-    @classmethod
-    def get_total_bots(cls) -> int:
-        """Get total number of chatbot instances created.
-
-        Returns:
-            Total number of chatbot instances created        
-        """
-        return cls._total_count
-
-    @property
-    def bot_index(self) -> int:
-        """Implementation of abstract property."""
-        return self._bot_index
-
-class OpenAIChatbot(ChatbotCommon[ChatMessage]):
+class OpenAIChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using OpenAI's API service.
     
     Handles initialization of OpenAI client, message formatting specific to OpenAI's
@@ -136,14 +114,15 @@ class OpenAIChatbot(ChatbotCommon[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(self, model_version: str, system_prompt: str):
+    def __init__(self, model_version: str, system_prompt: str, name: str):
         """Initialize OpenAI chatbot with specific model and behavior.
 
         Args:
             model_version: GPT model version to use (e.g. "gpt-4")
             system_prompt: System instruction defining bot behavior
+            name: Name of the chatbot
         """
-        super().__init__(model_version, system_prompt)
+        super().__init__(model_version, system_prompt, name)
     
     def _initialize_api(self) -> Any:
         """Initialize connection to OpenAI API.
@@ -167,12 +146,17 @@ class OpenAIChatbot(ChatbotCommon[ChatMessage]):
         """
         formatted_messages = self._format_message(conversation)
         
-        completion = self.api.chat.completions.create(
-            model=self.model_version,
-            messages=formatted_messages
-        )
-        
-        return completion.choices[0].message.content
+        try:
+            completion = self.api.chat.completions.create(
+                model=self.model_version,
+                messages=formatted_messages,
+                timeout=10
+            )
+            response = completion.choices[0].message.content
+            return f"{self.name}: {response}"
+        except Exception as e:
+            print(f"Error calling GPT model: {e}")
+            return f"{self.name}: Error: Unable to generate response from GPT model."
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for OpenAI API submission.
@@ -194,7 +178,7 @@ class OpenAIChatbot(ChatbotCommon[ChatMessage]):
 
         return messages
     
-class ClaudeChatbot(ChatbotCommon[ChatMessage]):
+class ClaudeChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using Claude's API service.
     
     Handles initialization of Claude client, message formatting specific to Claude's
@@ -206,14 +190,15 @@ class ClaudeChatbot(ChatbotCommon[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(self, model_version: str, system_prompt: str):
+    def __init__(self, model_version: str, system_prompt: str, name: str):
         """Initialize Claude chatbot with specific model and behavior.
 
         Args:
             model_version: Claude model version to use (e.g. "claude-3")
             system_prompt: System instruction defining bot behavior
+            name: Name of the chatbot
         """
-        super().__init__(model_version, system_prompt)
+        super().__init__(model_version, system_prompt, name)
     
     def _initialize_api(self) -> Any:
         """Initialize connection to Claude API.
@@ -237,14 +222,19 @@ class ClaudeChatbot(ChatbotCommon[ChatMessage]):
         """
         formatted_messages = self._format_message(conversation)
         
-        message = self.api.messages.create(
-            model=self.model_version,
-            system=self.system_prompt,
-            messages=formatted_messages,
-            max_tokens=500
-        )
-        
-        return message.content[0].text
+        try:
+            message = self.api.messages.create(
+                model=self.model_version,
+                system=self.system_prompt,
+                messages=formatted_messages,
+                max_tokens=500,
+                timeout=10
+            )
+            response = message.content[0].text
+            return f"{self.name}: {response}"
+        except Exception as e:
+            print(f"Error calling Claude model: {e}")
+            return f"{self.name}: Error: Unable to generate response from Claude model."
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for Claude API submission.
@@ -268,7 +258,7 @@ class ClaudeChatbot(ChatbotCommon[ChatMessage]):
         return messages
 
 
-class GeminiChatbot(ChatbotCommon[GeminiMessage]):
+class GeminiChatbot(ChatbotBase[GeminiMessage]):
     """Concrete implementation of chatbot using Google's Gemini API service.
     
     Handles initialization of Gemini model with system prompt during setup,
@@ -276,9 +266,9 @@ class GeminiChatbot(ChatbotCommon[GeminiMessage]):
     of 'content', and response generation.
     """
 
-    def __init__(self, model_version: str, system_prompt: str):
+    def __init__(self, model_version: str, system_prompt: str, name: str):
         """Initialize Gemini chatbot with specific model and behavior."""
-        super().__init__(model_version, system_prompt)
+        super().__init__(model_version, system_prompt, name)
     
     def _initialize_api(self) -> Any:
         """Initialize connection to Gemini API with system prompt."""
@@ -291,8 +281,14 @@ class GeminiChatbot(ChatbotCommon[GeminiMessage]):
     def generate_response(self, conversation: List[ConversationMessage]) -> str:
         """Generate next response using Gemini model."""
         formatted_messages = self._format_message(conversation)
-        message = self.api.generate_content(formatted_messages)
-        return message.text
+        
+        try:
+            message = self.api.generate_content(formatted_messages) # type: ignore
+            response = message.text
+            return f"{self.name}: {response}"
+        except Exception as e:
+            print(f"Error calling Gemini model: {e}")
+            return f"{self.name}: Error: Unable to generate response from Gemini model."
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[GeminiMessage]:
         """Format message history for Gemini API submission."""
@@ -305,16 +301,16 @@ class GeminiChatbot(ChatbotCommon[GeminiMessage]):
         return messages
 
 
-class OllamaChatbot(ChatbotCommon[ChatMessage]):
+class OllamaChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using Ollama's API service.
     
     Handles initialization of Ollama client, message formatting specific to Ollama's
     expected format, and response generation.
     """
 
-    def __init__(self, model_version: str, system_prompt: str):
+    def __init__(self, model_version: str, system_prompt: str, name: str):
         """Initialize Ollama chatbot with specific model and behavior."""
-        super().__init__(model_version, system_prompt)
+        super().__init__(model_version, system_prompt, name)
     
     def _initialize_api(self) -> Any:
         """Initialize connection to Ollama API."""
@@ -324,12 +320,16 @@ class OllamaChatbot(ChatbotCommon[ChatMessage]):
         """Generate next response using Ollama's chat model."""
         formatted_messages = self._format_message(conversation)
         
-        response = ollama.chat(             # type: ignore
-            model=self.model_version,
-            messages=formatted_messages
-        )
-        
-        return response['message']['content']
+        try:
+            response = ollama.chat(                 # type: ignore
+                model=self.model_version,
+                messages=formatted_messages
+            )
+            response = response['message']['content'] # type: ignore
+            return f"{self.name}: {response}"
+        except Exception as e:
+            print(f"Error calling Ollama model: {e}")
+            return f"{self.name}: Error: Unable to generate response from Ollama model."
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for Ollama API submission."""
@@ -346,25 +346,26 @@ class ChatbotFactory:
     """Factory for creating different types of chatbots."""
     
     @staticmethod
-    def create_bot(bot_type: BotType, model_version: str, system_prompt: str) -> ChatbotBase[Any]:
+    def create_bot(bot_type: BotType, model_version: str, system_prompt: str, name: str) -> ChatbotBase[Any]:
         """Create a chatbot of specified type.
         
         Args:
             bot_type: Type of bot to create
             model_version: Model version to use
             system_prompt: System instruction for bot behavior
+            name: Name of the chatbot
         
         Returns:
             Initialized chatbot instance
         """
         if bot_type == BotType.GPT:
-            return OpenAIChatbot(model_version, system_prompt)
+            return OpenAIChatbot(model_version, system_prompt, name)
         elif bot_type == BotType.CLAUDE:
-            return ClaudeChatbot(model_version, system_prompt)
+            return ClaudeChatbot(model_version, system_prompt, name)
         elif bot_type == BotType.GEMINI:
-            return GeminiChatbot(model_version, system_prompt)
+            return GeminiChatbot(model_version, system_prompt, name)
         elif bot_type == BotType.OLLAMA:
-            return OllamaChatbot(model_version, system_prompt)
+            return OllamaChatbot(model_version, system_prompt, name)
         else:
             raise ValueError(f"Unknown bot type: {bot_type}")
 
@@ -413,43 +414,27 @@ if __name__ == "__main__":
 
     gpt_system = "You are an expert on modern professional tennis. \
     You think that Roger Federer is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results. \
-    You are known as RogerFan. At the start of each response (not within a single response, \
-    not at the start of each paragraph within each response, only the first paragraph) you \
-    will prefix your contribution with the text 'RogerFan: '."
-
+    justify your opinion through your knowledge of tennis technique and results."
 
     claude_system = "You are an expert on modern professional tennis. \
     You think that Rafa Nadal is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results. \
-    You are known as RafaFan. At the start of each response (not within a single response, \
-    not at the start of each paragraph within each response, only the first paragraph) you \
-    will prefix your contribution with the text 'RafaFan: '."
-
+    justify your opinion through your knowledge of tennis technique and results."
 
     gemini_system = "You are an expert on modern professional tennis. \
     You think that Novak Djokovic is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results. \
-    You are known as NovakFan. At the start of each response (not within a single response, \
-    not at the start of each paragraph within each response, only the first paragraph) you \
-    will prefix your contribution with the text 'NovakFan: '."
+    justify your opinion through your knowledge of tennis technique and results."
 
     ollama_system = "You are an expert on modern professional tennis. \
     You are not sure who should have the title of the greatest player of all time \
-    (the 'GOAT) but you hope to base your decision on the opinions of others \
-    You are known as AndyFan. It is very important to only play this role in the conversation \
-    and NOT to play other people's roles. At the start of each response (not within a single response, \
-    not at the start of each paragraph within each response, only the first paragraph) you \
-    will prefix your contribution with the text 'AndyFan: '. If you don't have much to say as AndyFan then that is fine."
+    (the 'GOAT) but you hope to base your decision on the opinions of others"
 
     APIConfig.setup_env()
     factory = ChatbotFactory()
 
-    # Create bots
-    gpt_bot = factory.create_bot(BotType.GPT, gpt_model_version, gpt_system)
-    claude_bot = factory.create_bot(BotType.CLAUDE, claude_model_version, claude_system)
-    gemini_bot = factory.create_bot(BotType.GEMINI, gemini_model_version, gemini_system)
-    ollama_bot = factory.create_bot(BotType.OLLAMA, ollama_model_version, ollama_system)
+    gpt_bot = factory.create_bot(BotType.GPT, gpt_model_version, gpt_system, "RogerFan")
+    claude_bot = factory.create_bot(BotType.CLAUDE, claude_model_version, claude_system, "RafaFan")
+    gemini_bot = factory.create_bot(BotType.GEMINI, gemini_model_version, gemini_system, "NovakFan")
+    ollama_bot = factory.create_bot(BotType.OLLAMA, ollama_model_version, ollama_system, "AndyFan")
     
     # Initialize manager and add bots
     manager = ConversationManager("I think Roger Federer is the GOAT!")
