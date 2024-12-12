@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 # from dataclasses import dataclass
 from typing import List, Any, TypedDict, TypeVar, Generic
 import os # type: ignore
+import json
 from openai import OpenAI
 import anthropic # type: ignore
 import google.generativeai # type: ignore
@@ -370,9 +371,48 @@ class ChatbotFactory:
             raise ValueError(f"Unknown bot type: {bot_type}")
 
 
+class BotConfig(TypedDict):
+    name: str
+    bot_type: str
+    model_version: str
+    system_prompt: str
+
+class ConversationConfig(TypedDict):
+    conversation_seed: str
+    rounds: int
+    bots: List[BotConfig]
+
+class ConfigurationLoader:
+    @staticmethod
+    def load_config(config_path: str) -> ConversationConfig:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
     
+    @classmethod
+    def from_config(cls, config_path: str) -> 'ConversationManager':
+        """Create ConversationManager from config file.
+        
+        Args:
+            config_path: Path to JSON configuration file
+        """
+        config = ConfigurationLoader.load_config(config_path)
+        manager = cls(config['conversation_seed'])
+        
+        factory = ChatbotFactory()
+        for bot_config in config['bots']:
+            bot = factory.create_bot(
+                BotType[bot_config['bot_type']], 
+                bot_config['model_version'],
+                bot_config['system_prompt'],
+                bot_config['name']
+            )
+            manager.add_bot(bot)
+        
+        return manager
+
     def __init__(self, initial_message: str):
         """Initialize conversation with starting message.
         
@@ -405,44 +445,13 @@ class ConversationManager:
 
 
 if __name__ == "__main__":
-
-    gpt_model_version = "gpt-4o-mini"
-    claude_model_version = "claude-3-haiku-20240307"
-    gemini_model_version = "gemini-1.5-flash"
-    ollama_model_version = "llama3.2"
-
-
-    gpt_system = "You are an expert on modern professional tennis. \
-    You think that Roger Federer is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results."
-
-    claude_system = "You are an expert on modern professional tennis. \
-    You think that Rafa Nadal is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results."
-
-    gemini_system = "You are an expert on modern professional tennis. \
-    You think that Novak Djokovic is the greatest tennis player of all time (the 'GOAT') and are keen to \
-    justify your opinion through your knowledge of tennis technique and results."
-
-    ollama_system = "You are an expert on modern professional tennis. \
-    You are not sure who should have the title of the greatest player of all time \
-    (the 'GOAT) but you hope to base your decision on the opinions of others"
-
     APIConfig.setup_env()
-    factory = ChatbotFactory()
-
-    gpt_bot = factory.create_bot(BotType.GPT, gpt_model_version, gpt_system, "RogerFan")
-    claude_bot = factory.create_bot(BotType.CLAUDE, claude_model_version, claude_system, "RafaFan")
-    gemini_bot = factory.create_bot(BotType.GEMINI, gemini_model_version, gemini_system, "NovakFan")
-    ollama_bot = factory.create_bot(BotType.OLLAMA, ollama_model_version, ollama_system, "AndyFan")
     
-    # Initialize manager and add bots
-    manager = ConversationManager("I think Roger Federer is the GOAT!")
-    for bot in [gpt_bot, claude_bot, gemini_bot, ollama_bot]:
-        manager.add_bot(bot)
+    config = ConfigurationLoader.load_config('config.json')
+    manager = ConversationManager.from_config('config.json')
     
-    # Run conversation
-    for _ in range(2):
+    # Run conversation for configured number of rounds
+    for _ in range(config['rounds']):
         manager.run_round()
 
 
