@@ -1,19 +1,20 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "chatbot_conversation"
 version = "0.1.0"
-description = "A Python application for multi-model AI chatbot conversations"
+description = "A chatbot conversation system"
 authors = [{name = "Your Name"}]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q"
+pythonpath = ["src"]
 
 [tool.mypy]
 python_version = "3.11"
