@@ -3,6 +3,12 @@ from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
 from ..models.factory import ChatbotFactory
 from .loader import ConfigurationLoader
+import logging
+import logging.config
+
+# Set up logging from config file
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger('chatbot_conversation')
 
 class BotConfig(TypedDict):
     name: str
@@ -46,6 +52,7 @@ class ConversationManager:
         Args:
             initial_message: First message to start conversation
         """
+        logger.info("Initializing conversation manager")
         self.bots: List[ChatbotBase[Any]] = []
         self.conversation: List[ConversationMessage] = [
             {"bot_index": 0, "content": initial_message}
@@ -61,10 +68,15 @@ class ConversationManager:
     
     def run_round(self) -> None:
         """Run one round of responses from all bots."""
-        for bot in self.bots:
-            response = bot.generate_response(self.conversation)
-            self.conversation.append({
-                "bot_index": bot.bot_index,
-                "content": response
-            })
-            print(f"\n{bot.__class__.__name__}:\n{response}\n")
+        logger.debug("Starting new conversation round")
+        try:
+            for bot in self.bots:
+                response = bot.generate_response(self.conversation)
+                self.conversation.append({
+                    "bot_index": bot.bot_index,
+                    "content": response
+                })
+                print(f"\n{bot.__class__.__name__}:\n{response}\n")
+            logger.info("Round completed successfully")
+        except Exception as e:
+            logger.error(f"Error during conversation round: {str(e)}")
