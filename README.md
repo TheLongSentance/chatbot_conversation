@@ -115,4 +115,4 @@ The bots will engage in a multi-round discussion based on the conversation seed,
 
 ## License
 
-This code is not licensed
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
