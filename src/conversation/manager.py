@@ -32,7 +32,20 @@ class ConversationManager:
             config_path: Path to JSON configuration file
         """
         config = ConfigurationLoader.load_config(config_path)
-        manager = cls(config['conversation_seed'])
+        return cls(config)
+    
+    def __init__(self, config: ConversationConfig):
+        """Initialize conversation with starting message.
+        
+        Args:
+            config: Conversation configuration
+        """
+        logger.info("Initializing conversation manager")
+        self.config = config
+        self.bots: List[ChatbotBase[Any]] = []
+        self.conversation: List[ConversationMessage] = [
+            {"bot_index": 0, "content": config['conversation_seed']}
+        ]
         
         factory = ChatbotFactory()
         for bot_config in config['bots']:
@@ -42,21 +55,7 @@ class ConversationManager:
                 bot_config['system_prompt'],
                 bot_config['name']
             )
-            manager.add_bot(bot)
-        
-        return manager
-
-    def __init__(self, initial_message: str):
-        """Initialize conversation with starting message.
-        
-        Args:
-            initial_message: First message to start conversation
-        """
-        logger.info("Initializing conversation manager")
-        self.bots: List[ChatbotBase[Any]] = []
-        self.conversation: List[ConversationMessage] = [
-            {"bot_index": 0, "content": initial_message}
-        ]
+            self.add_bot(bot)
     
     def add_bot(self, bot: ChatbotBase[Any]) -> None:
         """Add a chatbot to the conversation.
@@ -80,3 +79,10 @@ class ConversationManager:
             logger.info("Round completed successfully")
         except Exception as e:
             logger.error(f"Error during conversation round: {str(e)}")
+    
+    def run_conversation(self) -> None:
+        """Run the conversation for the configured number of rounds."""
+        print("\nStarting conversation...\n")
+        for round_num in range(self.config['rounds']):
+            print(f"\n--- Round {round_num + 1} ---")
+            self.run_round()
