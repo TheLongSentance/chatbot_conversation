@@ -1,5 +1,7 @@
 from typing import List, Any
 import google.generativeai  # type: ignore
+import asyncio
+from concurrent.futures import TimeoutError
 from .base import ChatbotBase, GeminiMessage, ConversationMessage
 
 class GeminiChatbot(ChatbotBase[GeminiMessage]):
@@ -22,14 +24,30 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
             system_instruction=self.system_prompt
         )
         
+    async def _generate_with_timeout(self, formatted_messages: List[GeminiMessage], timeout: int = 30) -> str:
+        """Wrapper to call Gemini API with timeout."""
+        try:
+            message = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None, lambda: self.api.generate_content(formatted_messages)
+                ),
+                timeout=timeout
+            )
+            return message.text
+        except TimeoutError:
+            raise TimeoutError("Gemini API call timed out after {timeout} seconds")
+
     def generate_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate next response using Gemini model."""
+        """Generate next response using Gemini model with timeout."""
         formatted_messages = self._format_message(conversation)
         
         try:
-            message = self.api.generate_content(formatted_messages) # type: ignore
-            response = message.text
+            # Run the async function in a synchronous context
+            response = asyncio.run(self._generate_with_timeout(formatted_messages))
             return f"{self.name}: {response}"
+        except TimeoutError as te:
+            print(f"*** Timeout error: {te} ***")
+            return f"{self.name}: Error: Request timed out while waiting for Gemini model response."
         except Exception as e:
             print(f"Error calling Gemini model: {e}")
             return f"{self.name}: Error: Unable to generate response from Gemini model."
