@@ -75,7 +75,7 @@ class ConversationManager:
                     "bot_index": bot.bot_index,
                     "content": response
                 })
-                print(f"\n{bot.__class__.__name__}:\n{response}\n")
+                print(f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n{response}\n")
             logger.info("Round completed successfully")
         except Exception as e:
             logger.error(f"Error during conversation round: {str(e)}")
