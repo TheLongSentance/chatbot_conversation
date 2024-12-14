@@ -16,21 +16,6 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
     def _initialize_api(self) -> Any:
         """Initialize connection to Ollama API."""
         return None  # Ollama doesn't need initialization
-        
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate next response using Ollama's chat model."""
-        formatted_messages = self._format_message(conversation)
-        
-        try:
-            response = ollama.chat(                 # type: ignore
-                model=self.model_version,
-                messages=formatted_messages
-            )
-            response = response['message']['content'] # type: ignore
-            return f"{self.name}: {response}"
-        except Exception as e:
-            print(f"Error calling Ollama model: {e}")
-            return f"{self.name}: Error: Unable to generate response from Ollama model."
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for Ollama API submission."""
@@ -41,3 +26,12 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
             messages.append({"role": role, "content": contribution["content"]})
 
         return messages
+
+    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
+        """Generate raw response using Ollama's chat model."""
+        formatted_messages = self._format_message(conversation)
+        response = ollama.chat(                 # type: ignore
+            model=self.model_version,
+            messages=formatted_messages
+        )
+        return response['message']['content']   # type: ignore

@@ -37,21 +37,6 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
         except TimeoutError:
             raise TimeoutError("Gemini API call timed out after {timeout} seconds")
 
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate next response using Gemini model with timeout."""
-        formatted_messages = self._format_message(conversation)
-        
-        try:
-            # Run the async function in a synchronous context
-            response = asyncio.run(self._generate_with_timeout(formatted_messages))
-            return f"{self.name}: {response}"
-        except TimeoutError as te:
-            print(f"*** Timeout error: {te} ***")
-            return f"{self.name}: Error: Request timed out while waiting for Gemini model response."
-        except Exception as e:
-            print(f"Error calling Gemini model: {e}")
-            return f"{self.name}: Error: Unable to generate response from Gemini model."
-
     def _format_message(self, conversation: List[ConversationMessage]) -> List[GeminiMessage]:
         """Format message history for Gemini API submission."""
         messages: List[GeminiMessage] = []
@@ -61,3 +46,9 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
             messages.append({"role": role, "parts": contribution["content"]})
 
         return messages
+
+    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
+        """Generate raw response using Gemini model with timeout."""
+        formatted_messages = self._format_message(conversation)
+        response = asyncio.run(self._generate_with_timeout(formatted_messages))
+        return response

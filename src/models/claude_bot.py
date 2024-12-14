@@ -31,34 +31,18 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
             Claude: Configured Claude client instance
         """
         return anthropic.Anthropic() # type: ignore
-        
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate next response using Claude's chat model.
 
-        Args:
-            conversation: List of previous conversation messages
-
-        Returns:
-            str: Generated response from Claude model
-
-        Note:
-            Includes system prompt at start of every request
-        """
+    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
+        """Generate raw response using Claude's chat model."""
         formatted_messages = self._format_message(conversation)
-        
-        try:
-            message = self.api.messages.create(
-                model=self.model_version,
-                system=self.system_prompt,
-                messages=formatted_messages,
-                max_tokens=500,
-                timeout=10
-            )
-            response = message.content[0].text
-            return f"{self.name}: {response}"
-        except Exception as e:
-            print(f"Error calling Claude model: {e}")
-            return f"{self.name}: Error: Unable to generate response from Claude model."
+        message = self.api.messages.create(
+            model=self.model_version,
+            system=self.system_prompt,
+            messages=formatted_messages,
+            max_tokens=500,
+            timeout=10
+        )
+        return message.content[0].text
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for Claude API submission.

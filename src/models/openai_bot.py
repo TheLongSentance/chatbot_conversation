@@ -32,31 +32,15 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         """
         return OpenAI()
         
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate next response using OpenAI's chat completion.
-
-        Args:
-            conversation: List of previous conversation messages
-
-        Returns:
-            str: Generated response from GPT model
-
-        Note:
-            Includes system prompt at start of every request
-        """
+    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
+        """Generate raw response using OpenAI's chat completion."""
         formatted_messages = self._format_message(conversation)
-        
-        try:
-            completion = self.api.chat.completions.create(
-                model=self.model_version,
-                messages=formatted_messages,
-                timeout=10
-            )
-            response = completion.choices[0].message.content
-            return f"{self.name}: {response}"
-        except Exception as e:
-            print(f"Error calling GPT model: {e}")
-            return f"{self.name}: Error: Unable to generate response from GPT model."
+        completion = self.api.chat.completions.create(
+            model=self.model_version,
+            messages=formatted_messages,
+            timeout=10
+        )
+        return completion.choices[0].message.content
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for OpenAI API submission.
@@ -77,5 +61,5 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
             messages.append({"role": role, "content": contribution["content"]})
 
         return messages
-    
+
 
