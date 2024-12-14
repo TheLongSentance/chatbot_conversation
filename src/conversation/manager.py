@@ -82,7 +82,9 @@ class ConversationManager:
     
     def run_conversation(self) -> None:
         """Run the conversation for the configured number of rounds."""
-        print("\nStarting conversation...\n")
+        print("\n\n*** Starting conversation: ***\n")
+        print(f'{self.conversation[0]["content"]}\n')
+        
         for round_num in range(self.config['rounds']):
             print(f"\n--- Round {round_num + 1} ---")
             self.run_round()
