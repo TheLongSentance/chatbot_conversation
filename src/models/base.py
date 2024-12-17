@@ -31,7 +31,8 @@ class ChatbotBase(ABC, Generic[T]):
 
     def __init__(self, bot_model_version: str, bot_specific_system_prompt: str, bot_name: str, shared_system_prompt_prefix: str):
         self.model_version: str = bot_model_version
-        self.system_prompt: str = shared_system_prompt_prefix.format(bot_name=bot_name) + bot_specific_system_prompt
+        self.system_prompt: str = shared_system_prompt_prefix.format(bot_name=bot_name) \
+                                + bot_specific_system_prompt
         self.name: str = bot_name
         self.api = self._initialize_api()
         ChatbotBase._total_count += 1
