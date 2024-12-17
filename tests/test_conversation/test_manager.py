@@ -3,12 +3,35 @@ import os
 from src.conversation.manager import ConversationManager
 from src.conversation.loader import ConfigurationLoader
 
-def test_conversation_manager_initialization(test_config_path: str, mock_env: dict[str, str]):
+def test_conversation_manager_initialization(test_config_path: str):
     manager = ConversationManager.from_config(test_config_path)
     assert manager is not None
     assert len(manager.bots) == 2  # Based on test_config.json
+    
+    # Verify initial conversation state
+    assert len(manager.conversation) == 1
+    assert manager.conversation[0]["bot_index"] == 0
+    assert manager.conversation[0]["content"] == "This is a test conversation"
+    
+    # Verify bot configurations
+    assert manager.config["rounds"] == 1
+    assert len(manager.config["bots"]) == 2
+    
+    # Verify first bot configuration
+    assert manager.bots[0].name == "TestBot1"
+    assert manager.bots[0].bot_index == 1  # 1-indexed since 0 is reserved for seed message
+    assert manager.bots[0].system_prompt.endswith("You are a test bot.")
+    
+    # Verify second bot configuration
+    assert manager.bots[1].name == "TestBot2"
+    assert manager.bots[1].bot_index == 2
+    assert manager.bots[1].system_prompt.endswith("You are another test bot.")
+    
+    # Verify bot types
+    assert str(manager.bots[0].__class__.__name__).startswith("OpenAI")
+    assert str(manager.bots[1].__class__.__name__).startswith("Claude")
 
-def test_run_round(test_config_path: str, mock_env: dict[str, str]):
+def test_run_round(test_config_path: str):
     manager = ConversationManager.from_config(test_config_path)
     manager.run_round()
     assert len(manager.conversation) > 1  # Initial message + at least one response
@@ -35,7 +58,7 @@ def test_conversation_history(test_config_path: str, mock_env: dict[str, str]):
     assert len(manager.conversation) > initial_length
     assert all(isinstance(msg, str) for msg in manager.conversation)
 
-def test_bot_validation(test_config_path: str, mock_env: dict[str, str]):
+def test_bot_validation(test_config_path: str):
     config = ConfigurationLoader.load_config(test_config_path)
     config['bots'][0]['bot_type'] = 'INVALID'
     with pytest.raises(ValueError, match='Unsupported bot type'):
@@ -45,7 +68,7 @@ def test_missing_env_variables(test_config_path: str):
     with pytest.raises(KeyError):
         ConversationManager.from_config(test_config_path)
 
-def test_multiple_rounds(test_config_path: str, mock_env: dict[str, str]):
+def test_multiple_rounds(test_config_path: str):
     manager = ConversationManager.from_config(test_config_path)
     initial_length = len(manager.conversation)
     num_rounds = 3
@@ -53,7 +76,7 @@ def test_multiple_rounds(test_config_path: str, mock_env: dict[str, str]):
         manager.run_round()
     assert len(manager.conversation) >= initial_length + num_rounds * 2  # At least 2 messages per round
 
-def test_bot_order(test_config_path: str, mock_env: dict[str, str]):
+def test_bot_order(test_config_path: str):
     manager = ConversationManager.from_config(test_config_path)
     manager.run_round()
     messages = manager.conversation[1:]  # Skip seed message
@@ -63,7 +86,7 @@ def test_bot_order(test_config_path: str, mock_env: dict[str, str]):
         if i + 1 < len(messages):
             assert messages[i + 1].startswith("TestBot2:")
 
-def test_empty_conversation_seed(test_config_path: str, mock_env: dict[str, str]):
+def test_empty_conversation_seed(test_config_path: str):
     config = ConfigurationLoader.load_config(test_config_path)
     config['conversation_seed'] = ""
     with pytest.raises(ValueError, match='Conversation seed cannot be empty'):
