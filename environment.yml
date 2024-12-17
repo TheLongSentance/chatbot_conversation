@@ -5,6 +5,7 @@ channels:
 dependencies:
   - python=3.11
   - pip
+  - pytest-cov
   - pip:
     - openai>=1.12.0
     - anthropic>=0.18.1
