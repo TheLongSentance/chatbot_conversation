@@ -10,6 +10,13 @@ import logging.config
 logging.config.fileConfig('logging.conf')
 logger = logging.getLogger('chatbot_conversation')
 
+# Define error messages as constants
+ERROR_EMPTY_CONVERSATION_SEED = "Conversation seed cannot be empty"
+ERROR_INVALID_ROUNDS = "Rounds must be a positive integer"
+ERROR_EMPTY_SHARED_SYSTEM_PROMPT_PREFIX = "Shared system prompt prefix cannot be empty"
+ERROR_EMPTY_BOTS_LIST = "Bots list cannot be empty"
+ERROR_EMPTY_BOT_FIELD = "Each bot must have a non-empty '{field}' field"
+
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
     
@@ -24,26 +31,26 @@ class ConversationManager:
 
         # Check if conversation_seed is empty
         if not config.get("conversation_seed"):
-            raise ValueError("Conversation seed cannot be empty")
+            raise ValueError(ERROR_EMPTY_CONVERSATION_SEED)
         
         # Check if rounds is a positive integer
         if config["rounds"] <= 0:
-            raise ValueError("Rounds must be a positive integer")
+            raise ValueError(ERROR_INVALID_ROUNDS)
         
         # Check if conversation_seed is empty
         if not config.get("shared_system_prompt_prefix"):
-            raise ValueError("Shared system prompt prefix cannot be empty")
+            raise ValueError(ERROR_EMPTY_SHARED_SYSTEM_PROMPT_PREFIX)
 
         # Check if bots list is not empty
         if not config.get("bots") or len(config["bots"]) == 0:
-            raise ValueError("Bots list cannot be empty")
+            raise ValueError(ERROR_EMPTY_BOTS_LIST)
         
         # Check if each bot has the required fields and they are not empty
         required_bot_fields = ["bot_name", "bot_type", "bot_model_version", "bot_specific_system_prompt"]
         for bot in config["bots"]:
             for field in required_bot_fields:
                 if field not in bot or not bot[field]:
-                    raise ValueError(f"Each bot must have a non-empty '{field}' field")
+                    raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field=field))
 
         return cls(config)
     

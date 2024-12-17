@@ -1,5 +1,5 @@
 import pytest
-from src.conversation.manager import ConversationManager
+from src.conversation.manager import ConversationManager, ERROR_EMPTY_CONVERSATION_SEED
 
 def test_conversation_manager_initialization(test_config_path: str):
     manager = ConversationManager.from_config(test_config_path)
@@ -48,5 +48,5 @@ def test_multiple_rounds(test_config_path: str):
 
 def test_invalid_config_empty_seed(test_config_empty_path: str):
     # Test conversation seed is empty
-    with pytest.raises(ValueError, match='Conversation seed cannot be empty'):
+    with pytest.raises(ValueError, match=ERROR_EMPTY_CONVERSATION_SEED):
         ConversationManager.from_config(test_config_empty_path)
