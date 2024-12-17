@@ -35,7 +35,7 @@ class ChatbotBase(ABC, Generic[T]):
     " be prefixed, in the form \"{name}: \". It is important that you only take on the role of yourself as " \
     "{name} in each response you make. Do not impersonate others in a response and do not make contibutions " \
     "impersonating/imitating multiple roles within a single response i.e. respond only as you in your role. " \
-    "It is important not to prefix your response (or any paragraphs within your resposne) with \"{name}: \" "
+    "It is important not to prefix your response (or any paragraphs within your resposne) with \"{name}: \" " \
     "- please do not do this as this will appear unnatural - you know who you are, you do not need refer to " \
     "yourself by name. If you need to refer to yourself, use the pronoun \"I\". as a human would." \
     "And when refering to other participants, refer to them naturally within your response, you do not have to prefix " \
