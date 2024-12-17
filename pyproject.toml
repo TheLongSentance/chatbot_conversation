@@ -6,9 +6,12 @@ build-backend = "hatchling.build"
 name = "chatbot_conversation"
 version = "0.1.0"
 description = "A chatbot conversation system"
-authors = [{name = "Your Name"}]
+authors = [{name = "Brian Sentance", email = "brian@sentance.tech"}]
 readme = "README.md"
 requires-python = ">=3.8"
+
+[tool.hatch.build.targets.wheel]
+packages = ["chatbot_conversation"]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
@@ -21,13 +24,13 @@ filterwarnings = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.8"
 strict = true
 ignore_missing_imports = true
 
 [tool.black]
 line-length = 88
-target-version = ['py311']
+target-version = ['py38']
 
 [tool.isort]
 profile = "black"
