@@ -14,7 +14,7 @@ def test_conversation_manager_initialization(test_config_path: str):
     assert manager.conversation[0]["content"] == "This is a test conversation"
     
     # Verify bot configurations
-    assert manager.config["rounds"] == 1
+    assert manager.config["rounds"] == 2
     assert len(manager.config["bots"]) == 2
     
     # Verify first bot configuration
