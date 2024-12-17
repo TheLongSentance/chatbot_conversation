@@ -1,7 +1,8 @@
 import pytest
+from typing import Callable
 from src.conversation.manager import ConversationManager, ERROR_EMPTY_CONVERSATION_SEED
 
-def test_conversation_manager_initialization(test_config_path: str):
+def test_conversation_manager_initialization(test_config_path: str, setup_valid_env: None):
     manager = ConversationManager.from_config(test_config_path)
     assert manager is not None
     assert len(manager.bots) == 2  # Based on test_config.json
@@ -29,7 +30,7 @@ def test_conversation_manager_initialization(test_config_path: str):
     assert str(manager.bots[0].__class__.__name__).startswith("OpenAI")
     assert str(manager.bots[1].__class__.__name__).startswith("Claude")
 
-def test_run_round(test_config_path: str):
+def test_run_round(test_config_path: str, setup_valid_env: None):
     manager = ConversationManager.from_config(test_config_path)
     manager.run_round()
     assert len(manager.conversation) > 1  # Initial message + at least one response
@@ -38,7 +39,7 @@ def test_invalid_config_path():
     with pytest.raises(FileNotFoundError):
         ConversationManager.from_config('nonexistent.json')
 
-def test_multiple_rounds(test_config_path: str):
+def test_multiple_rounds(test_config_path: str, setup_valid_env: None):
     manager = ConversationManager.from_config(test_config_path)
     initial_length = len(manager.conversation)
     num_rounds = 3
@@ -50,3 +51,13 @@ def test_invalid_config_empty_seed(test_config_empty_path: str):
     # Test conversation seed is empty
     with pytest.raises(ValueError, match=ERROR_EMPTY_CONVERSATION_SEED):
         ConversationManager.from_config(test_config_empty_path)
+
+# def test_invalid_api_keys(mock_env: Callable[[], None]):
+#     # Use the mock_env fixture to set invalid keys
+#     mock_env()
+    
+#     # Add assertions or checks to verify behavior with invalid keys
+#     # For example, you might want to check log messages or specific exceptions
+#     with pytest.raises(SomeExpectedException):
+#         # Code that should raise an exception due to invalid API keys
+#         some_function_that_uses_api_keys()

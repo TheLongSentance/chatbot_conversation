@@ -6,13 +6,13 @@
         {
             "bot_name": "TestBot1",
             "bot_type": "GPT",
-            "bot_model_version": "gpt-4",
+            "bot_model_version": "gpt-4o-mini",
             "bot_specific_system_prompt": "You are a test bot."
         },
         {
             "bot_name": "TestBot2",
             "bot_type": "CLAUDE",
-            "bot_model_version": "claude-3-haiku",
+            "bot_model_version": "claude-3-haiku-20240307",
             "bot_specific_system_prompt": "You are another test bot."
         }
     ]
