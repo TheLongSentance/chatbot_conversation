@@ -14,7 +14,7 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(self, model_version: str, system_prompt: str, name: str):
+    def __init__(self, bot_model_version: str, bot_specific_system_prompt: str, bot_name: str, shared_system_prompt_prefix: str):
         """Initialize Claude chatbot with specific model and behavior.
 
         Args:
@@ -22,7 +22,7 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
             system_prompt: System instruction defining bot behavior
             name: Name of the chatbot
         """
-        super().__init__(model_version, system_prompt, name)
+        super().__init__(bot_model_version, bot_specific_system_prompt, bot_name, shared_system_prompt_prefix)
     
     def _initialize_api(self) -> Any:
         """Initialize connection to Claude API.

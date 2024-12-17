@@ -123,14 +123,15 @@ Edit `config.json` to customize the conversation. Example configuration for a te
 
 ```json
 {
-    "conversation_seed": "What makes a tennis player the GOAT?",
-    "rounds": 3,
+    "conversation_seed": "I think Roger Federer is the GOAT!",
+    "rounds": 2,
+    "shared_system_prompt_prefix": "You are about to take part in a conversation...",
     "bots": [
         {
-            "name": "TennisBot1",
+            "bot_name": "RogerFan",
             "bot_type": "GPT",
-            "model_version": "gpt-4",
-            "system_prompt": "You are an expert tennis analyst..."
+            "bot_model_version": "gpt-4-mini",
+            "bot_specific_system_prompt": "You are an expert on modern professional tennis..."
         }
     ]
 }
@@ -139,11 +140,21 @@ Edit `config.json` to customize the conversation. Example configuration for a te
 Configuration parameters:
 - `conversation_seed`: The initial prompt to start the discussion
 - `rounds`: Number of conversation rounds
+- `shared_system_prompt_prefix`: Common instructions provided to all bots about conversation structure
+  - Supports template variable `{bot_name}` which gets replaced with each bot's name from their configuration
+  - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
 - `bots`: Array of bot configurations
-  - `name`: Display name for the bot
+  - `bot_name`: Display name for the bot (also used in shared system prompt templating)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
-  - `model_version`: Specific model version to use
-  - `system_prompt`: Instructions that define the bot's personality and knowledge
+  - `bot_model_version`: Specific model version to use
+  - `bot_specific_system_prompt`: Role-specific instructions for each bot
+
+### Template Variables
+
+The `shared_system_prompt_prefix` supports the following template variables:
+- `{bot_name}`: Replaced with the bot's name from its configuration
+  - This allows the shared prompt to reference each bot's specific identity
+  - Used for making the system prompt more personalized to each bot
 
 ## Usage
 

@@ -28,28 +28,11 @@ class ChatbotBase(ABC, Generic[T]):
     
     _total_count: int = 0  # Class variable to track total instances
 
-    SYSTEM_PROMPT_TEMPLATE: str = (
-        "You are about to take part in a conversation with multiple participants. "
-        "Your identity in this conversation is {name}. Other participants will also have names "
-        "that you can use to refer to them if needed, often in the example form of \"name: \" at the "
-        "start of their contributions to the conversation. Your past contributions to the conversation will also "
-        "be prefixed, in the form \"{name}: \". It is important that you only take on the role of yourself as "
-        "{name} in each response you make. Do not impersonate others in a response and do not make contributions "
-        "impersonating/imitating multiple roles within a single response i.e. respond only as you in your role. "
-        "It is important not to prefix your response (or any paragraphs within your response) with \"{name}: \" "
-        "- do not do this as this will appear unnatural since you know who you are, you do not need to refer to "
-        "yourself by name. If you need to refer to yourself, use the pronoun \"I\" as a human would. "
-        "And when referring to other participants, refer to them naturally within your response, you do not have to prefix "
-        "each paragraph within your response with their name. Try not to simply repeat your points from your earlier "
-        "contributions to the conversation, but rather develop your points further and pick up on the contributions "
-        "of others. Follow the role instructions supplied in this prompt. {system_prompt}"
-    )
 
-    def __init__(self, model_version: str, system_prompt: str, name: str):
-        self.model_version: str = model_version
-        self.system_prompt: str = self.SYSTEM_PROMPT_TEMPLATE.format(
-            name=name, system_prompt=system_prompt)
-        self.name: str = name
+    def __init__(self, bot_model_version: str, bot_specific_system_prompt: str, bot_name: str, shared_system_prompt_prefix: str):
+        self.model_version: str = bot_model_version
+        self.system_prompt: str = shared_system_prompt_prefix.format(bot_name=bot_name) + bot_specific_system_prompt
+        self.name: str = bot_name
         self.api = self._initialize_api()
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count

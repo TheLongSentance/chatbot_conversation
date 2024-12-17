@@ -2,14 +2,15 @@ from typing import List, TypedDict
 import json
 
 class BotConfig(TypedDict):
-    name: str
+    bot_name: str
     bot_type: str
-    model_version: str
-    system_prompt: str
+    bot_model_version: str
+    bot_specific_system_prompt: str
 
 class ConversationConfig(TypedDict):
     conversation_seed: str
     rounds: int
+    shared_system_prompt_prefix: str
     bots: List[BotConfig]
 
 class ConfigurationLoader:

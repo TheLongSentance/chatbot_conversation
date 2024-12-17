@@ -1,25 +1,14 @@
-from typing import List, Any, TypedDict
+from typing import List, Any
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
 from ..models.factory import ChatbotFactory
-from .loader import ConfigurationLoader
+from .loader import ConfigurationLoader, ConversationConfig
 import logging
 import logging.config
 
 # Set up logging from config file
 logging.config.fileConfig('logging.conf')
 logger = logging.getLogger('chatbot_conversation')
-
-class BotConfig(TypedDict):
-    name: str
-    bot_type: str
-    model_version: str
-    system_prompt: str
-
-class ConversationConfig(TypedDict):
-    conversation_seed: str
-    rounds: int
-    bots: List[BotConfig]
 
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
@@ -51,9 +40,10 @@ class ConversationManager:
         for bot_config in config['bots']:
             bot = factory.create_bot(
                 BotType[bot_config['bot_type']], 
-                bot_config['model_version'],
-                bot_config['system_prompt'],
-                bot_config['name']
+                bot_config['bot_model_version'],
+                bot_config['bot_specific_system_prompt'],
+                bot_config['bot_name'],
+                config['shared_system_prompt_prefix']
             )
             self.add_bot(bot)
     
@@ -75,7 +65,7 @@ class ConversationManager:
                     "bot_index": bot.bot_index,
                     "content": response
                 })
-                print(f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n{response}\n")
+                print(f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{response}\n")
             logger.info("Round completed successfully")
         except Exception as e:
             logger.error(f"Error during conversation round: {str(e)}")
@@ -86,5 +76,5 @@ class ConversationManager:
         print(f'{self.conversation[0]["content"]}\n')
         
         for round_num in range(self.config['rounds']):
-            print(f"\n--- Round {round_num + 1} ---")
+            print(f"\n--- Round {round_num + 1} ---\n")
             self.run_round()

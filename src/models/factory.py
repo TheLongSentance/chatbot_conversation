@@ -11,9 +11,10 @@ class ChatbotFactory:
     def create_bot(
         self, 
         bot_type: BotType, 
-        model_version: str,
-        system_prompt: str,
-        name: str
+        bot_model_version: str,
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        bot_shared_system_prompt_prefix: str
     ) -> ChatbotBase[Any]:
         """Create a new chatbot instance based on type.
         
@@ -30,12 +31,12 @@ class ChatbotFactory:
             ValueError: If bot_type is not recognized
         """
         if bot_type == BotType.GPT:
-            return OpenAIChatbot(model_version, system_prompt, name)
+            return OpenAIChatbot(bot_model_version, bot_specific_system_prompt, bot_name, bot_shared_system_prompt_prefix)
         elif bot_type == BotType.CLAUDE:
-            return ClaudeChatbot(model_version, system_prompt, name)
+            return ClaudeChatbot(bot_model_version, bot_specific_system_prompt, bot_name, bot_shared_system_prompt_prefix)
         elif bot_type == BotType.GEMINI:
-            return GeminiChatbot(model_version, system_prompt, name)
+            return GeminiChatbot(bot_model_version, bot_specific_system_prompt, bot_name, bot_shared_system_prompt_prefix)
         elif bot_type == BotType.OLLAMA:
-            return OllamaChatbot(model_version, system_prompt, name)
+            return OllamaChatbot(bot_model_version, bot_specific_system_prompt, bot_name, bot_shared_system_prompt_prefix)
         else:
             raise ValueError(f"Unknown bot type: {bot_type}")
