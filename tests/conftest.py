@@ -13,6 +13,10 @@ def test_config_path() -> str:
     return str(Path(__file__).parent / 'fixtures' / 'test_config.json')
 
 @pytest.fixture
+def test_config_empty_path() -> str:
+    return str(Path(__file__).parent / 'fixtures' / 'test_config_empty.json')
+    
+@pytest.fixture
 def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
     env_vars = {
         "OPENAI_API_KEY": "test-key",

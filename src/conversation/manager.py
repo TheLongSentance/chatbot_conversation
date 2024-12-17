@@ -21,6 +21,30 @@ class ConversationManager:
             config_path: Path to JSON configuration file
         """
         config = ConfigurationLoader.load_config(config_path)
+
+        # Check if conversation_seed is empty
+        if not config.get("conversation_seed"):
+            raise ValueError("Conversation seed cannot be empty")
+        
+        # Check if rounds is a positive integer
+        if config["rounds"] <= 0:
+            raise ValueError("Rounds must be a positive integer")
+        
+        # Check if conversation_seed is empty
+        if not config.get("shared_system_prompt_prefix"):
+            raise ValueError("Shared system prompt prefix cannot be empty")
+
+        # Check if bots list is not empty
+        if not config.get("bots") or len(config["bots"]) == 0:
+            raise ValueError("Bots list cannot be empty")
+        
+        # Check if each bot has the required fields and they are not empty
+        required_bot_fields = ["bot_name", "bot_type", "bot_model_version", "bot_specific_system_prompt"]
+        for bot in config["bots"]:
+            for field in required_bot_fields:
+                if field not in bot or not bot[field]:
+                    raise ValueError(f"Each bot must have a non-empty '{field}' field")
+
         return cls(config)
     
     def __init__(self, config: ConversationConfig):
@@ -37,13 +61,14 @@ class ConversationManager:
         ]
         
         factory = ChatbotFactory()
+        shared_system_prompt_prefix = config.get('shared_system_prompt_prefix', '')
         for bot_config in config['bots']:
             bot = factory.create_bot(
                 BotType[bot_config['bot_type']], 
                 bot_config['bot_model_version'],
                 bot_config['bot_specific_system_prompt'],
                 bot_config['bot_name'],
-                config['shared_system_prompt_prefix']
+                shared_system_prompt_prefix
             )
             self.add_bot(bot)
     
