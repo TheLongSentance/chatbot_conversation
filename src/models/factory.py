@@ -1,3 +1,7 @@
+"""
+This module contains the ChatbotFactory class for creating different types of chatbots.
+"""
+
 from typing import Any
 from .base import BotType, ChatbotBase
 from .openai_bot import OpenAIChatbot
@@ -20,9 +24,10 @@ class ChatbotFactory:
         
         Args:
             bot_type: Type of bot to create (GPT, CLAUDE, etc.)
-            model_version: Model version to use
-            system_prompt: System instruction for bot behavior
-            name: Name of the bot
+            bot_model_version: Model version to use
+            bot_specific_system_prompt: System instruction for bot behavior
+            bot_name: Name of the bot
+            bot_shared_system_prompt_prefix: Shared system prompt prefix for the bot
             
         Returns:
             ChatbotBase: Initialized chatbot instance
