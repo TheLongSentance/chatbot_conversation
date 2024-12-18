@@ -1,10 +1,12 @@
 from typing import List, Any
+import os
+import logging
+import logging.config
+
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
 from ..models.factory import ChatbotFactory
 from .loader import ConfigurationLoader, ConversationConfig
-import logging
-import logging.config
 
 # Set up logging from config file
 logging.config.fileConfig('logging.conf')
@@ -104,9 +106,20 @@ class ConversationManager:
     
     def run_conversation(self) -> None:
         """Run the conversation for the configured number of rounds."""
-        print("\n\n*** Starting conversation: ***\n")
+
+        # Clear the terminal screen
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+        print("**********************************")
+        print("***   Starting conversation:   ***")
+        print("**********************************\n")
         print(f'{self.conversation[0]["content"]}\n')
-        
+        print("**********************************\n")
+
         for round_num in range(self.config['rounds']):
-            print(f"\n--- Round {round_num + 1} ---\n")
+            print(f"\n--- Round {round_num + 1} ---")
             self.run_round()
+
+        print("\n**********************************")
+        print("***   Conversation completed   ***")
+        print("**********************************\n\n")
