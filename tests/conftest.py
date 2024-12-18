@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Dict
 from dotenv import load_dotenv
 from src.utils.env import APIConfig
+from src.models.base import ChatbotBase
+
 
 # Add project root to path for imports in tests
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -38,3 +40,8 @@ def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
         monkeypatch.setenv(key, value)
     
     return env_vars
+
+@pytest.fixture(autouse=True)
+def reset_bot_count():
+    ChatbotBase.reset_total_count()
+    yield

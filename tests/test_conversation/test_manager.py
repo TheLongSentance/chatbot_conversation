@@ -1,5 +1,4 @@
 import pytest
-from typing import Callable
 from src.conversation.manager import ConversationManager, ERROR_EMPTY_CONVERSATION_SEED
 
 def test_conversation_manager_initialization(test_config_path: str, setup_valid_env: None):
@@ -51,13 +50,3 @@ def test_invalid_config_empty_seed(test_config_empty_path: str):
     # Test conversation seed is empty
     with pytest.raises(ValueError, match=ERROR_EMPTY_CONVERSATION_SEED):
         ConversationManager.from_config(test_config_empty_path)
-
-# def test_invalid_api_keys(mock_env: Callable[[], None]):
-#     # Use the mock_env fixture to set invalid keys
-#     mock_env()
-    
-#     # Add assertions or checks to verify behavior with invalid keys
-#     # For example, you might want to check log messages or specific exceptions
-#     with pytest.raises(SomeExpectedException):
-#         # Code that should raise an exception due to invalid API keys
-#         some_function_that_uses_api_keys()
