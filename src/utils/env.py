@@ -1,9 +1,21 @@
-from dotenv import load_dotenv
+"""
+This module contains the APIConfig class, which is responsible for setting up
+and validating environment variables for API keys.
+
+The APIConfig class handles:
+- Loading environment variables from a .env file
+- Validating the presence of required API keys
+- Logging the status of the API keys
+"""
 import os
 import logging
 from typing import List, Tuple, Optional
+from dotenv import load_dotenv
 
-class APIConfig:
+
+class APIConfig:    # pylint: disable=too-few-public-methods
+    """Class responsible for setting up and validating environment variables for API keys."""
+
     @staticmethod
     def setup_env():
         """Set up environment variables and validate keys."""
@@ -11,7 +23,7 @@ class APIConfig:
 
     @staticmethod
     def _load_config():
-        """Initialize and validate API keys"""
+        """Initialize and validate API keys."""
         load_dotenv()
         keys = [
             ("OpenAI", os.getenv('OPENAI_API_KEY')),
@@ -22,18 +34,23 @@ class APIConfig:
 
     @staticmethod
     def _validate_keys(keys: List[Tuple[str, Optional[str]]]):
-        """Validate presence of required API keys"""
+        """Validate presence of required API keys.
+
+        Args:
+            keys: List of tuples containing service name and API key
+        """
         for service, key in keys:
             APIConfig._log_key_status(service, key)
 
     @staticmethod
     def _log_key_status(service: str, key: Optional[str]):
-        """Log the status of the API key"""
+        """Log the status of the API key.
+
+        Args:
+            service: Name of the service
+            key: API key for the service
+        """
         if not key:
-            logging.warning(f"{service} API Key not set")
+            logging.warning("%s API Key not set", service)
         else:
-            logging.info(f"{service} API Key exists and begins {key[:8]}")
-
-
-# Usage:
-# APIConfig.setup_env()
+            logging.info("%s API Key exists and begins %s", service, key[:8])
