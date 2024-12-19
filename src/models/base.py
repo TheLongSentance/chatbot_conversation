@@ -13,30 +13,40 @@ from abc import ABC, abstractmethod
 from typing import List, Any, TypedDict, TypeVar, Generic
 from enum import Enum, auto
 
+
 class ChatMessage(TypedDict):
     """Represents a typical chat message with a role and content."""
+
     role: str
     content: str
+
 
 class GeminiMessage(TypedDict):
     """Represents a Gemini-specific message with a role and parts."""
+
     role: str
     parts: str
 
+
 # Define generic model input message type
-T = TypeVar('T', ChatMessage, GeminiMessage)
+T = TypeVar("T", ChatMessage, GeminiMessage)
+
 
 class ConversationMessage(TypedDict):
     """Represents a conversation message with a bot index and content."""
+
     bot_index: int
     content: str
 
+
 class BotType(Enum):
     """Enumeration of different bot types."""
+
     GPT = auto()
     CLAUDE = auto()
     GEMINI = auto()
     OLLAMA = auto()
+
 
 class ChatbotBase(ABC, Generic[T]):
     """Abstract base class defining interface for AI chatbot implementations."""
@@ -51,10 +61,13 @@ class ChatbotBase(ABC, Generic[T]):
         """
         cls._total_count = 0
 
-    def __init__(self, bot_model_version: str,
-                 bot_specific_system_prompt: str,
-                 bot_name: str,
-                 shared_system_prompt_prefix: str):
+    def __init__(
+        self,
+        bot_model_version: str,
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        shared_system_prompt_prefix: str,
+    ):
         """
         Initialize the chatbot with model version, system prompt, and bot name.
 
@@ -65,8 +78,10 @@ class ChatbotBase(ABC, Generic[T]):
             shared_system_prompt_prefix (str): The shared system prompt prefix.
         """
         self.model_version: str = bot_model_version
-        self.system_prompt: str = shared_system_prompt_prefix.format(bot_name=bot_name) \
-                                + bot_specific_system_prompt
+        self.system_prompt: str = (
+            shared_system_prompt_prefix.format(bot_name=bot_name)
+            + bot_specific_system_prompt
+        )
         self.name: str = bot_name
         self.api = self._initialize_api()
         ChatbotBase._total_count += 1
@@ -113,7 +128,7 @@ class ChatbotBase(ABC, Generic[T]):
         try:
             raw_response = self._generate_raw_response(conversation)
             return self.format_response(raw_response)
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             print(f"Error generating response: {e}")
             return self.format_response("Error: Unable to generate response.")
 
@@ -128,7 +143,7 @@ class ChatbotBase(ABC, Generic[T]):
             str: The response without the bot name prefix.
         """
         prefix = f"{self.name}: "
-        return response[len(prefix):] if response.startswith(prefix) else response
+        return response[len(prefix) :] if response.startswith(prefix) else response
 
     def format_response(self, response: str) -> str:
         """

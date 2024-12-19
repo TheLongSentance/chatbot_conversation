@@ -7,10 +7,12 @@ The OllamaChatbot class handles:
 - Formatting messages specific to Ollama's expected format
 - Generating responses using the Ollama API
 """
+
 from typing import List, Any
 import ollama
 from ollama import ChatResponse
 from .base import ChatbotBase, ChatMessage, ConversationMessage
+
 
 class OllamaChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using Ollama's API service.
@@ -19,10 +21,13 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
     expected format, and response generation.
     """
 
-    def __init__(self, bot_model_version: str, # pylint: disable=useless-parent-delegation
-                 bot_specific_system_prompt: str,
-                 bot_name: str,
-                 shared_system_prompt_prefix: str):
+    def __init__(
+        self,
+        bot_model_version: str,  # pylint: disable=useless-parent-delegation
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        shared_system_prompt_prefix: str,
+    ):
         """Initialize Ollama chatbot with specific model and behavior.
 
         Args:
@@ -31,21 +36,29 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
             bot_name: Name of the chatbot
             shared_system_prompt_prefix: Prefix for shared system instructions
         """
-        super().__init__(bot_model_version,
-                         bot_specific_system_prompt,
-                         bot_name,
-                         shared_system_prompt_prefix)
+        super().__init__(
+            bot_model_version,
+            bot_specific_system_prompt,
+            bot_name,
+            shared_system_prompt_prefix,
+        )
 
     def _initialize_api(self) -> Any:
         """Initialize connection to Ollama API."""
         return None  # Ollama doesn't need initialization
 
-    def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
+    def _format_message(
+        self, conversation: List[ConversationMessage]
+    ) -> List[ChatMessage]:
         """Format message history for Ollama API submission."""
-        messages: List[ChatMessage] = [{"role": "system", "content": self.system_prompt}]
+        messages: List[ChatMessage] = [
+            {"role": "system", "content": self.system_prompt}
+        ]
 
         for contribution in conversation:
-            role = "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            role = (
+                "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            )
             messages.append({"role": role, "content": contribution["content"]})
 
         return messages
@@ -54,14 +67,13 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
         """Generate raw response using Ollama's chat model."""
         formatted_messages = self._format_message(conversation)
         response: ChatResponse = ollama.chat(
-            model=self.model_version,
-            messages=formatted_messages
+            model=self.model_version, messages=formatted_messages
         )
 
-        message = response['message']
-        if message is None or 'content' not in message:
+        message = response["message"]
+        if message is None or "content" not in message:
             raise KeyError("Expected 'message' key with 'content' in response")
-        response_content = message['content']
+        response_content = message["content"]
         if not isinstance(response_content, str):
             raise ValueError("Expected response content to be a string")
         return response_content

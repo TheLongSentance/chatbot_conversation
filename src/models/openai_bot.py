@@ -7,9 +7,11 @@ The OpenAIChatbot class handles:
 - Formatting messages specific to OpenAI's expected format
 - Generating responses using the GPT model
 """
+
 from typing import List, Any
 from openai import OpenAI
 from .base import ChatbotBase, ChatMessage, ConversationMessage
+
 
 class OpenAIChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using OpenAI's API service.
@@ -23,11 +25,13 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(self, # pylint: disable=useless-parent-delegation
-                 bot_model_version: str,
-                 bot_specific_system_prompt: str,
-                 bot_name: str,
-                 shared_system_prompt_prefix: str):
+    def __init__(
+        self,  # pylint: disable=useless-parent-delegation
+        bot_model_version: str,
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        shared_system_prompt_prefix: str,
+    ):
         """Initialize OpenAI chatbot with specific model and behavior.
 
         Args:
@@ -36,10 +40,12 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
             bot_name (str): Name of the chatbot
             shared_system_prompt_prefix (str): Prefix for shared system instructions
         """
-        super().__init__(bot_model_version,
-                         bot_specific_system_prompt,
-                         bot_name,
-                         shared_system_prompt_prefix)
+        super().__init__(
+            bot_model_version,
+            bot_specific_system_prompt,
+            bot_name,
+            shared_system_prompt_prefix,
+        )
 
     def _initialize_api(self) -> Any:
         """Initialize connection to OpenAI API.
@@ -60,16 +66,16 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         """
         formatted_messages = self._format_message(conversation)
         completion = self.api.chat.completions.create(
-            model=self.model_version,
-            messages=formatted_messages,
-            timeout=10
+            model=self.model_version, messages=formatted_messages, timeout=10
         )
         response_content = completion.choices[0].message.content
         if not isinstance(response_content, str):
             raise ValueError("Expected response content to be a string")
         return response_content
 
-    def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
+    def _format_message(
+        self, conversation: List[ConversationMessage]
+    ) -> List[ChatMessage]:
         """Format message history for OpenAI API submission.
 
         Prepends system prompt and formats all messages according to
@@ -81,10 +87,14 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         Returns:
             List[ChatMessage]: Messages formatted for OpenAI API
         """
-        messages: List[ChatMessage] = [{"role": "system", "content": self.system_prompt}]
+        messages: List[ChatMessage] = [
+            {"role": "system", "content": self.system_prompt}
+        ]
 
         for contribution in conversation:
-            role = "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            role = (
+                "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            )
             messages.append({"role": role, "content": contribution["content"]})
 
         return messages

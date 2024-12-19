@@ -14,6 +14,7 @@ from concurrent.futures import TimeoutError as FuturesTimeoutError
 import google.generativeai
 from .base import ChatbotBase, GeminiMessage, ConversationMessage
 
+
 class GeminiChatbot(ChatbotBase[GeminiMessage]):
     """Concrete implementation of chatbot using Google's Gemini API service.
 
@@ -22,11 +23,13 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
     of 'content', and response generation.
     """
 
-    def __init__(self, # pylint: disable=useless-parent-delegation
-                 bot_model_version: str,
-                 bot_specific_system_prompt: str,
-                 bot_name: str,
-                 shared_system_prompt_prefix: str):
+    def __init__(
+        self,  # pylint: disable=useless-parent-delegation
+        bot_model_version: str,
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        shared_system_prompt_prefix: str,
+    ):
         """Initialize Gemini chatbot with specific model and behavior.
 
         Args:
@@ -35,29 +38,30 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
             bot_name: Name of the chatbot
             shared_system_prompt_prefix: Prefix for shared system instructions
         """
-        super().__init__(bot_model_version, # pylint: disable=useless-parent-delegation
-                         bot_specific_system_prompt,
-                         bot_name,
-                         shared_system_prompt_prefix)
+        super().__init__(
+            bot_model_version,  # pylint: disable=useless-parent-delegation
+            bot_specific_system_prompt,
+            bot_name,
+            shared_system_prompt_prefix,
+        )
 
     def _initialize_api(self) -> Any:
         """Initialize connection to Gemini API with system prompt."""
         google.generativeai.configure()
         return google.generativeai.GenerativeModel(
-            model_name=self.model_version,
-            system_instruction=self.system_prompt
+            model_name=self.model_version, system_instruction=self.system_prompt
         )
 
-    async def _generate_with_timeout(self,
-                                     formatted_messages: List[GeminiMessage],
-                                     timeout: int = 30) -> str:
+    async def _generate_with_timeout(
+        self, formatted_messages: List[GeminiMessage], timeout: int = 30
+    ) -> str:
         """Wrapper to call Gemini API with timeout."""
         try:
             message = await asyncio.wait_for(
                 asyncio.get_event_loop().run_in_executor(
                     None, lambda: self.api.generate_content(formatted_messages)
                 ),
-                timeout=timeout
+                timeout=timeout,
             )
             if not isinstance(message.text, str):
                 raise TypeError("Expected message.text to be a string")
@@ -65,9 +69,11 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
         except FuturesTimeoutError as error:
             raise FuturesTimeoutError(
                 f"Gemini API call timed out after {timeout} seconds"
-                ) from error
+            ) from error
 
-    def _format_message(self, conversation: List[ConversationMessage]) -> List[GeminiMessage]:
+    def _format_message(
+        self, conversation: List[ConversationMessage]
+    ) -> List[GeminiMessage]:
         """Format message history for Gemini API submission."""
         messages: List[GeminiMessage] = []
 

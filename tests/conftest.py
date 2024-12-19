@@ -7,6 +7,7 @@ The fixtures handle:
 - Mocking environment variables for tests
 - Resetting bot count before each test
 """
+
 import os
 import sys
 from pathlib import Path
@@ -18,11 +19,12 @@ from src.models.base import ChatbotBase
 
 
 # Add project root to path for imports in tests
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, project_root)
 
 # Load environment variables from .env file
 load_dotenv()
+
 
 @pytest.fixture
 def test_config_path() -> str:
@@ -31,7 +33,8 @@ def test_config_path() -> str:
     Returns:
         str: Path to the test configuration file
     """
-    return str(Path(__file__).parent / 'fixtures' / 'test_config.json')
+    return str(Path(__file__).parent / "fixtures" / "test_config.json")
+
 
 @pytest.fixture
 def test_config_empty_path() -> str:
@@ -40,12 +43,14 @@ def test_config_empty_path() -> str:
     Returns:
         str: Path to the empty test configuration file
     """
-    return str(Path(__file__).parent / 'fixtures' / 'test_config_empty.json')
+    return str(Path(__file__).parent / "fixtures" / "test_config_empty.json")
+
 
 @pytest.fixture
 def setup_valid_env() -> None:
     """Fixture to set up environment with valid keys."""
     APIConfig.setup_env()
+
 
 @pytest.fixture
 def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
@@ -60,13 +65,14 @@ def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
     env_vars = {
         "OPENAI_API_KEY": "invalid-test-key",
         "ANTHROPIC_API_KEY": "invalid-test-key",
-        "GOOGLE_API_KEY": "invalid-test-key"
+        "GOOGLE_API_KEY": "invalid-test-key",
     }
 
     for key, value in env_vars.items():
         monkeypatch.setenv(key, value)
 
     return env_vars
+
 
 @pytest.fixture(autouse=True)
 def reset_bot_count() -> Generator[None, None, None]:

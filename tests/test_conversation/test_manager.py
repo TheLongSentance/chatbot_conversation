@@ -8,8 +8,10 @@ The tests handle:
 - Running multiple conversation rounds
 - Handling empty conversation seeds in configuration
 """
+
 import pytest
 from src.conversation.manager import ConversationManager, ERROR_EMPTY_CONVERSATION_SEED
+
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:
     """Test initialization of ConversationManager from a configuration file.
@@ -33,7 +35,9 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
 
     # Verify first bot configuration
     assert manager.bots[0].name == "TestBot1"
-    assert manager.bots[0].bot_index == 1  # 1-indexed since 0 is reserved for seed message
+    assert (
+        manager.bots[0].bot_index == 1
+    )  # 1-indexed since 0 is reserved for seed message
     assert manager.bots[0].system_prompt.endswith("You are a test bot.")
 
     # Verify second bot configuration
@@ -44,6 +48,7 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
     # Verify bot types
     assert str(manager.bots[0].__class__.__name__).startswith("OpenAI")
     assert str(manager.bots[1].__class__.__name__).startswith("Claude")
+
 
 def test_run_round(test_config_path: str) -> None:
     """Test running a single round of conversation.
@@ -56,10 +61,12 @@ def test_run_round(test_config_path: str) -> None:
     manager.run_round()
     assert len(manager.conversation) > 1  # Initial message + at least one response
 
+
 def test_invalid_config_path() -> None:
     """Test handling of invalid configuration file path."""
     with pytest.raises(FileNotFoundError):
-        ConversationManager.from_config('nonexistent.json')
+        ConversationManager.from_config("nonexistent.json")
+
 
 def test_multiple_rounds(test_config_path: str) -> None:
     """Test running multiple rounds of conversation.
@@ -75,6 +82,7 @@ def test_multiple_rounds(test_config_path: str) -> None:
         manager.run_round()
     # At least 2 messages per round
     assert len(manager.conversation) >= initial_length + num_rounds * 2
+
 
 def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
     """Test handling of empty conversation seed in configuration.

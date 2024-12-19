@@ -12,6 +12,7 @@ from typing import List, Any
 import anthropic
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
+
 class ClaudeChatbot(ChatbotBase[ChatMessage]):
     """Concrete implementation of chatbot using Claude's API service.
 
@@ -24,11 +25,13 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(self,          # pylint: disable=useless-parent-delegation
-                 bot_model_version: str,
-                 bot_specific_system_prompt: str,
-                 bot_name: str,
-                 shared_system_prompt_prefix: str):
+    def __init__(
+        self,  # pylint: disable=useless-parent-delegation
+        bot_model_version: str,
+        bot_specific_system_prompt: str,
+        bot_name: str,
+        shared_system_prompt_prefix: str,
+    ):
         """Initialize Claude chatbot with specific model and behavior.
 
         Args:
@@ -37,10 +40,12 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
             bot_name: Name of the chatbot
             shared_system_prompt_prefix: Prefix for shared system instructions
         """
-        super().__init__(bot_model_version,
-                         bot_specific_system_prompt,
-                         bot_name,
-                         shared_system_prompt_prefix)
+        super().__init__(
+            bot_model_version,
+            bot_specific_system_prompt,
+            bot_name,
+            shared_system_prompt_prefix,
+        )
 
     def _initialize_api(self) -> Any:
         """Initialize connection to Claude API.
@@ -48,7 +53,7 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         Returns:
             Claude: Configured Claude client instance
         """
-        return anthropic.Anthropic() 
+        return anthropic.Anthropic()
 
     def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
         """Generate raw response using Claude's chat model."""
@@ -58,14 +63,16 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
             system=self.system_prompt,
             messages=formatted_messages,
             max_tokens=500,
-            timeout=10
+            timeout=10,
         )
         response_content = message.content[0].text
         if not isinstance(response_content, str):
             raise ValueError("Expected response content to be a string")
         return response_content
 
-    def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
+    def _format_message(
+        self, conversation: List[ConversationMessage]
+    ) -> List[ChatMessage]:
         """Format message history for Claude API submission.
 
         Formats all messages according to Claude's expected structure.
@@ -81,7 +88,9 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         messages: List[ChatMessage] = []
 
         for contribution in conversation:
-            role = "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            role = (
+                "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            )
             messages.append({"role": role, "content": contribution["content"]})
 
         return messages

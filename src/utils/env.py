@@ -7,13 +7,14 @@ The APIConfig class handles:
 - Validating the presence of required API keys
 - Logging the status of the API keys
 """
+
 import os
 import logging
 from typing import List, Tuple, Optional
 from dotenv import load_dotenv
 
 
-class APIConfig:    # pylint: disable=too-few-public-methods
+class APIConfig:  # pylint: disable=too-few-public-methods
     """Class responsible for setting up and validating environment variables for API keys."""
 
     @staticmethod
@@ -26,9 +27,9 @@ class APIConfig:    # pylint: disable=too-few-public-methods
         """Initialize and validate API keys."""
         load_dotenv()
         keys = [
-            ("OpenAI", os.getenv('OPENAI_API_KEY')),
-            ("Anthropic", os.getenv('ANTHROPIC_API_KEY')),
-            ("Google", os.getenv('GOOGLE_API_KEY')),
+            ("OpenAI", os.getenv("OPENAI_API_KEY")),
+            ("Anthropic", os.getenv("ANTHROPIC_API_KEY")),
+            ("Google", os.getenv("GOOGLE_API_KEY")),
         ]
         APIConfig._validate_keys(keys)
 
