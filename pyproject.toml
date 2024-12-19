@@ -13,6 +13,19 @@ requires-python = ">=3.8"
 [tool.hatch.build.targets.wheel]
 packages = ["chatbot_conversation"]
 
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+strict = true
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
 testpaths = ["tests"]
@@ -23,15 +36,8 @@ filterwarnings = [
     "ignore::UserWarning",
 ]
 
-[tool.mypy]
-python_version = "3.8"
-strict = true
-ignore_missing_imports = true
 
-[tool.black]
-line-length = 88
-target-version = ['py38']
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+
+
+
