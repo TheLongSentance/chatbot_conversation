@@ -31,10 +31,10 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         """Initialize OpenAI chatbot with specific model and behavior.
 
         Args:
-            bot_model_version: GPT model version to use (e.g. "gpt-4")
-            bot_specific_system_prompt: System instruction defining bot behavior
-            bot_name: Name of the chatbot
-            shared_system_prompt_prefix: Prefix for shared system instructions
+            bot_model_version (str): GPT model version to use (e.g. "gpt-4")
+            bot_specific_system_prompt (str): System instruction defining bot behavior
+            bot_name (str): Name of the chatbot
+            shared_system_prompt_prefix (str): Prefix for shared system instructions
         """
         super().__init__(bot_model_version,
                          bot_specific_system_prompt,
@@ -53,7 +53,7 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         """Generate raw response using OpenAI's chat completion.
 
         Args:
-            conversation: List of conversation messages
+            conversation (List[ConversationMessage]): List of conversation messages
 
         Returns:
             str: Generated response from the model
@@ -73,7 +73,7 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         OpenAI's expected structure.
 
         Args:
-            conversation: List of conversation messages to format
+            conversation (List[ConversationMessage]): List of conversation messages to format
 
         Returns:
             List[ChatMessage]: Messages formatted for OpenAI API

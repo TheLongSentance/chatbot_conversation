@@ -1,6 +1,11 @@
 """
 This module contains the ClaudeChatbot class, a concrete implementation of the ChatbotBase class,
 which uses Claude's API service to generate responses.
+
+The ClaudeChatbot class handles:
+- Initialization of the Claude client
+- Formatting messages specific to Claudes's expected format
+- Generating responses using the Claude API
 """
 
 from typing import List, Any
@@ -27,9 +32,10 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         """Initialize Claude chatbot with specific model and behavior.
 
         Args:
-            model_version: Claude model version to use (e.g. "claude-3")
-            system_prompt: System instruction defining bot behavior
-            name: Name of the chatbot
+            bot_model_version: Claude model version to use (e.g. "claude-3")
+            bot_specific_system_prompt: System instruction defining bot behavior
+            bot_name: Name of the chatbot
+            shared_system_prompt_prefix: Prefix for shared system instructions
         """
         super().__init__(bot_model_version,
                          bot_specific_system_prompt,

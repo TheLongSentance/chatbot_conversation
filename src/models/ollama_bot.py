@@ -22,7 +22,14 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
                  bot_specific_system_prompt: str,
                  bot_name: str,
                  shared_system_prompt_prefix: str):
-        """Initialize Ollama chatbot with specific model and behavior."""
+        """Initialize Ollama chatbot with specific model and behavior.
+
+        Args:
+            bot_model_version: Ollama model version to use (e.g. "ollama-1")
+            bot_specific_system_prompt: System instruction defining bot behavior
+            bot_name: Name of the chatbot
+            shared_system_prompt_prefix: Prefix for shared system instructions
+        """
         super().__init__(bot_model_version,
                          bot_specific_system_prompt,
                          bot_name,

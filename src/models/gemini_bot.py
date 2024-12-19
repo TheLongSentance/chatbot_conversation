@@ -1,6 +1,11 @@
 """
 This module contains the GeminiChatbot class, a concrete implementation of the ChatbotBase class,
 which uses Google's Gemini API service to generate responses.
+
+The GeminiChatbot class handles:
+- Initialization of the Gemini client
+- Formatting messages specific to Gemini's expected format
+- Generating responses using the Gemini API
 """
 
 from typing import List, Any
@@ -22,7 +27,14 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
                  bot_specific_system_prompt: str,
                  bot_name: str,
                  shared_system_prompt_prefix: str):
-        """Initialize Gemini chatbot with specific model and behavior."""
+        """Initialize Gemini chatbot with specific model and behavior.
+
+        Args:
+            bot_model_version: Gemini model version to use (e.g. "gemini-2")
+            bot_specific_system_prompt: System instruction defining bot behavior
+            bot_name: Name of the chatbot
+            shared_system_prompt_prefix: Prefix for shared system instructions
+        """
         super().__init__(bot_model_version, # pylint: disable=useless-parent-delegation
                          bot_specific_system_prompt,
                          bot_name,
