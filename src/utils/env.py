@@ -17,12 +17,12 @@ class APIConfig:    # pylint: disable=too-few-public-methods
     """Class responsible for setting up and validating environment variables for API keys."""
 
     @staticmethod
-    def setup_env():
+    def setup_env() -> None:
         """Set up environment variables and validate keys."""
         APIConfig._load_config()
 
     @staticmethod
-    def _load_config():
+    def _load_config() -> None:
         """Initialize and validate API keys."""
         load_dotenv()
         keys = [
@@ -33,7 +33,7 @@ class APIConfig:    # pylint: disable=too-few-public-methods
         APIConfig._validate_keys(keys)
 
     @staticmethod
-    def _validate_keys(keys: List[Tuple[str, Optional[str]]]):
+    def _validate_keys(keys: List[Tuple[str, Optional[str]]]) -> None:
         """Validate presence of required API keys.
 
         Args:
@@ -43,7 +43,7 @@ class APIConfig:    # pylint: disable=too-few-public-methods
             APIConfig._log_key_status(service, key)
 
     @staticmethod
-    def _log_key_status(service: str, key: Optional[str]):
+    def _log_key_status(service: str, key: Optional[str]) -> None:
         """Log the status of the API key.
 
         Args:
