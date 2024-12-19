@@ -9,7 +9,7 @@ The ClaudeChatbot class handles:
 """
 
 from typing import List, Any
-import anthropic  # type: ignore
+import anthropic
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
 class ClaudeChatbot(ChatbotBase[ChatMessage]):
@@ -48,7 +48,7 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
         Returns:
             Claude: Configured Claude client instance
         """
-        return anthropic.Anthropic() # type: ignore
+        return anthropic.Anthropic() 
 
     def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
         """Generate raw response using Claude's chat model."""
@@ -60,7 +60,10 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
             max_tokens=500,
             timeout=10
         )
-        return message.content[0].text
+        response_content = message.content[0].text
+        if not isinstance(response_content, str):
+            raise ValueError("Expected response content to be a string")
+        return response_content
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for Claude API submission.

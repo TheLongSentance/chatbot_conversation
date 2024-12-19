@@ -5,7 +5,7 @@ This module initializes and runs the chatbot conversation.
 from src.conversation.manager import ConversationManager
 from src.utils.env import APIConfig
 
-def main():
+def main() -> None:
     """
     Main function to set up environment variables, load configuration, 
     initialize the conversation manager, and run the conversation.

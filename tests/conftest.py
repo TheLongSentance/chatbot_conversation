@@ -10,7 +10,7 @@ The fixtures handle:
 import os
 import sys
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Generator
 import pytest
 from dotenv import load_dotenv
 from src.utils.env import APIConfig
@@ -43,7 +43,7 @@ def test_config_empty_path() -> str:
     return str(Path(__file__).parent / 'fixtures' / 'test_config_empty.json')
 
 @pytest.fixture
-def setup_valid_env():
+def setup_valid_env() -> None:
     """Fixture to set up environment with valid keys."""
     APIConfig.setup_env()
 
@@ -69,7 +69,7 @@ def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
     return env_vars
 
 @pytest.fixture(autouse=True)
-def reset_bot_count():
+def reset_bot_count() -> Generator[None, None, None]:
     """Fixture to reset the bot count before each test."""
     ChatbotBase.reset_total_count()
     yield

@@ -8,7 +8,8 @@ The OllamaChatbot class handles:
 - Generating responses using the Ollama API
 """
 from typing import List, Any
-import ollama  # type: ignore
+import ollama
+from ollama import ChatResponse
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
 class OllamaChatbot(ChatbotBase[ChatMessage]):
@@ -52,8 +53,15 @@ class OllamaChatbot(ChatbotBase[ChatMessage]):
     def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
         """Generate raw response using Ollama's chat model."""
         formatted_messages = self._format_message(conversation)
-        response = ollama.chat(                 # type: ignore
+        response: ChatResponse = ollama.chat(
             model=self.model_version,
             messages=formatted_messages
         )
-        return response['message']['content']   # type: ignore
+
+        message = response['message']
+        if message is None or 'content' not in message:
+            raise KeyError("Expected 'message' key with 'content' in response")
+        response_content = message['content']
+        if not isinstance(response_content, str):
+            raise ValueError("Expected response content to be a string")
+        return response_content

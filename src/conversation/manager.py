@@ -71,15 +71,16 @@ class ConversationManager:
         if not config.get("bots") or len(config["bots"]) == 0:
             raise ValueError(ERROR_EMPTY_BOTS_LIST)
 
-        # Check if each bot has the required fields and they are not empty
-        required_bot_fields = ["bot_name",
-                               "bot_type",
-                               "bot_model_version",
-                               "bot_specific_system_prompt"]
+        # Check each bot field individually with literal keys
         for bot in config["bots"]:
-            for field in required_bot_fields:
-                if field not in bot or not bot[field]:
-                    raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field=field))
+            if not bot["bot_name"]:
+                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_name"))
+            if not bot["bot_type"]:
+                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_type"))
+            if not bot["bot_model_version"]:
+                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_model_version"))
+            if not bot["bot_specific_system_prompt"]:
+                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_specific_system_prompt"))
 
         return cls(config)
 

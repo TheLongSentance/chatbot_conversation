@@ -64,7 +64,10 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
             messages=formatted_messages,
             timeout=10
         )
-        return completion.choices[0].message.content
+        response_content = completion.choices[0].message.content
+        if not isinstance(response_content, str):
+            raise ValueError("Expected response content to be a string")
+        return response_content
 
     def _format_message(self, conversation: List[ConversationMessage]) -> List[ChatMessage]:
         """Format message history for OpenAI API submission.

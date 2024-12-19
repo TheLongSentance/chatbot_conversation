@@ -11,7 +11,7 @@ The GeminiChatbot class handles:
 from typing import List, Any
 import asyncio
 from concurrent.futures import TimeoutError as FuturesTimeoutError
-import google.generativeai  # type: ignore
+import google.generativeai
 from .base import ChatbotBase, GeminiMessage, ConversationMessage
 
 class GeminiChatbot(ChatbotBase[GeminiMessage]):
@@ -42,7 +42,7 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
 
     def _initialize_api(self) -> Any:
         """Initialize connection to Gemini API with system prompt."""
-        google.generativeai.configure() # type: ignore
+        google.generativeai.configure()
         return google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt
@@ -59,6 +59,8 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
                 ),
                 timeout=timeout
             )
+            if not isinstance(message.text, str):
+                raise TypeError("Expected message.text to be a string")
             return message.text
         except FuturesTimeoutError as error:
             raise FuturesTimeoutError(
