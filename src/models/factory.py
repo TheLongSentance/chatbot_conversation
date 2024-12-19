@@ -3,11 +3,12 @@ This module contains the ChatbotFactory class for creating different types of ch
 """
 
 from typing import Any
+
 from .base import BotType, ChatbotBase
-from .openai_bot import OpenAIChatbot
 from .claude_bot import ClaudeChatbot
 from .gemini_bot import GeminiChatbot
 from .ollama_bot import OllamaChatbot
+from .openai_bot import OpenAIChatbot
 
 
 class ChatbotFactory:

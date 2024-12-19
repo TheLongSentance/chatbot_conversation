@@ -8,8 +8,10 @@ The ClaudeChatbot class handles:
 - Generating responses using the Claude API
 """
 
-from typing import List, Any
+from typing import Any, List
+
 import anthropic
+
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
 

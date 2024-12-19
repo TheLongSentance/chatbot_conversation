@@ -1,5 +1,5 @@
+from .loader import BotConfig, ConfigurationLoader, ConversationConfig
 from .manager import ConversationManager
-from .loader import ConfigurationLoader, ConversationConfig, BotConfig
 
 __all__ = [
     "ConversationManager",

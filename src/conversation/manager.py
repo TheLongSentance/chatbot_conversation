@@ -22,10 +22,10 @@ Constants:
 - ERROR_EMPTY_BOT_FIELD
 """
 
-from typing import List, Any
-import os
 import logging
 import logging.config
+import os
+from typing import Any, List
 
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType

@@ -8,8 +8,10 @@ The OpenAIChatbot class handles:
 - Generating responses using the GPT model
 """
 
-from typing import List, Any
+from typing import Any, List
+
 from openai import OpenAI
+
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
 

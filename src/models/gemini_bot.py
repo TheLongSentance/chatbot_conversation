@@ -8,11 +8,13 @@ The GeminiChatbot class handles:
 - Generating responses using the Gemini API
 """
 
-from typing import List, Any
 import asyncio
 from concurrent.futures import TimeoutError as FuturesTimeoutError
+from typing import Any, List
+
 import google.generativeai
-from .base import ChatbotBase, GeminiMessage, ConversationMessage
+
+from .base import ChatbotBase, ConversationMessage, GeminiMessage
 
 
 class GeminiChatbot(ChatbotBase[GeminiMessage]):

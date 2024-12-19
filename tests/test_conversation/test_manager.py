@@ -10,7 +10,8 @@ The tests handle:
 """
 
 import pytest
-from src.conversation.manager import ConversationManager, ERROR_EMPTY_CONVERSATION_SEED
+
+from src.conversation.manager import ERROR_EMPTY_CONVERSATION_SEED, ConversationManager
 
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:

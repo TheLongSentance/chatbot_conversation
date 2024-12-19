@@ -7,9 +7,9 @@ The ConfigurationLoader class handles:
 - Providing the configuration data in a structured format
 """
 
-from typing import List, TypedDict
 import json
 import typing
+from typing import List, TypedDict
 
 
 class BotConfig(TypedDict):

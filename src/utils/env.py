@@ -8,9 +8,10 @@ The APIConfig class handles:
 - Logging the status of the API keys
 """
 
-import os
 import logging
-from typing import List, Tuple, Optional
+import os
+from typing import List, Optional, Tuple
+
 from dotenv import load_dotenv
 
 

@@ -10,8 +10,8 @@ Classes:
 """
 
 from abc import ABC, abstractmethod
-from typing import List, Any, TypedDict, TypeVar, Generic
 from enum import Enum, auto
+from typing import Any, Generic, List, TypedDict, TypeVar
 
 
 class ChatMessage(TypedDict):

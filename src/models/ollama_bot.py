@@ -8,9 +8,11 @@ The OllamaChatbot class handles:
 - Generating responses using the Ollama API
 """
 
-from typing import List, Any
+from typing import Any, List
+
 import ollama
 from ollama import ChatResponse
+
 from .base import ChatbotBase, ChatMessage, ConversationMessage
 
 
