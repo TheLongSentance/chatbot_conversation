@@ -8,6 +8,7 @@ The ConfigurationLoader class handles:
 """
 from typing import List, TypedDict
 import json
+import typing
 
 class BotConfig(TypedDict):
     """Typed dictionary representing the configuration for a single bot.
@@ -51,4 +52,5 @@ class ConfigurationLoader:      # pylint: disable=too-few-public-methods
             ConversationConfig: Loaded configuration
         """
         with open(config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            data = json.load(f)
+        return typing.cast(ConversationConfig, data)
