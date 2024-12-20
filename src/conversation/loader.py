@@ -11,16 +11,28 @@ import json
 import typing
 from typing import List, TypedDict
 
+# Field names for BotConfig
+BOT_NAME = "bot_name"
+BOT_TYPE = "bot_type"
+BOT_MODEL_VERSION = "bot_model_version"
+BOT_SYSTEM_PROMPT = "bot_specific_system_prompt"
+
+# Field names for ConversationConfig
+CONVERSATION_SEED = "conversation_seed"
+ROUNDS = "rounds"
+SHARED_SYSTEM_PROMPT_PREFIX = "shared_system_prompt_prefix"
+BOTS = "bots"
+
+# Error messages for configuration validation
+ERROR_EMPTY_FIELD = "Each bot must have a non-empty '{field}' field"
+ERROR_EMPTY_SEED = "Conversation seed cannot be empty"
+ERROR_INVALID_ROUNDS = "Rounds must be a positive integer"
+ERROR_EMPTY_PREFIX = "Shared system prompt prefix cannot be empty"
+ERROR_EMPTY_BOTS = "Bots list cannot be empty"
+
 
 class BotConfig(TypedDict):
-    """Typed dictionary representing the configuration for a single bot.
-
-    Attributes:
-        bot_name: Name of the bot
-        bot_type: Type of the bot (e.g., "openai")
-        bot_model_version: Version of the bot model to use
-        bot_specific_system_prompt: System prompt specific to the bot
-    """
+    """Typed dictionary representing the configuration for a single bot."""
 
     bot_name: str
     bot_type: str
@@ -29,14 +41,7 @@ class BotConfig(TypedDict):
 
 
 class ConversationConfig(TypedDict):
-    """Typed dictionary representing the configuration for a conversation.
-
-    Attributes:
-        conversation_seed: Seed text to start the conversation
-        rounds: Number of rounds in the conversation
-        shared_system_prompt_prefix: Prefix for shared system instructions
-        bots: List of bot configurations
-    """
+    """Typed dictionary representing the configuration for a conversation."""
 
     conversation_seed: str
     rounds: int

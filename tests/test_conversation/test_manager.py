@@ -11,7 +11,8 @@ The tests handle:
 
 import pytest
 
-from src.conversation.manager import ERROR_EMPTY_CONVERSATION_SEED, ConversationManager
+from src.conversation.manager import ConversationManager
+from src.conversation.loader import ERROR_EMPTY_SEED
 
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:
@@ -19,7 +20,6 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
 
     Args:
         test_config_path: Path to the test configuration file
-        setup_valid_env: Fixture to set up environment with valid keys
     """
     manager = ConversationManager.from_config(test_config_path)
     assert manager is not None
@@ -56,7 +56,6 @@ def test_run_round(test_config_path: str) -> None:
 
     Args:
         test_config_path: Path to the test configuration file
-        setup_valid_env: Fixture to set up environment with valid keys
     """
     manager = ConversationManager.from_config(test_config_path)
     manager.run_round()
@@ -74,7 +73,6 @@ def test_multiple_rounds(test_config_path: str) -> None:
 
     Args:
         test_config_path: Path to the test configuration file
-        setup_valid_env: Fixture to set up environment with valid keys
     """
     manager = ConversationManager.from_config(test_config_path)
     initial_length = len(manager.conversation)
@@ -91,5 +89,5 @@ def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
     Args:
         test_config_empty_path: Path to the empty test configuration file
     """
-    with pytest.raises(ValueError, match=ERROR_EMPTY_CONVERSATION_SEED):
+    with pytest.raises(ValueError, match=ERROR_EMPTY_SEED):
         ConversationManager.from_config(test_config_empty_path)

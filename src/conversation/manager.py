@@ -13,13 +13,6 @@ Classes:
 - ChatbotFactory
 - ConfigurationLoader
 - ConversationConfig
-
-Constants:
-- ERROR_EMPTY_CONVERSATION_SEED
-- ERROR_INVALID_ROUNDS
-- ERROR_EMPTY_SHARED_SYSTEM_PROMPT_PREFIX
-- ERROR_EMPTY_BOTS_LIST
-- ERROR_EMPTY_BOT_FIELD
 """
 
 import logging
@@ -30,18 +23,27 @@ from typing import Any, List
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
 from ..models.factory import ChatbotFactory
-from .loader import ConfigurationLoader, ConversationConfig
+from .loader import (
+    BOT_MODEL_VERSION,
+    BOT_NAME,
+    BOT_SYSTEM_PROMPT,
+    BOT_TYPE,
+    BOTS,
+    CONVERSATION_SEED,
+    ERROR_EMPTY_BOTS,
+    ERROR_EMPTY_FIELD,
+    ERROR_EMPTY_PREFIX,
+    ERROR_EMPTY_SEED,
+    ERROR_INVALID_ROUNDS,
+    ROUNDS,
+    SHARED_SYSTEM_PROMPT_PREFIX,
+    ConfigurationLoader,
+    ConversationConfig,
+)
 
 # Set up logging from config file
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger("chatbot_conversation")
-
-# Define error messages as constants
-ERROR_EMPTY_CONVERSATION_SEED = "Conversation seed cannot be empty"
-ERROR_INVALID_ROUNDS = "Rounds must be a positive integer"
-ERROR_EMPTY_SHARED_SYSTEM_PROMPT_PREFIX = "Shared system prompt prefix cannot be empty"
-ERROR_EMPTY_BOTS_LIST = "Bots list cannot be empty"
-ERROR_EMPTY_BOT_FIELD = "Each bot must have a non-empty '{field}' field"
 
 
 class ConversationManager:
@@ -57,35 +59,31 @@ class ConversationManager:
         config = ConfigurationLoader.load_config(config_path)
 
         # Check if conversation_seed is empty
-        if not config.get("conversation_seed"):
-            raise ValueError(ERROR_EMPTY_CONVERSATION_SEED)
+        if not config.get(CONVERSATION_SEED):
+            raise ValueError(ERROR_EMPTY_SEED)
 
         # Check if rounds is a positive integer
-        if config["rounds"] <= 0:
+        if config[ROUNDS] <= 0:
             raise ValueError(ERROR_INVALID_ROUNDS)
 
-        # Check if conversation_seed is empty
-        if not config.get("shared_system_prompt_prefix"):
-            raise ValueError(ERROR_EMPTY_SHARED_SYSTEM_PROMPT_PREFIX)
+        # Check if shared_system_prompt_prefix is empty
+        if not config.get(SHARED_SYSTEM_PROMPT_PREFIX):
+            raise ValueError(ERROR_EMPTY_PREFIX)
 
         # Check if bots list is not empty
-        if not config.get("bots") or len(config["bots"]) == 0:
-            raise ValueError(ERROR_EMPTY_BOTS_LIST)
+        if not config.get(BOTS) or len(config[BOTS]) == 0:
+            raise ValueError(ERROR_EMPTY_BOTS)
 
-        # Check each bot field individually with literal keys
-        for bot in config["bots"]:
-            if not bot["bot_name"]:
-                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_name"))
-            if not bot["bot_type"]:
-                raise ValueError(ERROR_EMPTY_BOT_FIELD.format(field="bot_type"))
-            if not bot["bot_model_version"]:
-                raise ValueError(
-                    ERROR_EMPTY_BOT_FIELD.format(field="bot_model_version")
-                )
-            if not bot["bot_specific_system_prompt"]:
-                raise ValueError(
-                    ERROR_EMPTY_BOT_FIELD.format(field="bot_specific_system_prompt")
-                )
+        # Check each bot field individually with constants
+        for bot in config[BOTS]:
+            if not bot[BOT_NAME]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field=BOT_NAME))
+            if not bot[BOT_TYPE]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field=BOT_TYPE))
+            if not bot[BOT_MODEL_VERSION]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field=BOT_MODEL_VERSION))
+            if not bot[BOT_SYSTEM_PROMPT]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field=BOT_SYSTEM_PROMPT))
 
         return cls(config)
 
@@ -99,17 +97,17 @@ class ConversationManager:
         self.config = config
         self.bots: List[ChatbotBase[Any]] = []
         self.conversation: List[ConversationMessage] = [
-            {"bot_index": 0, "content": config["conversation_seed"]}
+            {"bot_index": 0, "content": config[CONVERSATION_SEED]}
         ]
 
         factory = ChatbotFactory()
-        shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
-        for bot_config in config["bots"]:
+        shared_system_prompt_prefix = config.get(SHARED_SYSTEM_PROMPT_PREFIX, "")
+        for bot_config in config[BOTS]:
             bot = factory.create_bot(
-                BotType[bot_config["bot_type"]],
-                bot_config["bot_model_version"],
-                bot_config["bot_specific_system_prompt"],
-                bot_config["bot_name"],
+                BotType[bot_config[BOT_TYPE]],
+                str(bot_config[BOT_MODEL_VERSION]),
+                bot_config[BOT_SYSTEM_PROMPT],
+                bot_config[BOT_NAME],
                 shared_system_prompt_prefix,
             )
             self.add_bot(bot)
@@ -150,7 +148,7 @@ class ConversationManager:
         print(f'{self.conversation[0]["content"]}\n')
         print("**********************************\n")
 
-        for round_num in range(self.config["rounds"]):
+        for round_num in range(self.config[ROUNDS]):
             print(f"\n--- Round {round_num + 1} ---")
             self.run_round()
 
