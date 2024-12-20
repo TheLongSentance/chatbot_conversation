@@ -3,14 +3,13 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
+  - python>=3.8
   - pip
-  - pytest-cov
   - pip:
     - openai>=1.12.0
     - anthropic>=0.18.1
     - google-generativeai>=0.3.2
     - ollama>=0.1.7
     - python-dotenv>=1.0.0
-    - pydantic>=2.6.1
     - typing-extensions>=4.9.0
+a
