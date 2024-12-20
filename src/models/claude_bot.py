@@ -8,11 +8,15 @@ The ClaudeChatbot class handles:
 - Generating responses using the Claude API
 """
 
+import json
 from typing import Any, List
 
 import anthropic
 
+from ..utils.logging_util import get_logger
 from .base import ChatbotBase, ChatMessage, ConversationMessage
+
+logger = get_logger("models")
 
 
 class ClaudeChatbot(ChatbotBase[ChatMessage]):
@@ -94,5 +98,11 @@ class ClaudeChatbot(ChatbotBase[ChatMessage]):
                 "assistant" if contribution["bot_index"] == self.bot_index else "user"
             )
             messages.append({"role": role, "content": contribution["content"]})
+
+        logger.debug(
+            f"Bot Class: {self.__class__.__name__}, Bot Name: {self.name}, "
+            f"Bot Index: {self.bot_index}, "
+            f"Formatted Messages: {json.dumps(messages, indent=2)}"
+        )
 
         return messages

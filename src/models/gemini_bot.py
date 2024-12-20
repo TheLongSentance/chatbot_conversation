@@ -9,12 +9,16 @@ The GeminiChatbot class handles:
 """
 
 import asyncio
+import json
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from typing import Any, List
 
 import google.generativeai
 
+from ..utils.logging_util import get_logger
 from .base import ChatbotBase, ConversationMessage, GeminiMessage
+
+logger = get_logger("models")
 
 
 class GeminiChatbot(ChatbotBase[GeminiMessage]):
@@ -82,6 +86,12 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
         for contribution in conversation:
             role = "model" if contribution["bot_index"] == self.bot_index else "user"
             messages.append({"role": role, "parts": contribution["content"]})
+
+        logger.debug(
+            f"Bot Class: {self.__class__.__name__}, Bot Name: {self.name}, "
+            f"Bot Index: {self.bot_index}, "
+            f"Formatted Messages: {json.dumps(messages, indent=2)}"
+        )
 
         return messages
 

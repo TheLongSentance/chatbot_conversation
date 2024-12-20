@@ -8,11 +8,15 @@ The OpenAIChatbot class handles:
 - Generating responses using the GPT model
 """
 
+import json
 from typing import Any, List
 
 from openai import OpenAI
 
+from ..utils.logging_util import get_logger
 from .base import ChatbotBase, ChatMessage, ConversationMessage
+
+logger = get_logger("models")
 
 
 class OpenAIChatbot(ChatbotBase[ChatMessage]):
@@ -98,5 +102,11 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
                 "assistant" if contribution["bot_index"] == self.bot_index else "user"
             )
             messages.append({"role": role, "content": contribution["content"]})
+
+        logger.debug(
+            f"Bot Class: {self.__class__.__name__}, Bot Name: {self.name}, "
+            f"Bot Index: {self.bot_index}, "
+            f"Formatted Messages: {json.dumps(messages, indent=2)}"
+        )
 
         return messages

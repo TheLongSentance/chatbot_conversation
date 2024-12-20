@@ -15,14 +15,14 @@ Classes:
 - ConversationConfig
 """
 
-import logging
-import logging.config
+import json
 import os
 from typing import Any, List
 
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
 from ..models.factory import ChatbotFactory
+from ..utils.logging_util import get_logger
 from .loader import (
     BOT_MODEL_VERSION,
     BOT_NAME,
@@ -41,9 +41,7 @@ from .loader import (
     ConversationConfig,
 )
 
-# Set up logging from config file
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger("chatbot_conversation")
+logger = get_logger("conversation_manager")
 
 
 class ConversationManager:
@@ -129,6 +127,13 @@ class ConversationManager:
                 self.conversation.append(
                     {"bot_index": bot.bot_index, "content": response}
                 )
+
+                logger.debug(
+                    f"Bot Class: {bot.__class__.__name__}, Bot Name: {bot.name}, "
+                    f"Bot Index: {bot.bot_index}, "
+                    f"Updated conversation: {json.dumps(self.conversation, indent=2)}"
+                )
+
                 print(
                     f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{response}\n"
                 )

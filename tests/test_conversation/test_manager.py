@@ -11,8 +11,8 @@ The tests handle:
 
 import pytest
 
-from src.conversation.manager import ConversationManager
 from src.conversation.loader import ERROR_EMPTY_SEED
+from src.conversation.manager import ConversationManager
 
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:
