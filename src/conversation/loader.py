@@ -11,18 +11,6 @@ import json
 import typing
 from typing import List, TypedDict
 
-# Field names for BotConfig
-BOT_NAME = "bot_name"
-BOT_TYPE = "bot_type"
-BOT_MODEL_VERSION = "bot_model_version"
-BOT_SYSTEM_PROMPT = "bot_specific_system_prompt"
-
-# Field names for ConversationConfig
-CONVERSATION_SEED = "conversation_seed"
-ROUNDS = "rounds"
-SHARED_SYSTEM_PROMPT_PREFIX = "shared_system_prompt_prefix"
-BOTS = "bots"
-
 # Error messages for configuration validation
 ERROR_EMPTY_FIELD = "Each bot must have a non-empty '{field}' field"
 ERROR_EMPTY_SEED = "Conversation seed cannot be empty"
