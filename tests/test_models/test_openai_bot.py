@@ -50,3 +50,36 @@ def test_openai_bot(openai_chatbot: OpenAIChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
+
+def test_empty_conversation(openai_chatbot: OpenAIChatbot) -> None:
+    """Test bot response to an empty conversation."""
+    conversation: list[ConversationMessage] = []
+    response = openai_chatbot.generate_response(conversation)
+    assert response is not None
+    assert isinstance(response, str)
+    assert len(response) > 0
+
+def test_multiple_bots() -> None:
+    """Test interaction of multiple bot instances."""
+    bot1 = OpenAIChatbot(
+        bot_model_version="gpt-4o-mini",
+        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_name="Bot1",
+        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
+    )
+    bot2 = OpenAIChatbot(
+        bot_model_version="gpt-4o-mini",
+        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_name="Bot2",
+        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
+    )
+    assert bot1.bot_index != bot2.bot_index
+    assert bot1.get_total_bots() == 2
+
+def test_long_conversation(openai_chatbot: OpenAIChatbot) -> None:
+    """Test bot handling of a long conversation history."""
+    conversation = [ConversationMessage(bot_index=0, content=f"Message {i}") for i in range(50)]
+    response = openai_chatbot.generate_response(conversation)
+    assert response is not None
+    assert isinstance(response, str)
+    assert len(response) > 0
