@@ -73,7 +73,9 @@ class ConversationManager:
             if not bot["bot_model_version"]:
                 raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_model_version"))
             if not bot["bot_specific_system_prompt"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_specific_system_prompt"))
+                raise ValueError(
+                    ERROR_EMPTY_FIELD.format(field="bot_specific_system_prompt")
+                )
 
         return cls(config)
 
