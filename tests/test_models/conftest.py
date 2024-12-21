@@ -1,5 +1,6 @@
 import pytest
 from src.models import OpenAIChatbot, ClaudeChatbot, OllamaChatbot, GeminiChatbot
+from src.models.factory import ChatbotFactory
 
 @pytest.fixture
 def openai_chatbot():
@@ -40,3 +41,8 @@ def gemini_chatbot():
         bot_name="GeminiTestBot1",
         shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
+
+@pytest.fixture
+def chatbot_factory():
+    """Fixture to create an instance of ChatbotFactory."""
+    return ChatbotFactory()
