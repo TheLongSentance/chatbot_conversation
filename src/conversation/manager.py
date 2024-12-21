@@ -33,7 +33,7 @@ from .loader import (
     ConversationConfig,
 )
 
-logger = get_logger("conversation_manager")
+logger = get_logger("conversation")
 
 
 class ConversationManager:
@@ -123,9 +123,11 @@ class ConversationManager:
                 )
 
                 logger.debug(
-                    f"Bot Class: {bot.__class__.__name__}, Bot Name: {bot.name}, "
-                    f"Bot Index: {bot.bot_index}, "
-                    f"Updated conversation: {json.dumps(self.conversation, indent=2)}"
+                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
+                    bot.__class__.__name__,
+                    bot.name,
+                    bot.bot_index,
+                    json.dumps(self.conversation, indent=2)
                 )
 
                 print(
