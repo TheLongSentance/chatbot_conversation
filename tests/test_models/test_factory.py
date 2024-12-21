@@ -4,12 +4,13 @@ of various chatbot types and handles unknown bot types appropriately.
 """
 
 import pytest
+
 from src.models.base import BotType
-from src.models.openai_bot import OpenAIChatbot
 from src.models.claude_bot import ClaudeChatbot
+from src.models.factory import ChatbotFactory
 from src.models.gemini_bot import GeminiChatbot
 from src.models.ollama_bot import OllamaChatbot
-from src.models.factory import ChatbotFactory
+from src.models.openai_bot import OpenAIChatbot
 
 
 def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
@@ -26,6 +27,7 @@ def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
     assert isinstance(bot, OpenAIChatbot)
     assert bot.name == "OpenAITestBot1"
 
+
 def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
     Test the creation of a ClaudeChatbot instance.
@@ -39,6 +41,7 @@ def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
     )
     assert isinstance(bot, ClaudeChatbot)
     assert bot.name == "ClaudeTestBot1"
+
 
 def test_create_gemini_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
@@ -68,4 +71,3 @@ def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
     )
     assert isinstance(bot, OllamaChatbot)
     assert bot.name == "OllamaTestBot1"
-    
