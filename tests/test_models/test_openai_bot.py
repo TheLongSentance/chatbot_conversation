@@ -28,8 +28,8 @@ def test_openai_bot(openai_chatbot: OpenAIChatbot) -> None:
     """
 
     assert openai_chatbot.model_version == "gpt-4o-mini"
-    assert openai_chatbot.system_prompt == "You are in a test program and you are called OpenAITestBot - You are a helpful assistant."
-    assert openai_chatbot.name == "OpenAITestBot"
+    assert openai_chatbot.system_prompt == "You are in a test program and you are called OpenAITestBot1 - You are a helpful assistant."
+    assert openai_chatbot.name == "OpenAITestBot1"
     assert openai_chatbot.bot_index == 1
     assert openai_chatbot.get_total_bots() == 1
     assert openai_chatbot.api is not None
