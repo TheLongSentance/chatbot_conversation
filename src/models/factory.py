@@ -11,16 +11,20 @@ from .ollama_bot import OllamaChatbot
 from .openai_bot import OpenAIChatbot
 
 
+# Disable the too-few-public-methods warning for this class
+# pylint: disable=R0903
 class ChatbotFactory:
     """Factory for creating different types of chatbots."""
 
+    # Disable the too-many-arguments warning for this method
+    # pylint: disable=R0913
     def create_bot(
         self,
         bot_type: BotType,
         bot_model_version: str,
         bot_specific_system_prompt: str,
         bot_name: str,
-        bot_shared_system_prompt_prefix: str,
+        bot_shared_system_prompt_prefix: str
     ) -> ChatbotBase[Any]:
         """Create a new chatbot instance based on type.
 
@@ -42,28 +46,27 @@ class ChatbotFactory:
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix,
+                bot_shared_system_prompt_prefix
             )
-        elif bot_type == BotType.CLAUDE:
+        if bot_type == BotType.CLAUDE:
             return ClaudeChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix,
+                bot_shared_system_prompt_prefix
             )
-        elif bot_type == BotType.GEMINI:
+        if bot_type == BotType.GEMINI:
             return GeminiChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix,
+                bot_shared_system_prompt_prefix
             )
-        elif bot_type == BotType.OLLAMA:
+        if bot_type == BotType.OLLAMA:
             return OllamaChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix,
+                bot_shared_system_prompt_prefix
             )
-        else:
-            raise ValueError(f"Unknown bot type: {bot_type}")
+        raise ValueError(f"Unknown bot type: {bot_type}")
