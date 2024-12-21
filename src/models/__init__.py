@@ -1,3 +1,27 @@
+"""
+This package contains various chatbot models and a factory for creating them.
+
+Modules:
+    base: Contains base classes and types for chatbots.
+    claude_bot: Contains the ClaudeChatbot class.
+    factory: Contains the ChatbotFactory class for creating chatbot instances.
+    gemini_bot: Contains the GeminiChatbot class.
+    ollama_bot: Contains the OllamaChatbot class.
+    openai_bot: Contains the OpenAIChatbot class.
+
+Classes:
+    ChatbotBase: Base class for all chatbots.
+    ChatMessage: Represents a chat message.
+    GeminiMessage: Represents a Gemini-specific message.
+    ConversationMessage: Represents a conversation message.
+    OpenAIChatbot: Chatbot class for OpenAI models.
+    ClaudeChatbot: Chatbot class for Claude models.
+    GeminiChatbot: Chatbot class for Gemini models.
+    OllamaChatbot: Chatbot class for Ollama models.
+    ChatbotFactory: Factory class for creating chatbot instances.
+    BotType: Enum for different types of chatbots.
+"""
+
 from .base import BotType, ChatbotBase, ChatMessage, ConversationMessage, GeminiMessage
 from .claude_bot import ClaudeChatbot
 from .factory import ChatbotFactory
