@@ -107,4 +107,4 @@ def test_generate_response_with_mock(openai_chatbot: OpenAIChatbot) -> None:
     openai_chatbot.api.chat.completions.create = MagicMock(return_value=mock_response)
 
     response = openai_chatbot.generate_response(conversation)
-    assert response == "OpenAITestBot1: Hello, user!"
+    assert response == "<<< OpenAITestBot1 >>> Hello, user!"

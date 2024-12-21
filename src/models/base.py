@@ -142,7 +142,7 @@ class ChatbotBase(ABC, Generic[T]):
         Returns:
             str: The response without the bot name prefix.
         """
-        prefix = f"{self.name}: "
+        prefix = f"<<< {self.name} >>> "
         return response[len(prefix) :] if response.startswith(prefix) else response
 
     def format_response(self, response: str) -> str:
@@ -156,7 +156,7 @@ class ChatbotBase(ABC, Generic[T]):
             str: The formatted response with bot name prefix.
         """
         clean_response = self._strip_name_prefix(response)
-        return f"{self.name}: {clean_response}"
+        return f"<<< {self.name} >>> {clean_response}"
 
     @abstractmethod
     def _format_message(self, conversation: List[ConversationMessage]) -> List[T]:

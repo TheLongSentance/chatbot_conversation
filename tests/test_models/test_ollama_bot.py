@@ -103,4 +103,4 @@ def test_generate_response_with_mock(ollama_chatbot: OllamaChatbot) -> None:
     with patch("ollama.chat", return_value=mock_response):
         response = ollama_chatbot.generate_response(conversation)
 
-    assert response == "OllamaTestBot1: Hello, user!"
+    assert response == "<<< OllamaTestBot1 >>> Hello, user!"

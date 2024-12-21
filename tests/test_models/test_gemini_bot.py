@@ -103,4 +103,4 @@ def test_generate_response_with_mock(gemini_chatbot: GeminiChatbot) -> None:
     gemini_chatbot.api.generate_content = MagicMock(return_value=mock_response)
 
     response = gemini_chatbot.generate_response(conversation)
-    assert response == "GeminiTestBot1: Hello, user!"
+    assert response == "<<< GeminiTestBot1 >>> Hello, user!"

@@ -106,4 +106,4 @@ def test_generate_response_with_mock(claude_chatbot: ClaudeChatbot) -> None:
     claude_chatbot.api.messages.create = MagicMock(return_value=mock_response)
 
     response = claude_chatbot.generate_response(conversation)
-    assert response == "ClaudeTestBot1: Hello, user!"
+    assert response == "<<< ClaudeTestBot1 >>> Hello, user!"
