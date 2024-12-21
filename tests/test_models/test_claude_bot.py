@@ -5,6 +5,7 @@ and response generation.
 """
 
 from typing import List
+from unittest.mock import MagicMock
 
 from anthropic import Anthropic
 
@@ -93,3 +94,16 @@ def test_long_conversation(claude_chatbot: ClaudeChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
+
+
+def test_generate_response_with_mock(claude_chatbot: ClaudeChatbot) -> None:
+    """Test the generate_response method with mocked Claude API."""
+    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+
+    # Mock the Claude API response
+    mock_response = MagicMock()
+    mock_response.content[0].text = "Hello, user!"
+    claude_chatbot.api.messages.create = MagicMock(return_value=mock_response)
+
+    response = claude_chatbot.generate_response(conversation)
+    assert response == "ClaudeTestBot1: Hello, user!"

@@ -5,6 +5,7 @@ and response generation.
 """
 
 from typing import List
+from unittest.mock import MagicMock, patch
 
 from src.models import ConversationMessage, OllamaChatbot
 
@@ -90,3 +91,16 @@ def test_long_conversation(ollama_chatbot: OllamaChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
+
+
+def test_generate_response_with_mock(ollama_chatbot: OllamaChatbot) -> None:
+    """Test the generate_response method with mocked Ollama API."""
+    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+
+    # Mock the Ollama API response with direct dictionary
+    mock_response = {"message": {"content": "Hello, user!"}}
+
+    with patch("ollama.chat", return_value=mock_response):
+        response = ollama_chatbot.generate_response(conversation)
+
+    assert response == "OllamaTestBot1: Hello, user!"

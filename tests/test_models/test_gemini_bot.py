@@ -5,6 +5,7 @@ and response generation.
 """
 
 from typing import List
+from unittest.mock import MagicMock
 
 from src.models import ConversationMessage, GeminiChatbot
 
@@ -90,3 +91,16 @@ def test_long_conversation(gemini_chatbot: GeminiChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
+
+
+def test_generate_response_with_mock(gemini_chatbot: GeminiChatbot) -> None:
+    """Test the generate_response method with mocked Gemini API."""
+    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+
+    # Mock the Gemini API response
+    mock_response = MagicMock()
+    mock_response.text = "Hello, user!"
+    gemini_chatbot.api.generate_content = MagicMock(return_value=mock_response)
+
+    response = gemini_chatbot.generate_response(conversation)
+    assert response == "GeminiTestBot1: Hello, user!"

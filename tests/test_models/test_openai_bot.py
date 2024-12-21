@@ -5,7 +5,9 @@ and response generation.
 """
 
 from typing import List
+from unittest.mock import MagicMock
 
+import pytest
 from openai import OpenAI
 
 from src.models import ConversationMessage, OpenAIChatbot
@@ -93,3 +95,16 @@ def test_long_conversation(openai_chatbot: OpenAIChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
+
+
+def test_generate_response_with_mock(openai_chatbot: OpenAIChatbot) -> None:
+    """Test the generate_response method with mocked OpenAI API."""
+    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+
+    # Mock the OpenAI API response
+    mock_response = MagicMock()
+    mock_response.choices[0].message.content = "Hello, user!"
+    openai_chatbot.api.chat.completions.create = MagicMock(return_value=mock_response)
+
+    response = openai_chatbot.generate_response(conversation)
+    assert response == "OpenAITestBot1: Hello, user!"
