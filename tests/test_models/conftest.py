@@ -1,3 +1,13 @@
+"""
+This module contains pytest fixtures for creating instances of various chatbot models.
+
+Fixtures:
+    openai_chatbot: Creates an instance of OpenAIChatbot.
+    claude_chatbot: Creates an instance of ClaudeChatbot.
+    ollama_chatbot: Creates an instance of OllamaChatbot.
+    gemini_chatbot: Creates an instance of GeminiChatbot.
+    chatbot_factory: Creates an instance of ChatbotFactory.
+"""
 import pytest
 from src.models import OpenAIChatbot, ClaudeChatbot, OllamaChatbot, GeminiChatbot
 from src.models.factory import ChatbotFactory
