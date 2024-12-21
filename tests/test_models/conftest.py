@@ -8,12 +8,15 @@ Fixtures:
     gemini_chatbot: Creates an instance of GeminiChatbot.
     chatbot_factory: Creates an instance of ChatbotFactory.
 """
+
 import pytest
-from src.models import OpenAIChatbot, ClaudeChatbot, OllamaChatbot, GeminiChatbot
+
+from src.models import ClaudeChatbot, GeminiChatbot, OllamaChatbot, OpenAIChatbot
 from src.models.factory import ChatbotFactory
 
+
 @pytest.fixture
-def openai_chatbot():
+def openai_chatbot() -> OpenAIChatbot:
     """Fixture to create an instance of OpenAIChatbot."""
     return OpenAIChatbot(
         bot_model_version="gpt-4o-mini",
@@ -22,8 +25,9 @@ def openai_chatbot():
         shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
 
+
 @pytest.fixture
-def claude_chatbot():
+def claude_chatbot() -> ClaudeChatbot:
     """Fixture to create an instance of ClaudeChatbot."""
     return ClaudeChatbot(
         bot_model_version="claude-3-haiku-20240307",
@@ -32,8 +36,9 @@ def claude_chatbot():
         shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
 
+
 @pytest.fixture
-def ollama_chatbot():
+def ollama_chatbot() -> OllamaChatbot:
     """Fixture to create an instance of OllamaChatbot."""
     return OllamaChatbot(
         bot_model_version="llama3.2",
@@ -42,8 +47,9 @@ def ollama_chatbot():
         shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
 
+
 @pytest.fixture
-def gemini_chatbot():
+def gemini_chatbot() -> GeminiChatbot:
     """Fixture to create an instance of GeminiChatbot."""
     return GeminiChatbot(
         bot_model_version="gemini-1.5-flash",
@@ -52,7 +58,8 @@ def gemini_chatbot():
         shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
 
+
 @pytest.fixture
-def chatbot_factory():
+def chatbot_factory() -> ChatbotFactory:
     """Fixture to create an instance of ChatbotFactory."""
     return ChatbotFactory()
