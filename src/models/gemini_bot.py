@@ -29,28 +29,6 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
     of 'content', and response generation.
     """
 
-    def __init__(
-        self,  # pylint: disable=useless-parent-delegation
-        bot_model_version: str,
-        bot_specific_system_prompt: str,
-        bot_name: str,
-        shared_system_prompt_prefix: str,
-    ):
-        """Initialize Gemini chatbot with specific model and behavior.
-
-        Args:
-            bot_model_version: Gemini model version to use (e.g. "gemini-2")
-            bot_specific_system_prompt: System instruction defining bot behavior
-            bot_name: Name of the chatbot
-            shared_system_prompt_prefix: Prefix for shared system instructions
-        """
-        super().__init__(
-            bot_model_version,  # pylint: disable=useless-parent-delegation
-            bot_specific_system_prompt,
-            bot_name,
-            shared_system_prompt_prefix,
-        )
-
     def _initialize_api(self) -> Any:
         """Initialize connection to Gemini API with system prompt."""
         google.generativeai.configure()
@@ -88,9 +66,11 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
             messages.append({"role": role, "parts": contribution["content"]})
 
         logger.debug(
-            f"Bot Class: {self.__class__.__name__}, Bot Name: {self.name}, "
-            f"Bot Index: {self.bot_index}, "
-            f"Formatted Messages: {json.dumps(messages, indent=2)}"
+            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
+            self.__class__.__name__,
+            self.name,
+            self.bot_index,
+            json.dumps(messages, indent=2),
         )
 
         return messages

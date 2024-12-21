@@ -31,28 +31,6 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         system_prompt: System instruction for bot behavior
     """
 
-    def __init__(
-        self,  # pylint: disable=useless-parent-delegation
-        bot_model_version: str,
-        bot_specific_system_prompt: str,
-        bot_name: str,
-        shared_system_prompt_prefix: str,
-    ):
-        """Initialize OpenAI chatbot with specific model and behavior.
-
-        Args:
-            bot_model_version (str): GPT model version to use (e.g. "gpt-4")
-            bot_specific_system_prompt (str): System instruction defining bot behavior
-            bot_name (str): Name of the chatbot
-            shared_system_prompt_prefix (str): Prefix for shared system instructions
-        """
-        super().__init__(
-            bot_model_version,
-            bot_specific_system_prompt,
-            bot_name,
-            shared_system_prompt_prefix,
-        )
-
     def _initialize_api(self) -> Any:
         """Initialize connection to OpenAI API.
 
@@ -104,9 +82,11 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
             messages.append({"role": role, "content": contribution["content"]})
 
         logger.debug(
-            f"Bot Class: {self.__class__.__name__}, Bot Name: {self.name}, "
-            f"Bot Index: {self.bot_index}, "
-            f"Formatted Messages: {json.dumps(messages, indent=2)}"
+            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
+            self.__class__.__name__,
+            self.name,
+            self.bot_index,
+            json.dumps(messages, indent=2),
         )
 
         return messages
