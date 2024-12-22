@@ -18,6 +18,9 @@ dependencies = [
     "typing-extensions>=4.9.0"
 ]
 
+[project.scripts]
+chatbot_conversation = "chatbot_conversation.main:run"
+
 [tool.hatch.build.targets.wheel]
 packages = ["chatbot_conversation"]
 
