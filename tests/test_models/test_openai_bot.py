@@ -7,7 +7,6 @@ and response generation.
 from typing import List
 from unittest.mock import MagicMock
 
-import pytest
 from openai import OpenAI
 
 from src.models import ConversationMessage, OpenAIChatbot
