@@ -21,6 +21,17 @@ dependencies = [
 [tool.hatch.build.targets.wheel]
 packages = ["chatbot_conversation"]
 
+[tool.hatch.envs.test]
+dependencies = [
+    "pytest>=7.4.4",
+    "pytest-cov>=6.0.0",
+    "black>=24.10.0",
+    "isort>=5.13.2",
+    "mypy>=1.11.2",
+    "mypy-extensions>=1.0.0",
+    "pylint>=3.2.7"
+]
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3

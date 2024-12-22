@@ -12,3 +12,11 @@ dependencies:
     - ollama>=0.1.7
     - python-dotenv>=1.0.0
     - typing-extensions>=4.9.0
+dev_dependencies:
+  - pytest>=7.4.4
+  - pytest-cov>=6.0.0
+  - black>=24.10.0
+  - isort>=5.13.2
+  - mypy>=1.11.2
+  - mypy-extensions>=1.0.0
+  - pylint>=3.2.7
