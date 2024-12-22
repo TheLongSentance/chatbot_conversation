@@ -2,16 +2,20 @@
 This module defines the abstract base class for AI chatbot implementations.
 
 Classes:
-    ChatMessage: Represents a chat message with a role and content.
-    GeminiMessage: Represents a Gemini message with a role and parts.
+    ChatMessage: Represents a typical chat message with a role and content.
     ConversationMessage: Represents a conversation message with a bot index and content.
     BotType: Enumeration of different bot types.
     ChatbotBase: Abstract base class defining interface for AI chatbot implementations.
 """
 
+import json
 from abc import ABC, abstractmethod
 from enum import Enum, auto
-from typing import Any, Generic, List, TypedDict, TypeVar
+from typing import Any, List, TypedDict
+
+from ..utils.logging_util import get_logger
+
+logger = get_logger("models")
 
 
 class ChatMessage(TypedDict):
@@ -19,17 +23,6 @@ class ChatMessage(TypedDict):
 
     role: str
     content: str
-
-
-class GeminiMessage(TypedDict):
-    """Represents a Gemini-specific message with a role and parts."""
-
-    role: str
-    parts: str
-
-
-# Define generic model input message type
-T = TypeVar("T", ChatMessage, GeminiMessage)
 
 
 class ConversationMessage(TypedDict):
@@ -48,7 +41,7 @@ class BotType(Enum):
     OLLAMA = auto()
 
 
-class ChatbotBase(ABC, Generic[T]):
+class ChatbotBase(ABC):
     """Abstract base class defining interface for AI chatbot implementations."""
 
     _total_count: int = 0  # Class variable to track total instances
@@ -127,10 +120,10 @@ class ChatbotBase(ABC, Generic[T]):
         """
         try:
             raw_response = self._generate_raw_response(conversation)
-            return self.format_response(raw_response)
+            return self._format_response(raw_response)
         except Exception as e:  # pylint: disable=broad-except
             print(f"Error generating response: {e}")
-            return self.format_response("Error: Unable to generate response.")
+            return self._format_response("Error: Unable to generate response.")
 
     def _strip_name_prefix(self, response: str) -> str:
         """
@@ -145,7 +138,7 @@ class ChatbotBase(ABC, Generic[T]):
         prefix = f"<<< {self.name} >>> "
         return response[len(prefix) :] if response.startswith(prefix) else response
 
-    def format_response(self, response: str) -> str:
+    def _format_response(self, response: str) -> str:
         """
         Format response with bot name prefix.
 
@@ -158,15 +151,43 @@ class ChatbotBase(ABC, Generic[T]):
         clean_response = self._strip_name_prefix(response)
         return f"<<< {self.name} >>> {clean_response}"
 
-    @abstractmethod
-    def _format_message(self, conversation: List[ConversationMessage]) -> List[T]:
-        """
-        Format the conversation messages into the required format.
+    def _format_conv_for_api_util(
+        self, conversation: List[ConversationMessage], add_system_prompt: bool = True
+    ) -> List[ChatMessage]:
+        """Format message history for submission to APIs.
+
+        Prepends system prompt and formats all messages according to
+        typical bot API's expected structure.
+
+        Does not begin with system prompt if add_system_prompt is False.
+        (e.g. for Claude API)
+
+        Not applicable for Gemini API.
 
         Args:
-            conversation (List[ConversationMessage]): The conversation history.
+            conversation (List[ConversationMessage]): List of conversation messages to format
+            add_system_prompt (bool, optional): Whether to prepend system prompt. Defaults to True.
 
         Returns:
-            List[T]: The formatted messages.
+            List[ChatMessage]: Messages formatted for OpenAI, Claude, or Ollama API
         """
-        pass  # # pylint: disable=unnecessary-pass
+
+        messages: List[ChatMessage] = []
+        if add_system_prompt:
+            messages.append({"role": "system", "content": self.system_prompt})
+
+        for contribution in conversation:
+            role = (
+                "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            )
+            messages.append({"role": role, "content": contribution["content"]})
+
+        logger.debug(
+            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
+            self.__class__.__name__,
+            self.name,
+            self.bot_index,
+            json.dumps(messages, indent=2),
+        )
+
+        return messages

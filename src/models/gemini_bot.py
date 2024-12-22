@@ -11,17 +11,25 @@ The GeminiChatbot class handles:
 import asyncio
 import json
 from concurrent.futures import TimeoutError as FuturesTimeoutError
-from typing import Any, List
+from typing import Any, List, TypedDict
 
 import google.generativeai
 
 from ..utils.logging_util import get_logger
-from .base import ChatbotBase, ConversationMessage, GeminiMessage
+from .base import ChatbotBase, ConversationMessage
+
+
+class GeminiMessage(TypedDict):
+    """Represents a Gemini-specific message with a role and parts."""
+
+    role: str
+    parts: str
+
 
 logger = get_logger("models")
 
 
-class GeminiChatbot(ChatbotBase[GeminiMessage]):
+class GeminiChatbot(ChatbotBase):
     """Concrete implementation of chatbot using Google's Gemini API service.
 
     Handles initialization of Gemini model with system prompt during setup,
@@ -55,7 +63,13 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
                 f"Gemini API call timed out after {timeout} seconds"
             ) from error
 
-    def _format_message(
+    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
+        """Generate raw response using Gemini model with timeout."""
+        formatted_messages = self._format_conv_for_gemini_api(conversation)
+        response = asyncio.run(self._generate_with_timeout(formatted_messages))
+        return response
+
+    def _format_conv_for_gemini_api(
         self, conversation: List[ConversationMessage]
     ) -> List[GeminiMessage]:
         """Format message history for Gemini API submission."""
@@ -74,9 +88,3 @@ class GeminiChatbot(ChatbotBase[GeminiMessage]):
         )
 
         return messages
-
-    def _generate_raw_response(self, conversation: List[ConversationMessage]) -> str:
-        """Generate raw response using Gemini model with timeout."""
-        formatted_messages = self._format_message(conversation)
-        response = asyncio.run(self._generate_with_timeout(formatted_messages))
-        return response

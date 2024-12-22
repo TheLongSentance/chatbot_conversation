@@ -2,8 +2,6 @@
 This module contains the ChatbotFactory class for creating different types of chatbots.
 """
 
-from typing import Any
-
 from .base import BotType, ChatbotBase
 from .claude_bot import ClaudeChatbot
 from .gemini_bot import GeminiChatbot
@@ -24,8 +22,8 @@ class ChatbotFactory:
         bot_model_version: str,
         bot_specific_system_prompt: str,
         bot_name: str,
-        bot_shared_system_prompt_prefix: str
-    ) -> ChatbotBase[Any]:
+        bot_shared_system_prompt_prefix: str,
+    ) -> ChatbotBase:
         """Create a new chatbot instance based on type.
 
         Args:
@@ -46,27 +44,27 @@ class ChatbotFactory:
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix
+                bot_shared_system_prompt_prefix,
             )
         if bot_type == BotType.CLAUDE:
             return ClaudeChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix
+                bot_shared_system_prompt_prefix,
             )
         if bot_type == BotType.GEMINI:
             return GeminiChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix
+                bot_shared_system_prompt_prefix,
             )
         if bot_type == BotType.OLLAMA:
             return OllamaChatbot(
                 bot_model_version,
                 bot_specific_system_prompt,
                 bot_name,
-                bot_shared_system_prompt_prefix
+                bot_shared_system_prompt_prefix,
             )
         raise ValueError(f"Unknown bot type: {bot_type}")

@@ -17,7 +17,7 @@ Classes:
 
 import json
 import os
-from typing import Any, List
+from typing import List
 
 from ..models import ChatbotBase, ConversationMessage
 from ..models.base import BotType
@@ -87,7 +87,7 @@ class ConversationManager:
         """
         logger.info("Initializing conversation manager")
         self.config = config
-        self.bots: List[ChatbotBase[Any]] = []
+        self.bots: List[ChatbotBase] = []
         self.conversation: List[ConversationMessage] = [
             {"bot_index": 0, "content": config["conversation_seed"]}
         ]
@@ -104,7 +104,7 @@ class ConversationManager:
             )
             self.add_bot(bot)
 
-    def add_bot(self, bot: ChatbotBase[Any]) -> None:
+    def add_bot(self, bot: ChatbotBase) -> None:
         """Add a chatbot to the conversation.
 
         Args:
@@ -127,7 +127,7 @@ class ConversationManager:
                     bot.__class__.__name__,
                     bot.name,
                     bot.bot_index,
-                    json.dumps(self.conversation, indent=2)
+                    json.dumps(self.conversation, indent=2),
                 )
 
                 print(

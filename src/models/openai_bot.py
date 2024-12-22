@@ -8,18 +8,17 @@ The OpenAIChatbot class handles:
 - Generating responses using the GPT model
 """
 
-import json
 from typing import Any, List
 
 from openai import OpenAI
 
 from ..utils.logging_util import get_logger
-from .base import ChatbotBase, ChatMessage, ConversationMessage
+from .base import ChatbotBase, ConversationMessage
 
 logger = get_logger("models")
 
 
-class OpenAIChatbot(ChatbotBase[ChatMessage]):
+class OpenAIChatbot(ChatbotBase):
     """Concrete implementation of chatbot using OpenAI's API service.
 
     Handles initialization of OpenAI client, message formatting specific to OpenAI's
@@ -48,7 +47,7 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         Returns:
             str: Generated response from the model
         """
-        formatted_messages = self._format_message(conversation)
+        formatted_messages = self._format_conv_for_api_util(conversation)
         completion = self.api.chat.completions.create(
             model=self.model_version, messages=formatted_messages, timeout=10
         )
@@ -56,37 +55,3 @@ class OpenAIChatbot(ChatbotBase[ChatMessage]):
         if not isinstance(response_content, str):
             raise ValueError("Expected response content to be a string")
         return response_content
-
-    def _format_message(
-        self, conversation: List[ConversationMessage]
-    ) -> List[ChatMessage]:
-        """Format message history for OpenAI API submission.
-
-        Prepends system prompt and formats all messages according to
-        OpenAI's expected structure.
-
-        Args:
-            conversation (List[ConversationMessage]): List of conversation messages to format
-
-        Returns:
-            List[ChatMessage]: Messages formatted for OpenAI API
-        """
-        messages: List[ChatMessage] = [
-            {"role": "system", "content": self.system_prompt}
-        ]
-
-        for contribution in conversation:
-            role = (
-                "assistant" if contribution["bot_index"] == self.bot_index else "user"
-            )
-            messages.append({"role": role, "content": contribution["content"]})
-
-        logger.debug(
-            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
-            self.__class__.__name__,
-            self.name,
-            self.bot_index,
-            json.dumps(messages, indent=2),
-        )
-
-        return messages

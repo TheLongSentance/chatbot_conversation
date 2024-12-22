@@ -11,8 +11,6 @@ Modules:
 
 Classes:
     ChatbotBase: Base class for all chatbots.
-    ChatMessage: Represents a chat message.
-    GeminiMessage: Represents a Gemini-specific message.
     ConversationMessage: Represents a conversation message.
     OpenAIChatbot: Chatbot class for OpenAI models.
     ClaudeChatbot: Chatbot class for Claude models.
@@ -22,7 +20,7 @@ Classes:
     BotType: Enum for different types of chatbots.
 """
 
-from .base import BotType, ChatbotBase, ChatMessage, ConversationMessage, GeminiMessage
+from .base import BotType, ChatbotBase, ConversationMessage
 from .claude_bot import ClaudeChatbot
 from .factory import ChatbotFactory
 from .gemini_bot import GeminiChatbot
@@ -31,8 +29,6 @@ from .openai_bot import OpenAIChatbot
 
 __all__ = [
     "ChatbotBase",
-    "ChatMessage",
-    "GeminiMessage",
     "ConversationMessage",
     "OpenAIChatbot",
     "ClaudeChatbot",
