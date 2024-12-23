@@ -9,7 +9,8 @@ from unittest.mock import MagicMock
 
 from openai import OpenAI
 
-from src.models import ConversationMessage, OpenAIChatbot
+from chatbot_conversation.models.base import ConversationMessage
+from chatbot_conversation.models.openai_bot import OpenAIChatbot
 
 
 def test_openai_bot(openai_chatbot: OpenAIChatbot) -> None:

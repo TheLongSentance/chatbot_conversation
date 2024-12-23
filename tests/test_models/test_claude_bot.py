@@ -9,7 +9,8 @@ from unittest.mock import MagicMock
 
 from anthropic import Anthropic
 
-from src.models import ClaudeChatbot, ConversationMessage
+from chatbot_conversation.models.base import ConversationMessage
+from chatbot_conversation.models.claude_bot import ClaudeChatbot
 
 
 def test_claude_bot(claude_chatbot: ClaudeChatbot) -> None:

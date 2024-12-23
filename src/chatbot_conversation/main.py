@@ -2,8 +2,10 @@
 This module initializes and runs the chatbot conversation.
 """
 
-from src.conversation.manager import ConversationManager
-from src.utils.env import APIConfig
+import os
+
+from chatbot_conversation.conversation.manager import ConversationManager
+from chatbot_conversation.utils.env import APIConfig
 
 
 def main() -> None:
@@ -15,7 +17,7 @@ def main() -> None:
     APIConfig.setup_env()
 
     # Load configuration and initialize conversation manager
-    manager = ConversationManager.from_config("config.json")
+    manager = ConversationManager.from_config(os.path.join("config", "config.json"))
 
     # Run conversation for configured number of rounds
     manager.run_conversation()

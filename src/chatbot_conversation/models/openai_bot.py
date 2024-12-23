@@ -12,10 +12,7 @@ from typing import Any, List
 
 from openai import OpenAI
 
-from ..utils.logging_util import get_logger
-from .base import ChatbotBase, ConversationMessage
-
-logger = get_logger("models")
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 
 
 class OpenAIChatbot(ChatbotBase):

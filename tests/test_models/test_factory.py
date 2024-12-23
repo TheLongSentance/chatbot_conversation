@@ -3,14 +3,12 @@ This module contains tests for the ChatbotFactory class, ensuring that it correc
 of various chatbot types and handles unknown bot types appropriately.
 """
 
-import pytest
-
-from src.models.base import BotType
-from src.models.claude_bot import ClaudeChatbot
-from src.models.factory import ChatbotFactory
-from src.models.gemini_bot import GeminiChatbot
-from src.models.ollama_bot import OllamaChatbot
-from src.models.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.base import BotType
+from chatbot_conversation.models.claude_bot import ClaudeChatbot
+from chatbot_conversation.models.factory import ChatbotFactory
+from chatbot_conversation.models.gemini_bot import GeminiChatbot
+from chatbot_conversation.models.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.openai_bot import OpenAIChatbot
 
 
 def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:

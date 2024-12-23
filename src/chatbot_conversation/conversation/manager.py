@@ -19,11 +19,7 @@ import json
 import os
 from typing import List
 
-from ..models import ChatbotBase, ConversationMessage
-from ..models.base import BotType
-from ..models.factory import ChatbotFactory
-from ..utils.logging_util import get_logger
-from .loader import (
+from chatbot_conversation.conversation.loader import (
     ERROR_EMPTY_BOTS,
     ERROR_EMPTY_FIELD,
     ERROR_EMPTY_PREFIX,
@@ -32,6 +28,9 @@ from .loader import (
     ConfigurationLoader,
     ConversationConfig,
 )
+from chatbot_conversation.models.base import BotType, ChatbotBase, ConversationMessage
+from chatbot_conversation.models.factory import ChatbotFactory
+from chatbot_conversation.utils.logging_util import get_logger
 
 logger = get_logger("conversation")
 

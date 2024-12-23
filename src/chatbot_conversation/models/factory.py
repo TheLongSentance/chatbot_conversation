@@ -2,11 +2,11 @@
 This module contains the ChatbotFactory class for creating different types of chatbots.
 """
 
-from .base import BotType, ChatbotBase
-from .claude_bot import ClaudeChatbot
-from .gemini_bot import GeminiChatbot
-from .ollama_bot import OllamaChatbot
-from .openai_bot import OpenAIChatbot
+from chatbot_conversation.models.base import BotType, ChatbotBase
+from chatbot_conversation.models.claude_bot import ClaudeChatbot
+from chatbot_conversation.models.gemini_bot import GeminiChatbot
+from chatbot_conversation.models.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.openai_bot import OpenAIChatbot
 
 
 # Disable the too-few-public-methods warning for this class

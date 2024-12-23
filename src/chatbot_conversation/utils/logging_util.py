@@ -11,10 +11,7 @@ import logging.config
 import os
 
 # Set up logging from config file
-config_path = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "logging.conf"
-)
-
+config_path = os.path.join(os.path.dirname(__file__), "../../../config/logging.conf")
 logging.config.fileConfig(config_path)
 
 

@@ -12,7 +12,7 @@ from typing import Any, List
 
 import anthropic
 
-from .base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 
 
 class ClaudeChatbot(ChatbotBase):

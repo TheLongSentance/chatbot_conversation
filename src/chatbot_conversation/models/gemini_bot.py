@@ -15,11 +15,11 @@ from typing import Any, List, TypedDict
 
 import google.generativeai
 
-from ..utils.logging_util import get_logger
-from .base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.utils.logging_util import get_logger
 
 
-class GeminiMessage(TypedDict):
+class _GeminiMessage(TypedDict):
     """Represents a Gemini-specific message with a role and parts."""
 
     role: str
@@ -45,7 +45,7 @@ class GeminiChatbot(ChatbotBase):
         )
 
     async def _generate_with_timeout(
-        self, formatted_messages: List[GeminiMessage], timeout: int = 30
+        self, formatted_messages: List[_GeminiMessage], timeout: int = 30
     ) -> str:
         """Wrapper to call Gemini API with timeout."""
         try:
@@ -71,9 +71,9 @@ class GeminiChatbot(ChatbotBase):
 
     def _format_conv_for_gemini_api(
         self, conversation: List[ConversationMessage]
-    ) -> List[GeminiMessage]:
+    ) -> List[_GeminiMessage]:
         """Format message history for Gemini API submission."""
-        messages: List[GeminiMessage] = []
+        messages: List[_GeminiMessage] = []
 
         for contribution in conversation:
             role = "model" if contribution["bot_index"] == self.bot_index else "user"

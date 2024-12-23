@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Any, List, TypedDict
 
-from ..utils.logging_util import get_logger
+from chatbot_conversation.utils.logging_util import get_logger
 
 logger = get_logger("models")
 
@@ -136,7 +136,7 @@ class ChatbotBase(ABC):
             str: The response without the bot name prefix.
         """
         prefix = f"<<< {self.name} >>> "
-        return response[len(prefix):] if response.startswith(prefix) else response
+        return response[len(prefix) :] if response.startswith(prefix) else response
 
     def _format_response(self, response: str) -> str:
         """

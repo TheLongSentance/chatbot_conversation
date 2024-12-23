@@ -13,7 +13,7 @@ from typing import Any, List
 import ollama
 from ollama import ChatResponse
 
-from .base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 
 
 class OllamaChatbot(ChatbotBase):

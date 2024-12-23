@@ -8,23 +8,15 @@ The fixtures handle:
 - Resetting bot count before each test
 """
 
-import os
-import sys
 from pathlib import Path
 from typing import Dict, Generator
 
 import pytest
-from dotenv import load_dotenv
 
-from src.models.base import ChatbotBase
-from src.utils.env import APIConfig
+from chatbot_conversation.models.base import ChatbotBase
+from chatbot_conversation.utils.env import APIConfig
 
-# Add project root to path for imports in tests
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, project_root)
-
-# Load environment variables from .env file
-load_dotenv()
+APIConfig.setup_env()
 
 
 @pytest.fixture

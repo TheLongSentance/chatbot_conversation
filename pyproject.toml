@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "chatbot_conversation"
-version = "0.1.0"
 description = "A chatbot conversation system"
+version = "0.1.0"
 authors = [{name = "Brian Sentance", email = "brian@sentance.tech"}]
 readme = "README.md"
 requires-python = ">=3.8"
@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-chatbot_conversation = "chatbot_conversation.main:run"
+chatbot_conversation = "chatbot_conversation.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["chatbot_conversation"]
@@ -57,6 +57,10 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::UserWarning",
 ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["my_project"]
 
 
 
