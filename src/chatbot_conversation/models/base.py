@@ -11,9 +11,9 @@ Classes:
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import Any, List, TypedDict
 
+from chatbot_conversation.models.bot_types import BotType
 from chatbot_conversation.utils import get_logger
 
 logger = get_logger("models")
@@ -31,15 +31,6 @@ class ConversationMessage(TypedDict):
 
     bot_index: int
     content: str
-
-
-class BotType(Enum):
-    """Enumeration of different bot types."""
-
-    GPT = auto()
-    CLAUDE = auto()
-    GEMINI = auto()
-    OLLAMA = auto()
 
 
 @dataclass
