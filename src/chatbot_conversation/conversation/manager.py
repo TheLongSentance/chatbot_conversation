@@ -19,7 +19,7 @@ import json
 import os
 from typing import List
 
-from chatbot_conversation.conversation.loader import (
+from chatbot_conversation.conversation import (
     ERROR_EMPTY_BOTS,
     ERROR_EMPTY_FIELD,
     ERROR_EMPTY_PREFIX,
@@ -29,17 +29,17 @@ from chatbot_conversation.conversation.loader import (
     ConversationConfig,
 )
 from chatbot_conversation.models import (
+    BotRegistry,
     BotType,
     ChatbotBase,
     ChatbotFactory,
+    ClaudeChatbot,
     ConversationMessage,
+    GeminiChatbot,
+    OllamaChatbot,
+    OpenAIChatbot,
 )
 from chatbot_conversation.utils import get_logger
-from chatbot_conversation.models import BotRegistry
-from chatbot_conversation.models import ClaudeChatbot
-from chatbot_conversation.models import GeminiChatbot
-from chatbot_conversation.models import OllamaChatbot
-from chatbot_conversation.models import OpenAIChatbot
 
 logger = get_logger("conversation")
 

@@ -14,12 +14,12 @@ import pytest
 
 from chatbot_conversation.models import (
     BotRegistry,
+    BotType,
     ChatbotFactory,
     ClaudeChatbot,
     GeminiChatbot,
     OllamaChatbot,
     OpenAIChatbot,
-    BotType,
 )
 
 

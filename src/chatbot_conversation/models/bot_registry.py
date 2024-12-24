@@ -2,7 +2,7 @@
 This module contains the BotRegistry class for managing the registration of different chatbot types.
 """
 
-from typing import Type
+from typing import Type, Dict
 
 from chatbot_conversation.models.base import BotType, ChatbotBase
 
@@ -10,8 +10,8 @@ from chatbot_conversation.models.base import BotType, ChatbotBase
 class BotRegistry:
     """Registry for managing chatbot types and their corresponding classes."""
 
-    def __init__(self):
-        self._bot_classes: dict[BotType, Type[ChatbotBase]] = {}
+    def __init__(self) -> None:
+        self._bot_classes: Dict[BotType, Type[ChatbotBase]] = {}
 
     def register_bot(self, bot_type: BotType, bot_class: Type[ChatbotBase]) -> None:
         """Register a new bot type with its corresponding class.
