@@ -11,8 +11,7 @@ The tests handle:
 
 import pytest
 
-from chatbot_conversation.conversation.loader import ERROR_EMPTY_SEED
-from chatbot_conversation.conversation.manager import ConversationManager
+from chatbot_conversation.conversation import ERROR_EMPTY_SEED, ConversationManager
 
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:

@@ -13,8 +13,8 @@ from typing import Dict, Generator
 
 import pytest
 
-from chatbot_conversation.models.base import ChatbotBase
-from chatbot_conversation.utils.env import APIConfig
+from chatbot_conversation.models import ChatbotBase
+from chatbot_conversation.utils import APIConfig
 
 APIConfig.setup_env()
 

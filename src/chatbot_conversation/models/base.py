@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from enum import Enum, auto
 from typing import Any, List, TypedDict
 
-from chatbot_conversation.utils.logging_util import get_logger
+from chatbot_conversation.utils import get_logger
 
 logger = get_logger("models")
 

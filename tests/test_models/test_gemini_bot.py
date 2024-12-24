@@ -7,8 +7,7 @@ and response generation.
 from typing import List
 from unittest.mock import MagicMock
 
-from chatbot_conversation.models.base import ConversationMessage
-from chatbot_conversation.models.gemini_bot import GeminiChatbot
+from chatbot_conversation.models import ConversationMessage, GeminiChatbot
 
 
 def test_gemini_bot(gemini_chatbot: GeminiChatbot) -> None:

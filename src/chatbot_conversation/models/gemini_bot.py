@@ -16,7 +16,7 @@ from typing import Any, List, TypedDict
 import google.generativeai
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
-from chatbot_conversation.utils.logging_util import get_logger
+from chatbot_conversation.utils import get_logger
 
 
 class _GeminiMessage(TypedDict):

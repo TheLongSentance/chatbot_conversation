@@ -28,9 +28,13 @@ from chatbot_conversation.conversation.loader import (
     ConfigurationLoader,
     ConversationConfig,
 )
-from chatbot_conversation.models.base import BotType, ChatbotBase, ConversationMessage
-from chatbot_conversation.models.factory import ChatbotFactory
-from chatbot_conversation.utils.logging_util import get_logger
+from chatbot_conversation.models import (
+    BotType,
+    ChatbotBase,
+    ChatbotFactory,
+    ConversationMessage,
+)
+from chatbot_conversation.utils import get_logger
 
 logger = get_logger("conversation")
 

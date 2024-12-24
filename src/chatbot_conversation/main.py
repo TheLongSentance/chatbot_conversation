@@ -4,8 +4,8 @@ This module initializes and runs the chatbot conversation.
 
 import os
 
-from chatbot_conversation.conversation.manager import ConversationManager
-from chatbot_conversation.utils.env import APIConfig
+from chatbot_conversation.conversation import ConversationManager
+from chatbot_conversation.utils import APIConfig
 
 
 def main() -> None:
