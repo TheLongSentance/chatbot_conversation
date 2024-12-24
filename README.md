@@ -38,6 +38,7 @@ chatbot_conversation/
 |   |   |   ├── gemini_bot.py
 |   |   |   ├── ollama.py
 |   |   |   ├── openai.py
+|   |   |   ├── bot_registry.py
 |   |   |   └── factory.py
 │   │   ├── utils/
 |   |   |   ├── __init__.py
