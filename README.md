@@ -48,9 +48,9 @@ chatbot_conversation/
 │   └── __init__.py
 ├── config/
 │   ├── examples/
-│   │   ├── config.json.example1
-│   │   ├── config.json.example2
-│   │   └── config.json.example3
+│   │   ├── brexit.config.json
+│   │   ├── churchill.config.json
+│   │   └── tennis.config.json
 │   ├── .env.example
 │   ├── config.json
 │   └── logging.conf
