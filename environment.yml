@@ -1,4 +1,4 @@
-name: chatbot-conv
+name: chatbots
 channels:
   - conda-forge
   - defaults

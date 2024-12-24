@@ -19,14 +19,6 @@ A Python application that facilitates conversations between multiple AI chatbots
 
 ```
 chatbot_conversation/
-├── docs/
-│   ├── CONTRIBUTING.md
-│   └── API.md
-├── examples/
-│   ├── config_examples/
-│   │   ├── debate.json
-│   │   └── storytelling.json
-│   └── README.md
 ├── tests/
 │   ├── __init__.py
 │   ├── test_conversation/
@@ -34,49 +26,61 @@ chatbot_conversation/
 │   └── test_models/
 │       └── test_base.py
 ├── src/
-│   ├── conversation/
+│   ├── chatbot_conversation/
+│   │   ├── conversation/
+|   |   |   ├── __init__.py
+|   |   |   ├── loader.py
+|   |   |   └── manager.py
+│   │   ├── models/
+|   |   |   ├── __init__.py
+|   |   |   ├── base.py
+|   |   |   ├── claude_bot.py
+|   |   |   ├── gemini_bot.py
+|   |   |   ├── ollama.py
+|   |   |   ├── openai.py
+|   |   |   └── factory.py
+│   │   ├── utils/
+|   |   |   ├── __init__.py
+|   |   |   ├── env.py
+|   |   |   └── logging_util.py
 │   │   ├── __init__.py
-│   │   ├── loader.py
-│   │   └── manager.py
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── claude.py
-│   │   ├── gemini.py
-│   │   ├── gpt.py
-│   │   └── ollama.py
-│   └── utils/
-│       ├── __init__.py
-│       └── env.py
-├── .env.example
+│   │   └── main.py
+│   └── __init__.py
+├── config/
+│   ├── examples/
+│   │   ├── config.json.example1
+│   │   ├── config.json.example2
+│   │   └── config.json.example3
+│   ├── .env.example
+│   ├── config.json
+│   └── logging.conf
 ├── .gitignore
-├── config.json
 ├── environment.yml
 ├── LICENSE
-├── logging.conf
-├── main.py
 ├── pyproject.toml
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── requirements-dev.txt
 ```
 
 The project is organized into the following components:
 
-- `src/conversation/`: Contains the core conversation management logic
-- `src/models/`: Implements different AI model integrations
-- `src/utils/`: Utility functions and environment configuration
-- `docs/`: Documentation files
-- `examples/`: Example configuration files
-- `tests/`: Test infrastructure
-- `config.json`: Configuration file for conversation settings
-- `main.py`: Application entry point
-- `.env.example`: Example environment configuration
+- `src/chatbot_conversation/conversation/`: Contains the core conversation management logic
+- `src/chatbot_conversation/models/`: Implements different AI model integrations
+- `src/chatbot_conversation/utils/`: Utility functions and environment configuration
+- `src/chatbot_conversation/main.py`: Application entry point
+- `config/`: Contains runtime configuration files
+- `config/config.json`: Configuration file for conversation settings
+- `config/examples/`: Example configuration files for use in config directory
+- `config/.env.example`: Example .env file format for storage of private keys for AI APIs
+- `config/logging.conf`: Configuration file for logging 
+- `tests/`: Test infrastructure based on pytest
 - `.gitignore`: Git ignore file
 - `environment.yml`: Conda environment configuration
 - `LICENSE`: License file
-- `logging.conf`: Logging configuration
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
+- `requirements-dev.txt`: Pip requirements file for development environment
 
 ## Installation
 
@@ -85,18 +89,18 @@ You can set up the project using either Conda (recommended) or pip:
 ### Using Conda
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/chatbot_conversation.git
+git clone https://github.com/TheLongSentance/chatbot_conversation.git
 cd chatbot_conversation
 
 # Create and activate environment using environment.yml
 conda env create -f environment.yml
-conda activate chatbot-conv
+conda activate chatbots
 ```
 
 ### Alternative: Using pip
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/chatbot_conversation.git
+git clone https://github.com/TheLongSentance/chatbot_conversation.git
 cd chatbot_conversation
 
 # Create and activate virtual environment (optional)
@@ -109,7 +113,7 @@ pip install -r requirements.txt
 
 ## Environment Setup
 
-Create a `.env` file in the root directory with your API keys:
+Create a `.env` file in the ./config/ directory with your API keys:
 
 ```
 OPENAI_API_KEY=your_openai_key
@@ -119,7 +123,7 @@ GOOGLE_API_KEY=your_google_key
 
 ## Configuration
 
-Edit `config.json` to customize the conversation. Example configuration for a tennis discussion:
+Edit `/config/config.json` to customize the conversation. Example configuration for a tennis discussion:
 
 ```json
 {
@@ -158,12 +162,13 @@ The `shared_system_prompt_prefix` supports the following template variables:
 
 ## Usage
 
-1. Configure your bots and conversation in `config.json`
-2. Set up environment variables in `.env`
-3. Run the conversation:
+1. Set up environment variables in `/config/.env`
+2. Configure/check logging in `/config/logging.conf`
+3. Configure your bots and conversation in `/config/config.json`
+4. Run the conversation:
 
 ```bash
-python main.py
+python /src/chatbot_conversation/main.py
 ```
 
 The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise.
