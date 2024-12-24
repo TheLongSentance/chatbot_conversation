@@ -3,19 +3,15 @@ This module contains the ChatbotFactory class for creating different types of ch
 """
 
 from chatbot_conversation.models.base import BotType, ChatbotBase
-from chatbot_conversation.models.claude_bot import ClaudeChatbot
-from chatbot_conversation.models.gemini_bot import GeminiChatbot
-from chatbot_conversation.models.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.bot_registry import BotRegistry
 
 
-# Disable the too-few-public-methods warning for this class
-# pylint: disable=R0903
 class ChatbotFactory:
-    """Factory for creating different types of chatbots."""
+    """Factory for creating different types of chatbots using dependency injection."""
 
-    # Disable the too-many-arguments warning for this method
-    # pylint: disable=R0913
+    def __init__(self, bot_registry: BotRegistry):
+        self._bot_registry = bot_registry
+
     def create_bot(
         self,
         bot_type: BotType,
@@ -39,32 +35,10 @@ class ChatbotFactory:
         Raises:
             ValueError: If bot_type is not recognized
         """
-        if bot_type == BotType.GPT:
-            return OpenAIChatbot(
-                bot_model_version,
-                bot_specific_system_prompt,
-                bot_name,
-                bot_shared_system_prompt_prefix,
-            )
-        if bot_type == BotType.CLAUDE:
-            return ClaudeChatbot(
-                bot_model_version,
-                bot_specific_system_prompt,
-                bot_name,
-                bot_shared_system_prompt_prefix,
-            )
-        if bot_type == BotType.GEMINI:
-            return GeminiChatbot(
-                bot_model_version,
-                bot_specific_system_prompt,
-                bot_name,
-                bot_shared_system_prompt_prefix,
-            )
-        if bot_type == BotType.OLLAMA:
-            return OllamaChatbot(
-                bot_model_version,
-                bot_specific_system_prompt,
-                bot_name,
-                bot_shared_system_prompt_prefix,
-            )
-        raise ValueError(f"Unknown bot type: {bot_type}")
+        bot_class = self._bot_registry.get_bot_class(bot_type)
+        return bot_class(
+            bot_model_version,
+            bot_specific_system_prompt,
+            bot_name,
+            bot_shared_system_prompt_prefix,
+        )

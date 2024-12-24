@@ -35,6 +35,7 @@ from chatbot_conversation.models import (
     ConversationMessage,
 )
 from chatbot_conversation.utils import get_logger
+from chatbot_conversation.models import BotRegistry
 
 logger = get_logger("conversation")
 
@@ -95,7 +96,8 @@ class ConversationManager:
             {"bot_index": 0, "content": config["conversation_seed"]}
         ]
 
-        factory = ChatbotFactory()
+        bot_registry = BotRegistry()  # create an instance of BotRegistry
+        factory = ChatbotFactory(bot_registry)
         shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
         for bot_config in config["bots"]:
             bot = factory.create_bot(
