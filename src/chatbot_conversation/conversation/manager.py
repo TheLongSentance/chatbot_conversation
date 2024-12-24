@@ -31,6 +31,7 @@ from chatbot_conversation.conversation import (
 from chatbot_conversation.models import (
     BotRegistry,
     BotType,
+    BotConfig,
     ChatbotBase,
     ChatbotFactory,
     ClaudeChatbot,
@@ -112,11 +113,13 @@ class ConversationManager:
         shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
         for bot_config in config["bots"]:
             bot = factory.create_bot(
-                BotType[bot_config["bot_type"]],
-                str(bot_config["bot_model_version"]),
-                bot_config["bot_specific_system_prompt"],
-                bot_config["bot_name"],
-                shared_system_prompt_prefix,
+                BotConfig(
+                    bot_type=BotType[bot_config["bot_type"]],
+                    bot_model_version=str(bot_config["bot_model_version"]),
+                    bot_specific_system_prompt=bot_config["bot_specific_system_prompt"],
+                    bot_name=bot_config["bot_name"],
+                    bot_shared_system_prompt_prefix=shared_system_prompt_prefix,
+                )
             )
             self.add_bot(bot)
 
