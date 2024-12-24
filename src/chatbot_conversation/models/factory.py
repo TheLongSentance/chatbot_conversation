@@ -2,20 +2,8 @@
 This module contains the ChatbotFactory class for creating different types of chatbots.
 """
 
-from dataclasses import dataclass
-
-from chatbot_conversation.models.base import BotType, ChatbotBase
+from chatbot_conversation.models.base import BotConfig, ChatbotBase
 from chatbot_conversation.models.bot_registry import BotRegistry
-
-
-@dataclass
-class BotConfig:
-    """Configuration for creating a chatbot."""
-    bot_type: BotType
-    bot_model_version: str
-    bot_specific_system_prompt: str
-    bot_name: str
-    bot_shared_system_prompt_prefix: str
 
 
 class ChatbotFactory:

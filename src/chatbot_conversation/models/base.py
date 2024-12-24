@@ -10,6 +10,7 @@ Classes:
 
 import json
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, List, TypedDict
 
@@ -39,6 +40,17 @@ class BotType(Enum):
     CLAUDE = auto()
     GEMINI = auto()
     OLLAMA = auto()
+
+
+@dataclass
+class BotConfig:
+    """Configuration for creating a chatbot."""
+
+    bot_type: BotType
+    bot_model_version: str
+    bot_specific_system_prompt: str
+    bot_name: str
+    bot_shared_system_prompt_prefix: str
 
 
 class ChatbotBase(ABC):

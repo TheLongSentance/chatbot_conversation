@@ -2,7 +2,7 @@
 This module contains the BotRegistry class for managing the registration of different chatbot types.
 """
 
-from typing import Type, Dict
+from typing import Dict, Type
 
 from chatbot_conversation.models.base import BotType, ChatbotBase
 

@@ -29,9 +29,9 @@ from chatbot_conversation.conversation import (
     ConversationConfig,
 )
 from chatbot_conversation.models import (
+    BotConfig,
     BotRegistry,
     BotType,
-    BotConfig,
     ChatbotBase,
     ChatbotFactory,
     ClaudeChatbot,

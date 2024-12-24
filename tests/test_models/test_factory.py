@@ -4,15 +4,14 @@ of various chatbot types and handles unknown bot types appropriately.
 """
 
 from chatbot_conversation.models import (
-    BotType,
     BotConfig,
+    BotType,
     ChatbotFactory,
     ClaudeChatbot,
     GeminiChatbot,
     OllamaChatbot,
     OpenAIChatbot,
 )
-from chatbot_conversation.models.factory import BotConfig
 
 
 def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
