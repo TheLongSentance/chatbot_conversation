@@ -5,22 +5,13 @@ This module contains the BotRegistry class for managing the registration of diff
 from typing import Type
 
 from chatbot_conversation.models.base import BotType, ChatbotBase
-from chatbot_conversation.models.claude_bot import ClaudeChatbot
-from chatbot_conversation.models.gemini_bot import GeminiChatbot
-from chatbot_conversation.models.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.openai_bot import OpenAIChatbot
 
 
 class BotRegistry:
     """Registry for managing chatbot types and their corresponding classes."""
 
     def __init__(self):
-        self._bot_classes: dict[BotType, Type[ChatbotBase]] = {
-            BotType.GPT: OpenAIChatbot,
-            BotType.CLAUDE: ClaudeChatbot,
-            BotType.GEMINI: GeminiChatbot,
-            BotType.OLLAMA: OllamaChatbot,
-        }
+        self._bot_classes: dict[BotType, Type[ChatbotBase]] = {}
 
     def register_bot(self, bot_type: BotType, bot_class: Type[ChatbotBase]) -> None:
         """Register a new bot type with its corresponding class.

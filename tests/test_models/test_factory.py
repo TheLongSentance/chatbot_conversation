@@ -6,26 +6,11 @@ of various chatbot types and handles unknown bot types appropriately.
 from chatbot_conversation.models import (
     BotType,
     ChatbotFactory,
-    BotRegistry,
     ClaudeChatbot,
     GeminiChatbot,
     OllamaChatbot,
     OpenAIChatbot,
 )
-
-import pytest
-
-
-@pytest.fixture
-def bot_registry() -> BotRegistry:
-    """Fixture for creating a BotRegistry instance."""
-    return BotRegistry()
-
-
-@pytest.fixture
-def chatbot_factory(bot_registry: BotRegistry) -> ChatbotFactory:
-    """Fixture for creating a ChatbotFactory instance."""
-    return ChatbotFactory(bot_registry)
 
 
 def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:

@@ -6,17 +6,20 @@ Fixtures:
     claude_chatbot: Creates an instance of ClaudeChatbot.
     ollama_chatbot: Creates an instance of OllamaChatbot.
     gemini_chatbot: Creates an instance of GeminiChatbot.
+    bot_registry: Creates an instance of BotRegistry and registers bot types.
     chatbot_factory: Creates an instance of ChatbotFactory.
 """
 
 import pytest
 
 from chatbot_conversation.models import (
+    BotRegistry,
     ChatbotFactory,
     ClaudeChatbot,
     GeminiChatbot,
     OllamaChatbot,
     OpenAIChatbot,
+    BotType,
 )
 
 
@@ -65,6 +68,17 @@ def gemini_chatbot() -> GeminiChatbot:
 
 
 @pytest.fixture
-def chatbot_factory() -> ChatbotFactory:
+def bot_registry() -> BotRegistry:
+    """Fixture for creating a BotRegistry instance and registering bot types."""
+    bot_registry = BotRegistry()
+    bot_registry.register_bot(BotType.GPT, OpenAIChatbot)
+    bot_registry.register_bot(BotType.CLAUDE, ClaudeChatbot)
+    bot_registry.register_bot(BotType.GEMINI, GeminiChatbot)
+    bot_registry.register_bot(BotType.OLLAMA, OllamaChatbot)
+    return bot_registry
+
+
+@pytest.fixture
+def chatbot_factory(bot_registry: BotRegistry) -> ChatbotFactory:
     """Fixture to create an instance of ChatbotFactory."""
-    return ChatbotFactory()
+    return ChatbotFactory(bot_registry)
