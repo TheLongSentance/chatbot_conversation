@@ -7,12 +7,7 @@ It includes the following functionalities:
 - Importing necessary classes and functions from other modules
 
 Classes:
-- ChatbotBase
-- ConversationMessage
-- BotType
-- ChatbotFactory
-- ConfigurationLoader
-- ConversationConfig
+    ConversationManager: Manages conversation between multiple chatbots.
 """
 
 import json
@@ -50,10 +45,14 @@ class ConversationManager:
 
     @classmethod
     def from_config(cls, config_path: str) -> "ConversationManager":
-        """Create ConversationManager from config file.
+        """
+        Create ConversationManager from config file.
 
         Args:
-            config_path: Path to JSON configuration file
+            config_path (str): Path to JSON configuration file.
+
+        Returns:
+            ConversationManager: An instance of ConversationManager.
         """
         config = ConfigurationLoader.load_config(config_path)
 
@@ -89,10 +88,11 @@ class ConversationManager:
         return cls(config)
 
     def __init__(self, config: ConversationConfig):
-        """Initialize conversation with starting message.
+        """
+        Initialize conversation with starting message.
 
         Args:
-            config: Conversation configuration
+            config (ConversationConfig): Conversation configuration.
         """
         logger.info("Initializing conversation manager")
         self.config = config
@@ -112,33 +112,48 @@ class ConversationManager:
         factory = ChatbotFactory(bot_registry)
         shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
         for bot_config in config["bots"]:
+            # Format bot_name into shared prefix and add bot-specific prompt
+            bot_name = bot_config.get("bot_name", "")
+            formatted_prefix = shared_system_prompt_prefix.replace(
+                "{bot_name}", bot_name
+            )
+            bot_specific_system_prompt = bot_config.get(
+                "bot_specific_system_prompt", ""
+            )
+            bot_system_prompt = formatted_prefix + bot_specific_system_prompt
+
             bot = factory.create_bot(
                 BotConfig(
-                    bot_type=BotType[bot_config["bot_type"]],
-                    bot_model_version=str(bot_config["bot_model_version"]),
-                    bot_specific_system_prompt=bot_config["bot_specific_system_prompt"],
-                    bot_name=bot_config["bot_name"],
-                    bot_shared_system_prompt_prefix=shared_system_prompt_prefix,
+                    bot_type=BotType[bot_config.get("bot_type", "")],
+                    bot_model_version=bot_config.get("bot_model_version", ""),
+                    bot_system_prompt=bot_system_prompt,
+                    bot_name=bot_name,
                 )
             )
             self.add_bot(bot)
 
     def add_bot(self, bot: ChatbotBase) -> None:
-        """Add a chatbot to the conversation.
+        """
+        Add a chatbot to the conversation.
 
         Args:
-            bot: Initialized chatbot instance
+            bot (ChatbotBase): Initialized chatbot instance.
         """
         self.bots.append(bot)
 
     def run_round(self) -> None:
-        """Run one round of responses from all bots."""
+        """
+        Run one round of responses from all bots.
+        """
         logger.debug("Starting new conversation round")
         try:
             for bot in self.bots:
-                response = bot.generate_response(self.conversation)
+                raw_response = bot.generate_response(self.conversation)
+
+                clean_response: str = self._format_response(bot.name, raw_response)
+
                 self.conversation.append(
-                    {"bot_index": bot.bot_index, "content": response}
+                    {"bot_index": bot.bot_index, "content": clean_response}
                 )
 
                 logger.debug(
@@ -150,14 +165,44 @@ class ConversationManager:
                 )
 
                 print(
-                    f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{response}\n"
+                    f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{clean_response}\n"
                 )
             logger.info("Round completed successfully")
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Unexpected error during conversation round: %s", str(e))
 
+    def _format_response(self, bot_name: str, raw_response: str) -> str:
+        """
+        Format response with bot name prefix.
+
+        Args:
+            bot_name (str): The name of the bot.
+            raw_response (str): The raw response string.
+
+        Returns:
+            str: The formatted response with bot name prefix.
+        """
+        clean_response = self._strip_name_prefix(bot_name, raw_response)
+        return f"<<< {bot_name} >>> {clean_response}"
+
+    def _strip_name_prefix(self, bot_name: str, response: str) -> str:
+        """
+        Remove bot name prefix if present in response.
+
+        Args:
+            bot_name (str): The name of the bot.
+            response (str): The response string.
+
+        Returns:
+            str: The response without the bot name prefix.
+        """
+        prefix = f"<<< {bot_name} >>> "
+        return response[len(prefix) :] if response.startswith(prefix) else response
+
     def run_conversation(self) -> None:
-        """Run the conversation for the configured number of rounds."""
+        """
+        Run the conversation for the configured number of rounds.
+        """
 
         # Clear the terminal screen
         os.system("cls" if os.name == "nt" else "clear")

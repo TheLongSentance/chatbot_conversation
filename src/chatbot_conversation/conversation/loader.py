@@ -5,6 +5,11 @@ conversation configurations from a JSON file.
 The ConfigurationLoader class handles:
 - Loading and parsing the JSON configuration file
 - Providing the configuration data in a structured format
+
+Classes:
+    BotConfigData: Typed dictionary representing the configuration for a single bot.
+    ConversationConfig: Typed dictionary representing the configuration for a conversation.
+    ConfigurationLoader: Class responsible for loading conversation configurations from a JSON file.
 """
 
 import json
@@ -19,7 +24,7 @@ ERROR_EMPTY_PREFIX = "Shared system prompt prefix cannot be empty"
 ERROR_EMPTY_BOTS = "Bots list cannot be empty"
 
 
-class BotConfig(TypedDict):
+class BotConfigData(TypedDict):
     """Typed dictionary representing the configuration for a single bot."""
 
     bot_name: str
@@ -34,7 +39,7 @@ class ConversationConfig(TypedDict):
     conversation_seed: str
     rounds: int
     shared_system_prompt_prefix: str
-    bots: List[BotConfig]
+    bots: List[BotConfigData]
 
 
 class ConfigurationLoader:  # pylint: disable=too-few-public-methods
@@ -42,13 +47,14 @@ class ConfigurationLoader:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def load_config(config_path: str) -> ConversationConfig:
-        """Load conversation configuration from JSON file.
+        """
+        Load conversation configuration from JSON file.
 
         Args:
-            config_path: Path to JSON configuration file
+            config_path (str): Path to JSON configuration file.
 
         Returns:
-            ConversationConfig: Loaded configuration
+            ConversationConfig: Loaded configuration.
         """
         with open(config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
