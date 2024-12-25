@@ -4,8 +4,8 @@ This module contains the BotRegistry class for managing the registration of diff
 
 from typing import Dict, Type
 
-from chatbot_conversation.models.base import BotType, ChatbotBase
-
+from chatbot_conversation.models.base import ChatbotBase
+from chatbot_conversation.models.bot_types import BotType
 
 class BotRegistry:
     """Registry for managing chatbot types and their corresponding classes."""
