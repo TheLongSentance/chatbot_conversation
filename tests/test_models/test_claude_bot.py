@@ -40,7 +40,11 @@ def test_claude_bot(claude_chatbot: ClaudeChatbot) -> None:
     assert claude_chatbot.api is not None
     assert isinstance(claude_chatbot.api, Anthropic)
 
-    conversation = [ConversationMessage(bot_index=0, content="Hello my name is John! Please say my name!")]
+    conversation = [
+        ConversationMessage(
+            bot_index=0, content="Hello my name is John! Please say my name!"
+        )
+    ]
 
     response = claude_chatbot.generate_response(conversation)
     assert response is not None
