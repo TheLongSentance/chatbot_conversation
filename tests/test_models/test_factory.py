@@ -21,9 +21,8 @@ def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
     config = BotConfig(
         bot_type=BotType.GPT,
         bot_model_version="gpt-4o-mini",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="OpenAITestBot1",
-        bot_shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, OpenAIChatbot)
@@ -37,9 +36,8 @@ def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
     config = BotConfig(
         bot_type=BotType.CLAUDE,
         bot_model_version="claude-3-haiku-20240307",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="ClaudeTestBot1",
-        bot_shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, ClaudeChatbot)
@@ -53,9 +51,8 @@ def test_create_gemini_chatbot(chatbot_factory: ChatbotFactory) -> None:
     config = BotConfig(
         bot_type=BotType.GEMINI,
         bot_model_version="gemini-1.5-flash",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot1",
-        bot_shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, GeminiChatbot)
@@ -69,9 +66,8 @@ def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
     config = BotConfig(
         bot_type=BotType.OLLAMA,
         bot_model_version="llama3.2",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot1",
-        bot_shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, OllamaChatbot)
