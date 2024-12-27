@@ -59,6 +59,7 @@ def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
     assert len(response) > 0
     assert "Exception:" in response
 
+
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
     bot1 = OllamaChatbot(
