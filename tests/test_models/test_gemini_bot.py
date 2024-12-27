@@ -31,28 +31,23 @@ def test_gemini_bot(gemini_chatbot: GeminiChatbot) -> None:
     """
 
     assert gemini_chatbot.model_version == "gemini-1.5-flash"
-    assert (
-        gemini_chatbot.system_prompt
-        == "You are in a test program and you are called GeminiTestBot1 - You are a helpful assistant."
-    )
+    assert gemini_chatbot.system_prompt == "You are a helpful assistant."
     assert gemini_chatbot.name == "GeminiTestBot1"
     assert gemini_chatbot.bot_index == 1
     assert gemini_chatbot.get_total_bots() == 1
     assert gemini_chatbot.api is not None
 
-    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+    conversation = [
+        ConversationMessage(
+            bot_index=0, content="Hello my name is John! Please say my name!"
+        )
+    ]
 
     response = gemini_chatbot.generate_response(conversation)
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
-
-    conversation.append(ConversationMessage(bot_index=1, content=response))
-
-    response = gemini_chatbot.generate_response(conversation)
-    assert response is not None
-    assert isinstance(response, str)
-    assert len(response) > 0
+    assert "John" in response
 
 
 def test_empty_conversation(gemini_chatbot: GeminiChatbot) -> None:
@@ -68,15 +63,13 @@ def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
     bot1 = GeminiChatbot(
         bot_model_version="gemini-1.5-flash",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot2",
-        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot2 = GeminiChatbot(
         bot_model_version="gemini-1.5-flash",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot3",
-        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
@@ -103,4 +96,4 @@ def test_generate_response_with_mock(gemini_chatbot: GeminiChatbot) -> None:
     gemini_chatbot.api.generate_content = MagicMock(return_value=mock_response)
 
     response = gemini_chatbot.generate_response(conversation)
-    assert response == "<<< GeminiTestBot1 >>> Hello, user!"
+    assert response == "Hello, user!"

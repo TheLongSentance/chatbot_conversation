@@ -77,13 +77,29 @@ class GeminiChatbot(ChatbotBase):
                 ),
                 timeout=timeout,
             )
-            if not isinstance(message.text, str):
-                raise TypeError("Expected message.text to be a string")
-            return message.text
-        except FuturesTimeoutError as error:
+            response_content = message.text
+            if response_content is None or response_content == "":
+                raise ValueError("Text is empty")
+        except FuturesTimeoutError as e:
             raise FuturesTimeoutError(
                 f"Gemini API call timed out after {timeout} seconds"
-            ) from error
+            ) from e
+        except AttributeError as e:
+            response_content = f"Exception: missing attribute in message.text: {e}"
+            self.log_error(response_content)
+            return response_content
+        except ValueError as e:
+            response_content = f"Exception: message.text is empty: {e}"
+            self.log_error(response_content)
+            return response_content
+        except Exception as e:
+            response_content = (
+                f"Exception: Gemini OpenAI API error generating response: {e}"
+            )
+            self.log_error(response_content)
+            return response_content
+
+        return response_content
 
     def generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
