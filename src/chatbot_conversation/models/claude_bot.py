@@ -67,29 +67,29 @@ class ClaudeChatbot(ChatbotBase):
             )
             self.log_error(response_content)
             return response_content
-        else:
-            try:
-                response_content = message.content[0].text
-                if response_content is None or response_content == "":
-                    raise ValueError("Text is empty")
-            except IndexError as e:
-                # Handle the case where message.content is empty
-                response_content = (
-                    f"Exception: message.content[0].text from Claude API is empty: {e}"
-                )
-                self.log_error(response_content)
-                return response_content
-            except AttributeError as e:
-                # Handle the case where message.content[0] does not have a text attribute
-                response_content = f"Exception: message.content[0] does not have a .text attribute: {e}"
-                self.log_error(response_content)
-                return response_content
-            except ValueError as e:
-                # Handle the case where message.content[0].text is empty
-                response_content = (
-                    f"Exception: message.content[0].text from Claude API is empty: {e}]"
-                )
-                self.log_error(response_content)
-                return response_content
+
+        try:
+            response_content = message.content[0].text
+            if response_content is None or response_content == "":
+                raise ValueError("Text is empty")
+        except IndexError as e:
+            # Handle the case where message.content is empty
+            response_content = (
+                f"Exception: message.content[0].text from Claude API is empty: {e}"
+            )
+            self.log_error(response_content)
+            return response_content
+        except AttributeError as e:
+            # Handle the case where message.content[0] does not have a text attribute
+            response_content = f"Exception: message.content[0] does not have a .text attribute: {e}"
+            self.log_error(response_content)
+            return response_content
+        except ValueError as e:
+            # Handle the case where message.content[0].text is empty
+            response_content = (
+                f"Exception: message.content[0].text from Claude API is empty: {e}]"
+            )
+            self.log_error(response_content)
+            return response_content
 
         return response_content
