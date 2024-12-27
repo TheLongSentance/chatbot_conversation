@@ -11,7 +11,7 @@ Classes:
     OllamaChatbot: Concrete implementation of chatbot using Ollama's API service.
 """
 
-from typing import Any, List
+from typing import Any, List, Optional
 
 import ollama
 from ollama import ChatResponse
@@ -47,14 +47,37 @@ class OllamaChatbot(ChatbotBase):
             str: The response from the Ollama model.
         """
         formatted_messages = self._format_conv_for_api_util(conversation)
-        response: ChatResponse = ollama.chat(
-            model=self.model_version, messages=formatted_messages
-        )
 
-        message = response["message"]
-        if message is None or "content" not in message:
-            raise KeyError("Expected 'message' key with 'content' in response")
-        response_content = message["content"]
-        if not isinstance(response_content, str):
-            raise ValueError("Expected response content to be a string")
+        response: Optional[ChatResponse] = None
+        try:
+            response = ollama.chat(
+                model=self.model_version, messages=formatted_messages
+            )
+        except Exception as e:
+            response_content = f"Exception: Ollama API error generating response: {e}"
+            self.log_error(response_content)
+            return response_content
+
+        try:
+            message = response["message"]
+            if message is None or "content" not in message:
+                raise KeyError("Expected 'message' key in response")
+            response_content = message["content"]
+            if not isinstance(response_content, str):
+                raise ValueError("Expected response content to be a string")
+            if response_content == "":
+                raise ValueError("Text is empty")
+        except KeyError as e:
+            response_content = f"Exception: Key error in response: {e}"
+            self.log_error(response_content)
+            return response_content
+        except ValueError as e:
+            response_content = f"Exception: Value error in response: {e}"
+            self.log_error(response_content)
+            return response_content
+        except Exception as e:
+            response_content = f"Unexpected error: {e}"
+            self.log_error(response_content)
+            return response_content
+
         return response_content

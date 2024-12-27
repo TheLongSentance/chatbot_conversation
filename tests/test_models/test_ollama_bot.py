@@ -31,28 +31,23 @@ def test_ollama_bot(ollama_chatbot: OllamaChatbot) -> None:
     """
 
     assert ollama_chatbot.model_version == "llama3.2"
-    assert (
-        ollama_chatbot.system_prompt
-        == "You are in a test program and you are called OllamaTestBot1 - You are a helpful assistant."
-    )
+    assert ollama_chatbot.system_prompt == "You are a helpful assistant."
     assert ollama_chatbot.name == "OllamaTestBot1"
     assert ollama_chatbot.bot_index == 1
     assert ollama_chatbot.get_total_bots() == 1
     assert ollama_chatbot.api is None  # Ollama doesn't need initialization
 
-    conversation = [ConversationMessage(bot_index=0, content="Hello, bot!")]
+    conversation = [
+        ConversationMessage(
+            bot_index=0, content="Hello my name is John! Please say my name!"
+        )
+    ]
 
     response = ollama_chatbot.generate_response(conversation)
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
-
-    conversation.append(ConversationMessage(bot_index=1, content=response))
-
-    response = ollama_chatbot.generate_response(conversation)
-    assert response is not None
-    assert isinstance(response, str)
-    assert len(response) > 0
+    assert "John" in response
 
 
 def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
@@ -62,21 +57,19 @@ def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0
-
+    assert "Exception:" in response
 
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
     bot1 = OllamaChatbot(
         bot_model_version="llama3.2",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot2",
-        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     bot2 = OllamaChatbot(
         bot_model_version="llama3.2",
-        bot_specific_system_prompt="You are a helpful assistant.",
+        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot3",
-        shared_system_prompt_prefix="You are in a test program and you are called {bot_name} - ",
     )
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
@@ -103,4 +96,4 @@ def test_generate_response_with_mock(ollama_chatbot: OllamaChatbot) -> None:
     with patch("ollama.chat", return_value=mock_response):
         response = ollama_chatbot.generate_response(conversation)
 
-    assert response == "<<< OllamaTestBot1 >>> Hello, user!"
+    assert response == "Hello, user!"
