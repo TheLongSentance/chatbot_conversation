@@ -62,8 +62,10 @@ class ClaudeChatbot(ChatbotBase):
                 timeout=10,
             )
         except anthropic.AnthropicError as e:
-            response_content = f"Exception: Anthropic Claude API error generating response: {e}"
-            self.log_error(response_content) 
+            response_content = (
+                f"Exception: Anthropic Claude API error generating response: {e}"
+            )
+            self.log_error(response_content)
             return response_content
         else:
             try:
@@ -72,7 +74,9 @@ class ClaudeChatbot(ChatbotBase):
                     raise ValueError("Text is empty")
             except IndexError as e:
                 # Handle the case where message.content is empty
-                response_content = f"Exception: message.content[0].text from Claude API is empty: {e}"
+                response_content = (
+                    f"Exception: message.content[0].text from Claude API is empty: {e}"
+                )
                 self.log_error(response_content)
                 return response_content
             except AttributeError as e:
@@ -82,7 +86,9 @@ class ClaudeChatbot(ChatbotBase):
                 return response_content
             except ValueError as e:
                 # Handle the case where message.content[0].text is empty
-                response_content = f"Exception: message.content[0].text from Claude API is empty: {e}]"
+                response_content = (
+                    f"Exception: message.content[0].text from Claude API is empty: {e}]"
+                )
                 self.log_error(response_content)
                 return response_content
 
