@@ -50,6 +50,8 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             str: The response from the Claude model.
         """
+        response_content: str = ""
+
         formatted_messages = self._format_conv_for_api_util(
             conversation, add_system_prompt=False
         )
@@ -61,17 +63,15 @@ class ClaudeChatbot(ChatbotBase):
                 max_tokens=500,
                 timeout=10,
             )
+            response_content = message.content[0].text
+            if response_content is None or response_content == "":
+                raise ValueError("Text is empty")
         except anthropic.AnthropicError as e:
             response_content = (
                 f"Exception: Anthropic Claude API error generating response: {e}"
             )
             self.log_error(response_content)
             return response_content
-
-        try:
-            response_content = message.content[0].text
-            if response_content is None or response_content == "":
-                raise ValueError("Text is empty")
         except IndexError as e:
             # Handle the case where message.content is empty
             response_content = (

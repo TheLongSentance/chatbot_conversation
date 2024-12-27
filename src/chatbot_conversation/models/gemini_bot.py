@@ -17,7 +17,8 @@ import json
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from typing import Any, List, TypedDict
 
-import google.generativeai
+# no stub file from google.generativeai so ignore for pylance etc
+import google.generativeai  # type: ignore
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils import get_logger
@@ -49,7 +50,8 @@ class GeminiChatbot(ChatbotBase):
         Returns:
             Any: Initialized Gemini API client.
         """
-        google.generativeai.configure()
+        # no stub file from google.generativeai so ignore for pylance etc
+        google.generativeai.configure()  # type: ignore
         return google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
@@ -70,6 +72,7 @@ class GeminiChatbot(ChatbotBase):
         Raises:
             FuturesTimeoutError: If the API call times out.
         """
+        response_content: str = ""
         try:
             message = await asyncio.wait_for(
                 asyncio.get_event_loop().run_in_executor(
@@ -78,12 +81,14 @@ class GeminiChatbot(ChatbotBase):
                 timeout=timeout,
             )
             response_content = message.text
-            if response_content is None or response_content == "":
+            if response_content == "":
                 raise ValueError("Text is empty")
         except FuturesTimeoutError as e:
-            raise FuturesTimeoutError(
-                f"Gemini API call timed out after {timeout} seconds"
-            ) from e
+            response_content = (
+                f"Exception: Gemini API call timed out after {timeout} seconds: {e}"
+            )
+            self.log_error(response_content)
+            return response_content
         except AttributeError as e:
             response_content = f"Exception: missing attribute in message.text: {e}"
             self.log_error(response_content)

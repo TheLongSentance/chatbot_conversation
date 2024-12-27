@@ -11,7 +11,7 @@ Classes:
     OllamaChatbot: Concrete implementation of chatbot using Ollama's API service.
 """
 
-from typing import Any, List, Optional
+from typing import Any, List
 
 import ollama
 from ollama import ChatResponse
@@ -46,18 +46,18 @@ class OllamaChatbot(ChatbotBase):
         Returns:
             str: The response from the Ollama model.
         """
+        response_content: str = ""
+
         formatted_messages = self._format_conv_for_api_util(conversation)
 
         try:
-            response: ChatResponse = ollama.chat(
+            response: ChatResponse = ollama.chat(  # type: ignore
                 model=self.model_version, messages=formatted_messages
             )
             message = response["message"]
             if message is None or "content" not in message:
                 raise KeyError("Expected 'message' key in response")
             response_content = message["content"]
-            if not isinstance(response_content, str):
-                raise ValueError("Expected response content to be a string")
             if response_content == "":
                 raise ValueError("Text is empty")
         except KeyError as e:

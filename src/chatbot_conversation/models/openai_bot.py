@@ -50,6 +50,8 @@ class OpenAIChatbot(ChatbotBase):
         Returns:
             str: Generated response from the model.
         """
+        response_content: str = ""
+
         formatted_messages = self._format_conv_for_api_util(conversation)
 
         try:
@@ -57,7 +59,7 @@ class OpenAIChatbot(ChatbotBase):
                 model=self.model_version, messages=formatted_messages, timeout=10
             )
             response_content = completion.choices[0].message.content
-            if response_content is None or response_content == "":
+            if response_content == "":
                 raise ValueError("Text is empty")
         except IndexError as e:
             response_content = f"Exception: completion.choices[0] is empty: {e}"
