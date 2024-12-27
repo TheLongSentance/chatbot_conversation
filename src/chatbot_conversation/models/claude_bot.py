@@ -81,7 +81,9 @@ class ClaudeChatbot(ChatbotBase):
             return response_content
         except AttributeError as e:
             # Handle the case where message.content[0] does not have a text attribute
-            response_content = f"Exception: message.content[0] does not have a .text attribute: {e}"
+            response_content = (
+                f"Exception: message.content[0] does not have a .text attribute: {e}"
+            )
             self.log_error(response_content)
             return response_content
         except ValueError as e:
