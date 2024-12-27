@@ -147,7 +147,7 @@ class ChatbotBase(ABC):
 
         return messages
 
-    def log_error(self, error_text: str):
+    def log_error(self, error_text: str) -> None:
         """
         Logs an error with the specified format.
 
