@@ -48,17 +48,10 @@ class OllamaChatbot(ChatbotBase):
         """
         formatted_messages = self._format_conv_for_api_util(conversation)
 
-        response: Optional[ChatResponse] = None
         try:
-            response = ollama.chat(
+            response: ChatResponse = ollama.chat(
                 model=self.model_version, messages=formatted_messages
             )
-        except Exception as e:
-            response_content = f"Exception: Ollama API error generating response: {e}"
-            self.log_error(response_content)
-            return response_content
-
-        try:
             message = response["message"]
             if message is None or "content" not in message:
                 raise KeyError("Expected 'message' key in response")
@@ -76,7 +69,7 @@ class OllamaChatbot(ChatbotBase):
             self.log_error(response_content)
             return response_content
         except Exception as e:
-            response_content = f"Unexpected error: {e}"
+            response_content = f"Exception: Ollama API error generating response: {e}"
             self.log_error(response_content)
             return response_content
 
