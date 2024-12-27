@@ -53,14 +53,37 @@ class ClaudeChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_api_util(
             conversation, add_system_prompt=False
         )
-        message = self.api.messages.create(
-            model=self.model_version,
-            system=self.system_prompt,
-            messages=formatted_messages,
-            max_tokens=500,
-            timeout=10,
-        )
-        response_content = message.content[0].text
-        if not isinstance(response_content, str):
-            raise ValueError("Expected response content to be a string")
+        try:
+            message = self.api.messages.create(
+                model=self.model_version,
+                system=self.system_prompt,
+                messages=formatted_messages,
+                max_tokens=500,
+                timeout=10,
+            )
+        except anthropic.AnthropicError as e:
+            response_content = f"Exception: Anthropic Claude API error generating response: {e}"
+            self.log_error(response_content) 
+            return response_content
+        else:
+            try:
+                response_content = message.content[0].text
+                if response_content is None or response_content == "":
+                    raise ValueError("Text is empty")
+            except IndexError:
+                # Handle the case where message.content is empty
+                response_content = "Exception: message.content[0].text from Claude API is empty"
+                self.log_error(response_content)
+                return response_content
+            except AttributeError:
+                # Handle the case where message.content[0] does not have a text attribute
+                response_content = "Exception: message.content[0] does not have a .text attribute"
+                self.log_error(response_content)
+                return response_content
+            except ValueError:
+                # Handle the case where message.content[0].text is empty
+                response_content = "Exception: message.content[0].text from Claude API is empty"
+                self.log_error(response_content)
+                return response_content
+
         return response_content

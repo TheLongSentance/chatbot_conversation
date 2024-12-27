@@ -146,3 +146,18 @@ class ChatbotBase(ABC):
         )
 
         return messages
+
+    def log_error(self, error_text: str):
+        """
+        Logs an error with the specified format.
+
+        Args:
+            error_text (str): The content of the response to log.
+        """
+        logger.error(
+            "Bot Class: %s, Bot Name: %s, Bot Index: %s, %s",
+            self.__class__.__name__,
+            self.name,
+            self.bot_index,
+            error_text,
+        )
