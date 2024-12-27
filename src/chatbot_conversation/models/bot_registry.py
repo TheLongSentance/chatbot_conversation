@@ -7,6 +7,7 @@ from typing import Dict, Type
 from chatbot_conversation.models.base import ChatbotBase
 from chatbot_conversation.models.bot_types import BotType
 
+
 class BotRegistry:
     """Registry for managing chatbot types and their corresponding classes."""
 
