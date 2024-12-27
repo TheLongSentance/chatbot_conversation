@@ -51,10 +51,31 @@ class OpenAIChatbot(ChatbotBase):
             str: Generated response from the model.
         """
         formatted_messages = self._format_conv_for_api_util(conversation)
-        completion = self.api.chat.completions.create(
-            model=self.model_version, messages=formatted_messages, timeout=10
-        )
-        response_content = completion.choices[0].message.content
-        if not isinstance(response_content, str):
-            raise ValueError("Expected response content to be a string")
+
+        try:
+            completion = self.api.chat.completions.create(
+                model=self.model_version, messages=formatted_messages, timeout=10
+            )
+            response_content = completion.choices[0].message.content
+            if response_content is None or response_content == "":
+                raise ValueError("Text is empty")
+        except IndexError as e:
+            response_content = f"Exception: completion.choices[0] is empty: {e}"
+            self.log_error(response_content)
+            return response_content
+        except AttributeError as e:
+            response_content = f"Exception: missing attribute in completion.choices[0].message.content: {e}"
+            self.log_error(response_content)
+            return response_content
+        except ValueError as e:
+            response_content = (
+                f"Exception: completion.choices[0].message.content is empty: {e}"
+            )
+            self.log_error(response_content)
+            return response_content
+        except Exception as e:
+            response_content = f"Exception: OpenAI API error generating response: {e}"
+            self.log_error(response_content)
+            return response_content
+
         return response_content
