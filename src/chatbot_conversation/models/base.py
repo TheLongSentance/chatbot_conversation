@@ -121,12 +121,10 @@ class ChatbotBase(ABC):
                 raise ValueError("Text is empty")
         except (IndexError, KeyError, AttributeError, ValueError) as e:
             response_content = f"Exception: index/key/attribute/value error: {e}"
-            self.log_error(response_content)
+            self._log_error(response_content)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            response_content = (
-                f"Exception: API error generating response: {e}"
-            )
-            self.log_error(response_content)
+            response_content = f"Exception: API error generating response: {e}"
+            self._log_error(response_content)
         return response_content
 
     def _format_conv_for_api_util(
@@ -161,19 +159,13 @@ class ChatbotBase(ABC):
             )
             messages.append({"role": role, "content": contribution["content"]})
 
-        logger.debug(
-            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
-            self.__class__.__name__,
-            self.name,
-            self.bot_index,
-            json.dumps(messages, indent=2),
-        )
+        self._log_debug(json.dumps(messages, indent=2))
 
         return messages
 
-    def log_error(self, error_text: str) -> None:
+    def _log_error(self, error_text: str) -> None:
         """
-        Logs an error with the specified format.
+        Logs a model error with the specified format.
 
         Args:
             error_text (str): The content of the response to log.
@@ -184,4 +176,19 @@ class ChatbotBase(ABC):
             self.name,
             self.bot_index,
             error_text,
+        )
+
+    def _log_debug(self, debug_text: str) -> None:
+        """
+        Logging for model debug with the specified format.
+
+        Args:
+            error_text (str): The content of the response to log.
+        """
+        logger.debug(
+            "Bot Class: %s, Bot Name: %s, Bot Index: %s, %s",
+            self.__class__.__name__,
+            self.name,
+            self.bot_index,
+            debug_text,
         )

@@ -110,12 +110,6 @@ class GeminiChatbot(ChatbotBase):
             role = "model" if contribution["bot_index"] == self.bot_index else "user"
             messages.append({"role": role, "parts": contribution["content"]})
 
-        logger.debug(
-            "Bot Class: %s, Bot Name: %s, Bot Index: %s, Formatted Messages: %s",
-            self.__class__.__name__,
-            self.name,
-            self.bot_index,
-            json.dumps(messages, indent=2),
-        )
+        self._log_debug(json.dumps(messages, indent=2))
 
         return messages
