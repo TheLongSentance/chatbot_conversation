@@ -40,9 +40,9 @@ class ClaudeChatbot(ChatbotBase):
         """
         return anthropic.Anthropic()
 
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate response using Claude's chat model.
+        Private method to generate response using Claude's chat model.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.
@@ -64,7 +64,7 @@ class ClaudeChatbot(ChatbotBase):
                 timeout=10,
             )
             response_content = message.content[0].text
-            if response_content is None or response_content == "":
+            if response_content == "":
                 raise ValueError("Text is empty")
         except anthropic.AnthropicError as e:
             response_content = (

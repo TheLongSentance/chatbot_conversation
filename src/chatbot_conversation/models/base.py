@@ -93,9 +93,9 @@ class ChatbotBase(ABC):
         pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate a response from the model without any formatting.
+        Private method to generate a response from the model without any formatting.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.
@@ -104,6 +104,18 @@ class ChatbotBase(ABC):
             str: The raw response from the model.
         """
         pass  # pylint: disable=unnecessary-pass
+
+    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+        """
+        Generate a response from the model using the conversation history.
+
+        Args:
+            conversation (List[ConversationMessage]): The conversation history.
+
+        Returns:
+            str: The response from the model.
+        """
+        return self._generate_response(conversation)
 
     def _format_conv_for_api_util(
         self, conversation: List[ConversationMessage], add_system_prompt: bool = True

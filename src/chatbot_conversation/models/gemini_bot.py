@@ -106,9 +106,9 @@ class GeminiChatbot(ChatbotBase):
 
         return response_content
 
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate response using Gemini model with timeout.
+        Private method to generate response using Gemini model with timeout.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.

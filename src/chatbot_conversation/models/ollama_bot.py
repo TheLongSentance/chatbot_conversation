@@ -36,9 +36,9 @@ class OllamaChatbot(ChatbotBase):
         """
         return None  # Ollama doesn't need initialization
 
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate response using Ollama's chat model.
+        Private method to generate response using Ollama's chat model.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.

@@ -40,9 +40,9 @@ class OpenAIChatbot(ChatbotBase):
         """
         return OpenAI()
 
-    def generate_response(self, conversation: List[ConversationMessage]) -> str:
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate response using OpenAI's chat completion.
+        Private method to generate response using OpenAI's chat completion.
 
         Args:
             conversation (List[ConversationMessage]): List of conversation messages.
@@ -66,7 +66,9 @@ class OpenAIChatbot(ChatbotBase):
             self.log_error(response_content)
             return response_content
         except AttributeError as e:
-            response_content = f"Exception: missing attribute in completion.choices[0].message.content: {e}"
+            response_content = (
+                f"Exception: missing attribute in completion.choices[0].message.content: {e}"
+            )
             self.log_error(response_content)
             return response_content
         except ValueError as e:
