@@ -48,7 +48,7 @@ class OllamaChatbot(ChatbotBase):
         """
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
-        response: ChatResponse = ollama.chat(                       # type: ignore
+        response: ChatResponse = ollama.chat(  # type: ignore
             model=self.model_version, messages=formatted_messages
         )
         response_content = response["message"]["content"]

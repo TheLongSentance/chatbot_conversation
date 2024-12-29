@@ -50,7 +50,7 @@ class OpenAIChatbot(ChatbotBase):
         Returns:
             str: Generated response from the model.
         """
-        response_content: str = "" 
+        response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
         completion = self.api.chat.completions.create(
             model=self.model_version, messages=formatted_messages, timeout=10
