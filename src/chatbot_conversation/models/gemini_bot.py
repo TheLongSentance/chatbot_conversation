@@ -14,7 +14,6 @@ Classes:
 
 import asyncio
 import json
-from concurrent.futures import TimeoutError as FuturesTimeoutError
 from typing import Any, List, TypedDict
 
 # no stub file from google.generativeai so ignore for pylance etc
@@ -68,42 +67,15 @@ class GeminiChatbot(ChatbotBase):
 
         Returns:
             str: The response text from the Gemini API.
-
-        Raises:
-            FuturesTimeoutError: If the API call times out.
         """
         response_content: str = ""
-        try:
-            message = await asyncio.wait_for(
-                asyncio.get_event_loop().run_in_executor(
-                    None, lambda: self.api.generate_content(formatted_messages)
-                ),
-                timeout=timeout,
-            )
-            response_content = message.text
-            if response_content == "":
-                raise ValueError("Text is empty")
-        except FuturesTimeoutError as e:
-            response_content = (
-                f"Exception: Gemini API call timed out after {timeout} seconds: {e}"
-            )
-            self.log_error(response_content)
-            return response_content
-        except AttributeError as e:
-            response_content = f"Exception: missing attribute in message.text: {e}"
-            self.log_error(response_content)
-            return response_content
-        except ValueError as e:
-            response_content = f"Exception: message.text is empty: {e}"
-            self.log_error(response_content)
-            return response_content
-        except Exception as e:
-            response_content = (
-                f"Exception: Gemini OpenAI API error generating response: {e}"
-            )
-            self.log_error(response_content)
-            return response_content
-
+        message = await asyncio.wait_for(
+            asyncio.get_event_loop().run_in_executor(
+                None, lambda: self.api.generate_content(formatted_messages)
+            ),
+            timeout=timeout,
+        )
+        response_content = message.text
         return response_content
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:

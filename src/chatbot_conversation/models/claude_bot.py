@@ -51,47 +51,15 @@ class ClaudeChatbot(ChatbotBase):
             str: The response from the Claude model.
         """
         response_content: str = ""
-
         formatted_messages = self._format_conv_for_api_util(
             conversation, add_system_prompt=False
         )
-        try:
-            message = self.api.messages.create(
-                model=self.model_version,
-                system=self.system_prompt,
-                messages=formatted_messages,
-                max_tokens=500,
-                timeout=10,
-            )
-            response_content = message.content[0].text
-            if response_content == "":
-                raise ValueError("Text is empty")
-        except anthropic.AnthropicError as e:
-            response_content = (
-                f"Exception: Anthropic Claude API error generating response: {e}"
-            )
-            self.log_error(response_content)
-            return response_content
-        except IndexError as e:
-            # Handle the case where message.content is empty
-            response_content = (
-                f"Exception: message.content[0].text from Claude API is empty: {e}"
-            )
-            self.log_error(response_content)
-            return response_content
-        except AttributeError as e:
-            # Handle the case where message.content[0] does not have a text attribute
-            response_content = (
-                f"Exception: message.content[0] does not have a .text attribute: {e}"
-            )
-            self.log_error(response_content)
-            return response_content
-        except ValueError as e:
-            # Handle the case where message.content[0].text is empty
-            response_content = (
-                f"Exception: message.content[0].text from Claude API is empty: {e}]"
-            )
-            self.log_error(response_content)
-            return response_content
-
+        message = self.api.messages.create(
+            model=self.model_version,
+            system=self.system_prompt,
+            messages=formatted_messages,
+            max_tokens=500,
+            timeout=10,
+        )
+        response_content = message.content[0].text
         return response_content

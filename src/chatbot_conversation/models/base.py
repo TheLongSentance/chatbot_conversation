@@ -115,7 +115,19 @@ class ChatbotBase(ABC):
         Returns:
             str: The response from the model.
         """
-        return self._generate_response(conversation)
+        try:
+            response_content = self._generate_response(conversation)
+            if response_content == "":
+                raise ValueError("Text is empty")
+        except (IndexError, KeyError, AttributeError, ValueError) as e:
+            response_content = f"Exception: index/key/attribute/value error: {e}"
+            self.log_error(response_content)
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            response_content = (
+                f"Exception: API error generating response: {e}"
+            )
+            self.log_error(response_content)
+        return response_content
 
     def _format_conv_for_api_util(
         self, conversation: List[ConversationMessage], add_system_prompt: bool = True
