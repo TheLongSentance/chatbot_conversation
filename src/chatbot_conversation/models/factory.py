@@ -5,6 +5,8 @@ Classes:
     ChatbotFactory: Factory for creating different types of chatbots using dependency injection.
 """
 
+from typing import List
+
 from chatbot_conversation.models.base import BotConfig, ChatbotBase
 from chatbot_conversation.models.bot_registry import BotRegistry
 
@@ -40,3 +42,24 @@ class ChatbotFactory:
             config.bot_system_prompt,
             config.bot_name,
         )
+
+    def list_available_bots(self) -> List[str]:
+        """
+        List all available bot types in the registry.
+
+        Returns:
+            list: A list of available bot type names.
+        """
+        return self._bot_registry.list_registered_bots()
+
+    def is_bot_registered(self, bot_type_name: str) -> bool:
+        """
+        Check if a bot type is registered in the registry.
+
+        Args:
+            bot_type_name (str): The name of the bot type.
+
+        Returns:
+            bool: True if the bot type is registered, False otherwise.
+        """
+        return self._bot_registry.is_bot_registered(bot_type_name)

@@ -16,8 +16,10 @@ from typing import Any, List
 from openai import OpenAI
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.bot_registry import register_bot
 
 
+@register_bot("GPT")
 class OpenAIChatbot(ChatbotBase):
     """
     Concrete implementation of chatbot using OpenAI's API service.

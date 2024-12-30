@@ -16,8 +16,10 @@ from typing import Any, List
 import anthropic
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.bot_registry import register_bot
 
 
+@register_bot("CLAUDE")
 class ClaudeChatbot(ChatbotBase):
     """
     Concrete implementation of chatbot using Claude's API service.

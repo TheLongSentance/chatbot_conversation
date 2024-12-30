@@ -13,7 +13,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, TypedDict
 
-from chatbot_conversation.models.bot_types import BotType
 from chatbot_conversation.utils import get_logger
 
 logger = get_logger("models")
@@ -37,7 +36,7 @@ class ConversationMessage(TypedDict):
 class BotConfig:
     """Configuration for creating a chatbot."""
 
-    bot_type: BotType
+    bot_type: str
     bot_model_version: str
     bot_system_prompt: str
     bot_name: str

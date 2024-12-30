@@ -12,15 +12,11 @@ Fixtures:
 
 import pytest
 
-from chatbot_conversation.models import (
-    BotRegistry,
-    BotType,
-    ChatbotFactory,
-    ClaudeChatbot,
-    GeminiChatbot,
-    OllamaChatbot,
-    OpenAIChatbot,
-)
+from chatbot_conversation.models import BotRegistry, ChatbotFactory
+from chatbot_conversation.models.claude_bot import ClaudeChatbot
+from chatbot_conversation.models.gemini_bot import GeminiChatbot
+from chatbot_conversation.models.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.openai_bot import OpenAIChatbot
 
 
 @pytest.fixture
@@ -67,10 +63,7 @@ def gemini_chatbot() -> GeminiChatbot:
 def bot_registry() -> BotRegistry:
     """Fixture for creating a BotRegistry instance and registering bot types."""
     bot_registry = BotRegistry()
-    bot_registry.register_bot(BotType.GPT, OpenAIChatbot)
-    bot_registry.register_bot(BotType.CLAUDE, ClaudeChatbot)
-    bot_registry.register_bot(BotType.GEMINI, GeminiChatbot)
-    bot_registry.register_bot(BotType.OLLAMA, OllamaChatbot)
+
     return bot_registry
 
 

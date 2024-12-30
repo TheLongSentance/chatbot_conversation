@@ -26,14 +26,9 @@ from chatbot_conversation.conversation import (
 from chatbot_conversation.models import (
     BotConfig,
     BotRegistry,
-    BotType,
     ChatbotBase,
     ChatbotFactory,
-    ClaudeChatbot,
     ConversationMessage,
-    GeminiChatbot,
-    OllamaChatbot,
-    OpenAIChatbot,
 )
 from chatbot_conversation.utils import get_logger
 
@@ -101,17 +96,12 @@ class ConversationManager:
             {"bot_index": 0, "content": config["conversation_seed"]}
         ]
 
-        bot_registry = BotRegistry()  # create an instance of BotRegistry
-
-        # Register the existing chatbot models
-        bot_registry.register_bot(BotType.GPT, OpenAIChatbot)
-        bot_registry.register_bot(BotType.CLAUDE, ClaudeChatbot)
-        bot_registry.register_bot(BotType.GEMINI, GeminiChatbot)
-        bot_registry.register_bot(BotType.OLLAMA, OllamaChatbot)
+        bot_registry = BotRegistry()  # get the singleton instance
 
         factory = ChatbotFactory(bot_registry)
         shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
         for bot_config in config["bots"]:
+
             # Format bot_name into shared prefix and add bot-specific prompt
             bot_name = bot_config.get("bot_name", "")
             formatted_prefix = shared_system_prompt_prefix.replace(
@@ -124,7 +114,7 @@ class ConversationManager:
 
             bot = factory.create_bot(
                 BotConfig(
-                    bot_type=BotType[bot_config.get("bot_type", "")],
+                    bot_type=bot_config.get("bot_type", ""),
                     bot_model_version=bot_config.get("bot_model_version", ""),
                     bot_system_prompt=bot_system_prompt,
                     bot_name=bot_name,

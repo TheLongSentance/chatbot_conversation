@@ -20,6 +20,7 @@ from typing import Any, List, TypedDict
 import google.generativeai  # type: ignore
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.bot_registry import register_bot
 from chatbot_conversation.utils import get_logger
 
 
@@ -33,6 +34,7 @@ class _GeminiMessage(TypedDict):
 logger = get_logger("models")
 
 
+@register_bot("GEMINI")
 class GeminiChatbot(ChatbotBase):
     """
     Concrete implementation of chatbot using Google's Gemini API service.

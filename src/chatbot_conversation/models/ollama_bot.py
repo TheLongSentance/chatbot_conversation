@@ -17,8 +17,10 @@ import ollama
 from ollama import ChatResponse
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.bot_registry import register_bot
 
 
+@register_bot("OLLAMA")
 class OllamaChatbot(ChatbotBase):
     """
     Concrete implementation of chatbot using Ollama's API service.
