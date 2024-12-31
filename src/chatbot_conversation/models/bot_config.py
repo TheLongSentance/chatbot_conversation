@@ -8,5 +8,6 @@ BOT_MODULES = [
     "chatbot_conversation.models.bots.claude_bot",
     "chatbot_conversation.models.bots.gemini_bot",
     "chatbot_conversation.models.bots.ollama_bot",
-    "chatbot_conversation.models.bots.openai_bot",  # Add new bots here
+    "chatbot_conversation.models.bots.openai_bot",
+    "chatbot_conversation.models.bots.dummy_bot",  # Add new bots here
 ]
