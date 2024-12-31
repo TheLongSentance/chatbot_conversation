@@ -92,6 +92,7 @@ class ConversationManager:
         logger.info("Initializing conversation manager")
         self.config = config
         self.bots: List[ChatbotBase] = []
+        # This is the seed message with the bot index set to a dummy value of 0
         self.conversation: List[ConversationMessage] = [
             {"bot_index": 0, "content": config["conversation_seed"]}
         ]
@@ -203,10 +204,27 @@ class ConversationManager:
         print(f'{self.conversation[0]["content"]}\n')
         print("**********************************\n")
 
-        for round_num in range(self.config["rounds"]):
-            print(f"\n--- Round {round_num + 1} ---")
+        num_rounds: int = self.config["rounds"]
+
+        for round_num in range(num_rounds - 1):  # Run all rounds except the last one
+            print(f"\n--- Round {round_num + 1} of {num_rounds} ---")
             self.run_round()
+
+        self.tell_bots_last_round()
+        print(f"\n--- Round {num_rounds}  of {num_rounds} ---")
+        self.run_round()
 
         print("\n**********************************")
         print("***   Conversation completed   ***")
         print("**********************************\n\n")
+
+    def tell_bots_last_round(self) -> None:
+        """
+        Inform bots that the conversation is about to end.
+        """
+        for bot in self.bots:
+            bot.append_to_system_prompt(
+                " This is the last round of the conversation. "
+                "So summarize your conclusions on the conversation by considering "
+                "the entire conversation history."
+            )

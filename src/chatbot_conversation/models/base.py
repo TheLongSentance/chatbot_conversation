@@ -70,7 +70,7 @@ class ChatbotBase(ABC):
             bot_name (str): The name of the bot.
         """
         self.model_version: str = bot_model_version
-        self.system_prompt: str = bot_system_prompt
+        self._system_prompt: str = bot_system_prompt
         self.name: str = bot_name
         self.api = self._initialize_api()
         ChatbotBase._total_count += 1
@@ -85,6 +85,20 @@ class ChatbotBase(ABC):
     def get_total_bots(cls) -> int:
         """Get the total number of bot instances."""
         return cls._total_count
+
+    @property
+    def system_prompt(self) -> str:
+        """Get the system prompt of the bot."""
+        return self._system_prompt
+
+    @system_prompt.setter
+    def system_prompt(self, new_prompt: str) -> None:
+        """Set a new system prompt for the bot."""
+        self._system_prompt = new_prompt
+
+    def append_to_system_prompt(self, additional_prompt: str) -> None:
+        """Append additional text to the current system prompt."""
+        self._system_prompt += additional_prompt
 
     @abstractmethod
     def _initialize_api(self) -> Any:
