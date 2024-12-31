@@ -11,6 +11,7 @@ A Python application that facilitates conversations between multiple AI chatbots
   - Ollama (local models)
 - Configurable conversation settings via JSON
 - Extensible architecture for adding new models
+  - see dummy_bot.py for example of how to add a new model
 - Type-safe implementation
 - Comprehensive logging
 - Environment-based configuration
@@ -32,12 +33,15 @@ chatbot_conversation/
 |   |   |   ├── loader.py
 |   |   |   └── manager.py
 │   │   ├── models/
+│   │   |   ├── bots/
+|   |   |   |   ├── __init__.py
+|   |   |   |   ├── claude_bot.py
+|   |   |   |   ├── dummy_bot.py
+|   |   |   |   ├── gemini_bot.py
+|   |   |   |   ├── ollama_bot.py
+|   |   |   |   └── openai_bot.py
 |   |   |   ├── __init__.py
 |   |   |   ├── base.py
-|   |   |   ├── claude_bot.py
-|   |   |   ├── gemini_bot.py
-|   |   |   ├── ollama.py
-|   |   |   ├── openai.py
 |   |   |   ├── bot_registry.py
 |   |   |   └── factory.py
 │   │   ├── utils/
@@ -67,7 +71,8 @@ chatbot_conversation/
 The project is organized into the following components:
 
 - `src/chatbot_conversation/conversation/`: Contains the core conversation management logic
-- `src/chatbot_conversation/models/`: Implements different AI model integrations
+- `src/chatbot_conversation/models/`: Implements core model functionality
+- `src/chatbot_conversation/models/bots`: Drop-in directory containing specific AI model integrations
 - `src/chatbot_conversation/utils/`: Utility functions and environment configuration
 - `src/chatbot_conversation/main.py`: Application entry point
 - `config/`: Contains runtime configuration files

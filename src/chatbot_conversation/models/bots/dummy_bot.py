@@ -42,7 +42,7 @@ class DummyChatbot(ChatbotBase):
             "Let's chat! What do you want to talk about?",
             "I'm here to assist you with your queries.",
             "Ask me anything, I'm here to help.",
-            "What would you like to know today?"
+            "What would you like to know today?",
         ]
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
