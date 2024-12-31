@@ -8,7 +8,7 @@ from typing import List
 from unittest.mock import patch
 
 from chatbot_conversation.models import ConversationMessage
-from chatbot_conversation.models.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 
 
 def test_ollama_bot(ollama_chatbot: OllamaChatbot) -> None:

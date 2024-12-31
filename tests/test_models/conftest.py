@@ -13,10 +13,10 @@ Fixtures:
 import pytest
 
 from chatbot_conversation.models import BotRegistry, ChatbotFactory
-from chatbot_conversation.models.claude_bot import ClaudeChatbot
-from chatbot_conversation.models.gemini_bot import GeminiChatbot
-from chatbot_conversation.models.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
+from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
+from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
 
 
 @pytest.fixture

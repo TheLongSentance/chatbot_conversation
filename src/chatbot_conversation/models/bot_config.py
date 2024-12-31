@@ -5,8 +5,8 @@ BOT_MODULES: A list of strings representing the import paths of the available ch
 """
 
 BOT_MODULES = [
-    "chatbot_conversation.models.claude_bot",
-    "chatbot_conversation.models.gemini_bot",
-    "chatbot_conversation.models.ollama_bot",
-    "chatbot_conversation.models.openai_bot",  # Add new bots here
+    "chatbot_conversation.models.bots.claude_bot",
+    "chatbot_conversation.models.bots.gemini_bot",
+    "chatbot_conversation.models.bots.ollama_bot",
+    "chatbot_conversation.models.bots.openai_bot",  # Add new bots here
 ]
