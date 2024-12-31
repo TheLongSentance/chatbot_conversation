@@ -29,8 +29,8 @@ class BotConfigData(TypedDict):
 
     bot_name: str
     bot_type: str
-    bot_model_version: str
-    bot_specific_system_prompt: str
+    bot_version: str
+    bot_prompt: str
 
 
 class ConversationConfig(TypedDict):
@@ -38,7 +38,9 @@ class ConversationConfig(TypedDict):
 
     conversation_seed: str
     rounds: int
-    shared_system_prompt_prefix: str
+    shared_prefix: str
+    first_round_postfix: str
+    last_round_postfix: str
     bots: List[BotConfigData]
 
 

@@ -135,13 +135,15 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 {
     "conversation_seed": "I think Roger Federer is the GOAT!",
     "rounds": 2,
-    "shared_system_prompt_prefix": "You are about to take part in a conversation...",
+    "shared_prefix": "You are about to take part in a conversation...",
+    "first_round_postfix": " This is the first round of the conversation. Please introduce yourself and state your initial thoughts.",
+    "last_round_postfix": " This is the last round of the conversation. So summarize your conclusions on the conversation by considering the entire conversation history.",
     "bots": [
         {
             "bot_name": "RogerFan",
             "bot_type": "GPT",
-            "bot_model_version": "gpt-4-mini",
-            "bot_specific_system_prompt": "You are an expert on modern professional tennis..."
+            "bot_version": "gpt-4-mini",
+            "bot_prompt": "You are an expert on modern professional tennis..."
         }
     ]
 }
@@ -150,18 +152,20 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 Configuration parameters:
 - `conversation_seed`: The initial prompt to start the discussion
 - `rounds`: Number of conversation rounds
-- `shared_system_prompt_prefix`: Common instructions provided to all bots about conversation structure
+- `shared_prefix`: Common instructions provided to all bots about conversation structure
   - Supports template variable `{bot_name}` which gets replaced with each bot's name from their configuration
   - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
+- `first_round_postfix`: Instructions for the first round of the conversation
+- `last_round_postfix`: Instructions for the last round of the conversation
 - `bots`: Array of bot configurations
   - `bot_name`: Display name for the bot (also used in shared system prompt templating)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
-  - `bot_model_version`: Specific model version to use
-  - `bot_specific_system_prompt`: Role-specific instructions for each bot
+  - `bot_version`: Specific model version to use
+  - `bot_prompt`: Role-specific instructions for each bot
 
 ### Template Variables
 
-The `shared_system_prompt_prefix` supports the following template variables:
+The `shared_prefix` supports the following template variables:
 - `{bot_name}`: Replaced with the bot's name from its configuration
   - This allows the shared prompt to reference each bot's specific identity
   - Used for making the system prompt more personalized to each bot

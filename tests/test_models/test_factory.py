@@ -16,7 +16,7 @@ def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
     config = BotConfig(
         bot_type="GPT",
-        bot_model_version="gpt-4o-mini",
+        bot_version="gpt-4o-mini",
         bot_system_prompt="You are a helpful assistant.",
         bot_name="OpenAITestBot1",
     )
@@ -31,7 +31,7 @@ def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
     config = BotConfig(
         bot_type="CLAUDE",
-        bot_model_version="claude-3-haiku-20240307",
+        bot_version="claude-3-haiku-20240307",
         bot_system_prompt="You are a helpful assistant.",
         bot_name="ClaudeTestBot1",
     )
@@ -46,7 +46,7 @@ def test_create_gemini_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
     config = BotConfig(
         bot_type="GEMINI",
-        bot_model_version="gemini-1.5-flash",
+        bot_version="gemini-1.5-flash",
         bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot1",
     )
@@ -61,7 +61,7 @@ def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
     """
     config = BotConfig(
         bot_type="OLLAMA",
-        bot_model_version="llama3.2",
+        bot_version="llama3.2",
         bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot1",
     )

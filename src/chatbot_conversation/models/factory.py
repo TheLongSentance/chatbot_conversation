@@ -38,7 +38,7 @@ class ChatbotFactory:
         """
         bot_class = self._bot_registry.get_bot_class(config.bot_type)
         return bot_class(
-            config.bot_model_version,
+            config.bot_version,
             config.bot_system_prompt,
             config.bot_name,
         )

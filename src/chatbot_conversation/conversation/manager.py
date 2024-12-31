@@ -59,8 +59,8 @@ class ConversationManager:
         if config["rounds"] <= 0:
             raise ValueError(ERROR_INVALID_ROUNDS)
 
-        # Check if shared_system_prompt_prefix is empty
-        if not config.get("shared_system_prompt_prefix"):
+        # Check if shared_prefix is empty
+        if not config.get("shared_prefix"):
             raise ValueError(ERROR_EMPTY_PREFIX)
 
         # Check if bots list is not empty
@@ -73,12 +73,10 @@ class ConversationManager:
                 raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_name"))
             if not bot["bot_type"]:
                 raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_type"))
-            if not bot["bot_model_version"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_model_version"))
-            if not bot["bot_specific_system_prompt"]:
-                raise ValueError(
-                    ERROR_EMPTY_FIELD.format(field="bot_specific_system_prompt")
-                )
+            if not bot["bot_version"]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_version"))
+            if not bot["bot_prompt"]:
+                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_prompt"))
 
         return cls(config)
 
@@ -91,32 +89,39 @@ class ConversationManager:
         """
         logger.info("Initializing conversation manager")
         self.config = config
+        self.conversation_seed: str = config["conversation_seed"]
+        self.num_rounds = self.config["rounds"]
+        self.system_prompts: dict[str, str] = {
+            "shared_prefix": config.get("shared_prefix", ""),
+            "first_round_postfix": config.get("first_round_postfix", ""),
+            "last_round_postfix": config.get("last_round_postfix", "")
+        }
         self.bots: List[ChatbotBase] = []
-        # This is the seed message with the bot index set to a dummy value of 0
+
+        # This is the seed message with the bot index set to a dummy bot index value of 0
         self.conversation: List[ConversationMessage] = [
-            {"bot_index": 0, "content": config["conversation_seed"]}
+            {"bot_index": 0, "content": self.conversation_seed}
         ]
 
         bot_registry = BotRegistry()  # get the singleton instance
 
         factory = ChatbotFactory(bot_registry)
-        shared_system_prompt_prefix = config.get("shared_system_prompt_prefix", "")
         for bot_config in config["bots"]:
 
             # Format bot_name into shared prefix and add bot-specific prompt
             bot_name = bot_config.get("bot_name", "")
-            formatted_prefix = shared_system_prompt_prefix.replace(
+            formatted_prefix = self.system_prompts["shared_prefix"].replace(
                 "{bot_name}", bot_name
             )
             bot_specific_system_prompt = bot_config.get(
-                "bot_specific_system_prompt", ""
+                "bot_prompt", ""
             )
             bot_system_prompt = formatted_prefix + bot_specific_system_prompt
 
             bot = factory.create_bot(
                 BotConfig(
                     bot_type=bot_config.get("bot_type", ""),
-                    bot_model_version=bot_config.get("bot_model_version", ""),
+                    bot_version=bot_config.get("bot_version", ""),
                     bot_system_prompt=bot_system_prompt,
                     bot_name=bot_name,
                 )
@@ -204,15 +209,17 @@ class ConversationManager:
         print(f'{self.conversation[0]["content"]}\n')
         print("**********************************\n")
 
-        num_rounds: int = self.config["rounds"]
-
-        for round_num in range(num_rounds - 1):  # Run all rounds except the last one
-            print(f"\n--- Round {round_num + 1} of {num_rounds} ---")
+        for round_num in range(
+            self.num_rounds
+        ):  # Run the second to the last but one round
+            print(f"\n--- Round {round_num + 1} of {self.num_rounds} ---")
+            if round_num == 0:
+                self.tell_bots_first_round()  # Add the first round system prompt postfix
+            if round_num == self.num_rounds - 1:
+                self.tell_bots_last_round()  # Add the last round system prompt postfix
             self.run_round()
-
-        self.tell_bots_last_round()
-        print(f"\n--- Round {num_rounds}  of {num_rounds} ---")
-        self.run_round()
+            if round_num == 0:
+                self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
 
         print("\n**********************************")
         print("***   Conversation completed   ***")
@@ -223,8 +230,18 @@ class ConversationManager:
         Inform bots that the conversation is about to end.
         """
         for bot in self.bots:
-            bot.append_to_system_prompt(
-                " This is the last round of the conversation. "
-                "So summarize your conclusions on the conversation by considering "
-                "the entire conversation history."
-            )
+            bot.append_to_system_prompt(self.system_prompts["last_round_postfix"])
+
+    def tell_bots_first_round(self) -> None:
+        """
+        Inform bots that the conversation is about to start.
+        """
+        for bot in self.bots:
+            bot.append_to_system_prompt(self.system_prompts["first_round_postfix"])
+
+    def tell_bots_not_first_round(self) -> None:
+        """
+        Remove the first round system prompt postfix from the system prompt.
+        """
+        for bot in self.bots:
+            bot.remove_from_system_prompt(self.system_prompts["first_round_postfix"])

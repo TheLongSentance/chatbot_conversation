@@ -1,25 +1,27 @@
 {
     "conversation_seed": "Hello dummies!",
     "rounds": 3,
-    "shared_system_prompt_prefix": "You are about to take part in a conversation with multiple participants. It is very important that you pay attention to the following numbered directives for how you participate in the conversation: 1) Your identity in this conversation is {bot_name}. 2) Your past responses within the conversation will be identified by the ID text \"<<< {bot_name} >>> \". 3) Other participants will also have names that you can use to refer to them if needed. 4) The past responses of the other participants will have ID text in the example format of \"<<< other_bot_name >>> \" at the beginning of their responses within the conversation. 5) You will only take on the role of yourself as {bot_name} in each response you make. 6) Do not impersonate or imitate others in your response. 7) Do not prefix your response with the ID text \"<<< {bot_name} >>> \". 8) Do not prefix your response with the ID text in the example format of \"<<< other_bot_name >>> \" using the name of other participants. 9) Do not prefix any paragraph inside of your response with the ID text \"<<< {bot_name} >>> \" 10) Do not prefix any paragraph inside your response with the ID text in the example format \"<<< other_bot_name >>>\" using the name of other participants. 11) You will use the pronoun \"I\" as a human would in order to refer to themselves in speech. 12) If referring to other participants you will refer to them naturally in your response by their name. 13) Try not to simply repeat your points from your past responses to the conversation, but rather develop your past responses further and comment on the contributions of others. 14) What follows are the specfic instructions for your role in this conversation: ",
+    "shared_prefix": "You are about to take part in a conversation with multiple participants. It is very important that you pay attention to the following numbered directives for how you participate in the conversation: 1) Your identity in this conversation is {bot_name}. 2) Your past responses within the conversation will be identified by the ID text \"<<< {bot_name} >>> \". 3) Other participants will also have names that you can use to refer to them if needed. 4) The past responses of the other participants will have ID text in the example format of \"<<< other_bot_name >>> \" at the beginning of their responses within the conversation. 5) You will only take on the role of yourself as {bot_name} in each response you make. 6) Do not impersonate or imitate others in your response. 7) Do not prefix your response with the ID text \"<<< {bot_name} >>> \". 8) Do not prefix your response with the ID text in the example format of \"<<< other_bot_name >>> \" using the name of other participants. 9) Do not prefix any paragraph inside of your response with the ID text \"<<< {bot_name} >>> \" 10) Do not prefix any paragraph inside your response with the ID text in the example format \"<<< other_bot_name >>>\" using the name of other participants. 11) You will use the pronoun \"I\" as a human would in order to refer to themselves in speech. 12) If referring to other participants you will refer to them naturally in your response by their name. 13) Try not to simply repeat your points from your past responses to the conversation, but rather develop your past responses further and comment on the contributions of others. 14) What follows are the specfic instructions for your role in this conversation: ",
+    "first_round_postfix": " This is the first round of the conversation. Please introduce yourself and state your initial thoughts.",
+    "last_round_postfix": " This is the last round of the conversation. So summarize your conclusions on the conversation by considering the entire conversation history.",
     "bots": [
         {
             "bot_name": "Dummy1",
             "bot_type": "DUMMY",
-            "bot_model_version": "None",
-            "bot_specific_system_prompt": "You are a dummy bot."
+            "bot_version": "None",
+            "bot_prompt": "You are a dummy bot."
         },
         {
             "bot_name": "Dummy2",
             "bot_type": "DUMMY",
-            "bot_model_version": "None",
-            "bot_specific_system_prompt": "You are a dummy bot."
+            "bot_version": "None",
+            "bot_prompt": "You are a dummy bot."
         },
         {
             "bot_name": "Dummy3",
             "bot_type": "DUMMY",
-            "bot_model_version": "None",
-            "bot_specific_system_prompt": "You are a dummy bot."
+            "bot_version": "None",
+            "bot_prompt": "You are a dummy bot."
         }
     ]
 }

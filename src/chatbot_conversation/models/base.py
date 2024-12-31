@@ -37,7 +37,7 @@ class BotConfig:
     """Configuration for creating a chatbot."""
 
     bot_type: str
-    bot_model_version: str
+    bot_version: str
     bot_system_prompt: str
     bot_name: str
 
@@ -99,6 +99,16 @@ class ChatbotBase(ABC):
     def append_to_system_prompt(self, additional_prompt: str) -> None:
         """Append additional text to the current system prompt."""
         self._system_prompt += additional_prompt
+
+    def remove_from_system_prompt(self, text_to_remove: str) -> None:
+        """
+        Remove a specific string from the system prompt if it exists.
+
+        Args:
+            text_to_remove (str): The string to remove from the system prompt.
+        """
+        if text_to_remove in self._system_prompt:
+            self._system_prompt = self._system_prompt.replace(text_to_remove, "")
 
     @abstractmethod
     def _initialize_api(self) -> Any:
