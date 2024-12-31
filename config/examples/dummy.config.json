@@ -6,19 +6,19 @@
         {
             "bot_name": "Dummy1",
             "bot_type": "DUMMY",
-            "bot_model_version": "1",
+            "bot_model_version": "None",
             "bot_specific_system_prompt": "You are a dummy bot."
         },
         {
             "bot_name": "Dummy2",
             "bot_type": "DUMMY",
-            "bot_model_version": "1",
+            "bot_model_version": "None",
             "bot_specific_system_prompt": "You are a dummy bot."
         },
         {
             "bot_name": "Dummy3",
             "bot_type": "DUMMY",
-            "bot_model_version": "1",
+            "bot_model_version": "None",
             "bot_specific_system_prompt": "You are a dummy bot."
         }
     ]
