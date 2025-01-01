@@ -7,6 +7,7 @@ and response generation.
 from typing import List
 from unittest.mock import MagicMock
 
+import pytest
 from anthropic import Anthropic
 
 from chatbot_conversation.models import ConversationMessage
@@ -68,11 +69,12 @@ def test_claude_bot(claude_chatbot: ClaudeChatbot) -> None:
 def test_empty_conversation(claude_chatbot: ClaudeChatbot) -> None:
     """Test bot response to an empty conversation."""
     conversation: List[ConversationMessage] = []
-    response = claude_chatbot.generate_response(conversation)
-    assert response is not None
-    assert isinstance(response, str)
-    assert len(response) > 0
-    assert "invalid_request_error" in response.lower()
+    with pytest.raises(Exception) as exc_info:
+        claude_chatbot.generate_response(
+            conversation
+        )  # No need to assign to a variable given the assert
+    assert isinstance(exc_info.value, Exception)
+    assert "at least one message is required" in str(exc_info.value)
 
 
 def test_multiple_bots() -> None:

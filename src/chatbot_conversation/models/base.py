@@ -119,7 +119,7 @@ class ChatbotBase(ABC):
             text_to_remove (str): The string to remove from the end of system prompt.
         """
         if self._system_prompt.endswith(text_to_remove):
-            self._system_prompt = self._system_prompt[:-len(text_to_remove)]
+            self._system_prompt = self._system_prompt[: -len(text_to_remove)]
 
     @abstractmethod
     def _initialize_api(self) -> Any:

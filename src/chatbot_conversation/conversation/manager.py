@@ -12,17 +12,9 @@ Classes:
 
 import json
 import os
-from typing import List
+from typing import Dict, List
 
-from chatbot_conversation.conversation import (
-    ERROR_EMPTY_BOTS,
-    ERROR_EMPTY_FIELD,
-    ERROR_EMPTY_PREFIX,
-    ERROR_EMPTY_SEED,
-    ERROR_INVALID_ROUNDS,
-    ConfigurationLoader,
-    ConversationConfig,
-)
+from chatbot_conversation.conversation import ConfigurationLoader, ConversationConfig
 from chatbot_conversation.models import (
     BotConfig,
     BotRegistry,
@@ -51,32 +43,33 @@ class ConversationManager:
         """
         config = ConfigurationLoader.load_config(config_path)
 
-        # Check if conversation_seed is empty
         if not config.get("conversation_seed"):
-            raise ValueError(ERROR_EMPTY_SEED)
+            raise ValueError("Conservation seed cannot be empty")
 
-        # Check if rounds is a positive integer
         if config["rounds"] <= 0:
-            raise ValueError(ERROR_INVALID_ROUNDS)
+            raise ValueError("Rounds must be a positive integer")
 
-        # Check if shared_prefix is empty
         if not config.get("shared_prefix"):
-            raise ValueError(ERROR_EMPTY_PREFIX)
+            raise ValueError("Shared system prompt prefix cannot be empty")
 
-        # Check if bots list is not empty
+        if not config.get("first_round_postfix"):
+            raise ValueError("First round system prompt postfix cannot be empty")
+
+        if not config.get("last_round_postfix"):
+            raise ValueError("Last round system prompt postfix cannot be empty")
+
         if not config.get("bots") or len(config["bots"]) == 0:
-            raise ValueError(ERROR_EMPTY_BOTS)
+            raise ValueError("Bots list cannot be empty")
 
-        # Check each bot field individually with constants
         for bot in config["bots"]:
             if not bot["bot_name"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_name"))
+                raise ValueError("Each bot must have a non-empty 'bot_name' field")
             if not bot["bot_type"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_type"))
+                raise ValueError("Each bot must have a non-empty 'bot_type' field")
             if not bot["bot_version"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_version"))
+                raise ValueError("Each bot must have a non-empty 'bot_version' field")
             if not bot["bot_prompt"]:
-                raise ValueError(ERROR_EMPTY_FIELD.format(field="bot_prompt"))
+                raise ValueError("Each bot must have a non-empty 'bot_prompt' field")
 
         return cls(config)
 
@@ -91,10 +84,10 @@ class ConversationManager:
         self.config = config
         self.conversation_seed: str = config["conversation_seed"]
         self.num_rounds = self.config["rounds"]
-        self.system_prompts: dict[str, str] = {
+        self.system_prompts: Dict[str, str] = {
             "shared_prefix": config.get("shared_prefix", ""),
             "first_round_postfix": config.get("first_round_postfix", ""),
-            "last_round_postfix": config.get("last_round_postfix", "")
+            "last_round_postfix": config.get("last_round_postfix", ""),
         }
         self.bots: List[ChatbotBase] = []
 
@@ -113,9 +106,7 @@ class ConversationManager:
             formatted_prefix = self.system_prompts["shared_prefix"].replace(
                 "{bot_name}", bot_name
             )
-            bot_specific_system_prompt = bot_config.get(
-                "bot_prompt", ""
-            )
+            bot_specific_system_prompt = bot_config.get("bot_prompt", "")
             bot_system_prompt = formatted_prefix + bot_specific_system_prompt
 
             bot = factory.create_bot(
@@ -144,14 +135,28 @@ class ConversationManager:
         logger.debug("Starting new conversation round")
         try:
             for bot in self.bots:
-                raw_response = bot.generate_response(self.conversation)
-
+                try:
+                    raw_response = bot.generate_response(self.conversation)
+                except (IndexError, KeyError, AttributeError, ValueError) as e:
+                    error_message = f"Exception: index/key/attribute/value error: {e}"
+                    logger.error(error_message)
+                    raw_response = (
+                        "I'm sorry, I can't think of a response right now. "
+                        "The values in my head are all over the place."
+                    )
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    error_message = (
+                        f"Exception: Unknown/API error generating response: {e}"
+                    )
+                    logger.error(error_message)
+                    raw_response = (
+                        "I'm sorry, I can't think of a response right now. "
+                        "My mind seems to be elsewhere."
+                    )
                 clean_response: str = self._format_response(bot.name, raw_response)
-
                 self.conversation.append(
                     {"bot_index": bot.bot_index, "content": clean_response}
                 )
-
                 logger.debug(
                     "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
                     bot.__class__.__name__,
@@ -159,7 +164,6 @@ class ConversationManager:
                     bot.bot_index,
                     json.dumps(self.conversation, indent=2),
                 )
-
                 print(
                     f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{clean_response}\n"
                 )
@@ -244,4 +248,4 @@ class ConversationManager:
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            bot.remove_from_system_prompt(self.system_prompts["first_round_postfix"])
+            bot.unappend_from_system_prompt(self.system_prompts["first_round_postfix"])

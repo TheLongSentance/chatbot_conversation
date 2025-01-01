@@ -11,7 +11,7 @@ The tests handle:
 
 import pytest
 
-from chatbot_conversation.conversation import ERROR_EMPTY_SEED, ConversationManager
+from chatbot_conversation.conversation import ConversationManager
 
 
 def test_conversation_manager_initialization(test_config_path: str) -> None:
@@ -88,5 +88,5 @@ def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
     Args:
         test_config_empty_path: Path to the empty test configuration file
     """
-    with pytest.raises(ValueError, match=ERROR_EMPTY_SEED):
+    with pytest.raises(ValueError, match="Conservation seed cannot be empty"):
         ConversationManager.from_config(test_config_empty_path)

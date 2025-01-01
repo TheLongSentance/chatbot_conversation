@@ -55,6 +55,7 @@ chatbot_conversation/
 │   ├── examples/
 │   │   ├── brexit.config.json
 │   │   ├── churchill.config.json
+│   │   ├── dummy.config.json
 │   │   └── tennis.config.json
 │   ├── .env.example
 │   ├── config.json
@@ -136,8 +137,8 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
     "conversation_seed": "I think Roger Federer is the GOAT!",
     "rounds": 2,
     "shared_prefix": "You are about to take part in a conversation...",
-    "first_round_postfix": " This is the first round of the conversation. Please introduce yourself and state your initial thoughts.",
-    "last_round_postfix": " This is the last round of the conversation. So summarize your conclusions on the conversation by considering the entire conversation history.",
+    "first_round_postfix": "This is the first round of the conversation. Please introduce yourself by name and state your first contribution to the conversation. ",
+    "last_round_postfix": "This is now the last round of the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Do not end this your final and last contribution to the conversation with more questions or prompts for the other participants. ",
     "bots": [
         {
             "bot_name": "RogerFan",
@@ -152,11 +153,11 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 Configuration parameters:
 - `conversation_seed`: The initial prompt to start the discussion
 - `rounds`: Number of conversation rounds
-- `shared_prefix`: Common instructions provided to all bots about conversation structure
+- `shared_prefix`: Common instructions provided to all bots about conversation structure which forms part of the system prompt for each bot
   - Supports template variable `{bot_name}` which gets replaced with each bot's name from their configuration
   - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
-- `first_round_postfix`: Instructions for the first round of the conversation
-- `last_round_postfix`: Instructions for the last round of the conversation
+- `first_round_postfix`: Instructions for the first round of the conversation which get appended to each bot's system prompt only for the first round of the conversation
+- `last_round_postfix`: Instructions for the last round of the conversation which get appended to each bot's system prompt only for the last round of the conversation 
 - `bots`: Array of bot configurations
   - `bot_name`: Display name for the bot (also used in shared system prompt templating)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)

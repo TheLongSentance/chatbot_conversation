@@ -7,6 +7,8 @@ and response generation.
 from typing import List
 from unittest.mock import patch
 
+import pytest
+
 from chatbot_conversation.models import ConversationMessage
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 
@@ -54,11 +56,14 @@ def test_ollama_bot(ollama_chatbot: OllamaChatbot) -> None:
 def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
     """Test bot response to an empty conversation."""
     conversation: List[ConversationMessage] = []
-    response = ollama_chatbot.generate_response(conversation)
-    assert response is not None
-    assert isinstance(response, str)
-    assert len(response) > 0
-    assert "Exception:" in response
+    with pytest.raises(Exception) as exc_info:
+        ollama_chatbot.generate_response(
+            conversation
+        )  # No need to assign to a variable given the assert
+    assert isinstance(exc_info.value, Exception)
+    # Ollama's response is to return an empty string to an empty conversation
+    # which raises a ValueError in the ChatbotBase class for OllamaChatbot
+    assert "Model returned an empty response" in str(exc_info.value)
 
 
 def test_multiple_bots() -> None:

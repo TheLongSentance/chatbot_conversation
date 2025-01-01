@@ -16,13 +16,6 @@ import json
 import typing
 from typing import List, TypedDict
 
-# Error messages for configuration validation
-ERROR_EMPTY_FIELD = "Each bot must have a non-empty '{field}' field"
-ERROR_EMPTY_SEED = "Conversation seed cannot be empty"
-ERROR_INVALID_ROUNDS = "Rounds must be a positive integer"
-ERROR_EMPTY_PREFIX = "Shared system prompt prefix cannot be empty"
-ERROR_EMPTY_BOTS = "Bots list cannot be empty"
-
 
 class BotConfigData(TypedDict):
     """Typed dictionary representing the configuration for a single bot."""

@@ -58,6 +58,7 @@ def test_empty_conversation(openai_chatbot: OpenAIChatbot) -> None:
     """Test bot response to an empty conversation."""
     conversation: List[ConversationMessage] = []
     response = openai_chatbot.generate_response(conversation)
+    # in this case, OpenAI returns a response even if the conversation is empty
     assert response is not None
     assert isinstance(response, str)
     assert len(response) > 0

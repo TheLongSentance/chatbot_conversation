@@ -7,6 +7,8 @@ and response generation.
 from typing import List
 from unittest.mock import MagicMock
 
+import pytest
+
 from chatbot_conversation.models import ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 
@@ -54,10 +56,12 @@ def test_gemini_bot(gemini_chatbot: GeminiChatbot) -> None:
 def test_empty_conversation(gemini_chatbot: GeminiChatbot) -> None:
     """Test bot response to an empty conversation."""
     conversation: List[ConversationMessage] = []
-    response = gemini_chatbot.generate_response(conversation)
-    assert response is not None
-    assert isinstance(response, str)
-    assert len(response) > 0
+    with pytest.raises(Exception) as exc_info:
+        gemini_chatbot.generate_response(
+            conversation
+        )  # No need to assign to a variable given the assert
+    assert isinstance(exc_info.value, Exception)
+    assert "contents must not be empty" in str(exc_info.value)
 
 
 def test_multiple_bots() -> None:
