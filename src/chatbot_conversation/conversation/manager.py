@@ -38,14 +38,20 @@ class ConversationManager:
             config_path (str): Path to JSON configuration file.
         """
         logger.info("Initializing conversation manager")
-        config = ConfigurationLoader.load_config(config_path)
-        self.config = config
-        self.conversation_seed: str = config["conversation_seed"]
+        try:
+            self.config = ConfigurationLoader.load_config(config_path)
+        except Exception as e:
+            logger.error("Failed to initialize conversation manager: %s", str(e))
+            raise RuntimeError(
+                f"Conversation manager initialization failed: {str(e)}"
+            ) from e
+
+        self.conversation_seed: str = self.config["conversation_seed"]
         self.num_rounds = self.config["rounds"]
         self.system_prompts: Dict[str, str] = {
-            "shared_prefix": config.get("shared_prefix", ""),
-            "first_round_postfix": config.get("first_round_postfix", ""),
-            "last_round_postfix": config.get("last_round_postfix", ""),
+            "shared_prefix": self.config.get("shared_prefix", ""),
+            "first_round_postfix": self.config.get("first_round_postfix", ""),
+            "last_round_postfix": self.config.get("last_round_postfix", ""),
         }
         self.bots: List[ChatbotBase] = []
 
@@ -57,7 +63,7 @@ class ConversationManager:
         bot_registry = BotRegistry()  # get the singleton instance
 
         factory = ChatbotFactory(bot_registry)
-        for bot_config in config["bots"]:
+        for bot_config in self.config["bots"]:
 
             # Format bot_name into shared prefix and add bot-specific prompt
             bot_name = bot_config.get("bot_name", "")

@@ -51,11 +51,26 @@ class ConfigurationLoader:  # pylint: disable=too-few-public-methods
         Returns:
             ConversationConfig: Loaded configuration.
         """
-        with open(config_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        config = typing.cast(ConversationConfig, data)
-        ConfigurationLoader.validate_config(config)
-        return config
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"Configuration file not found: {config_path}"
+            ) from e
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(
+                f"Invalid JSON in configuration file: {str(e)}", e.doc, e.pos
+            ) from e
+        except Exception as e:
+            raise RuntimeError(f"Error reading configuration: {str(e)}") from e
+
+        try:
+            config = typing.cast(ConversationConfig, data)
+            ConfigurationLoader.validate_config(config)
+            return config
+        except ValueError as e:
+            raise ValueError(f"Configuration validation failed: {str(e)}") from e
 
     @staticmethod
     def validate_config(config: ConversationConfig) -> None:

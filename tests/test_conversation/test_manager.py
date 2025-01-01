@@ -63,7 +63,7 @@ def test_run_round(test_config_path: str) -> None:
 
 def test_invalid_config_path() -> None:
     """Test handling of invalid configuration file path."""
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(RuntimeError):
         ConversationManager("nonexistent.json")
 
 
@@ -88,5 +88,7 @@ def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
     Args:
         test_config_empty_path: Path to the empty test configuration file
     """
-    with pytest.raises(ValueError, match="Conservation seed cannot be empty"):
+    with pytest.raises(RuntimeError) as exc_info:
         ConversationManager(test_config_empty_path)
+    assert isinstance(exc_info.value, Exception)
+    assert "Conservation seed cannot be empty" in str(exc_info.value)
