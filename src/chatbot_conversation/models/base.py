@@ -110,6 +110,17 @@ class ChatbotBase(ABC):
         if text_to_remove in self._system_prompt:
             self._system_prompt = self._system_prompt.replace(text_to_remove, "")
 
+    def unappend_from_system_prompt(self, text_to_remove: str) -> None:
+        """
+        Remove text from the end of the system prompt if it exists.
+        Only removes if the text appears at the very end of the prompt.
+
+        Args:
+            text_to_remove (str): The string to remove from the end of system prompt.
+        """
+        if self._system_prompt.endswith(text_to_remove):
+            self._system_prompt = self._system_prompt[:-len(text_to_remove)]
+
     @abstractmethod
     def _initialize_api(self) -> Any:
         """Initialize the API for the chatbot."""
@@ -138,16 +149,11 @@ class ChatbotBase(ABC):
         Returns:
             str: The response from the model.
         """
-        try:
-            response_content = self._generate_response(conversation)
-            if response_content == "":
-                raise ValueError("Text is empty")
-        except (IndexError, KeyError, AttributeError, ValueError) as e:
-            response_content = f"Exception: index/key/attribute/value error: {e}"
-            self._log_error(response_content)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            response_content = f"Exception: API error generating response: {e}"
-            self._log_error(response_content)
+        response_content = self._generate_response(conversation)
+        if response_content == "":
+            empty_response_error = "Model returned an empty response"
+            self._log_error(empty_response_error)
+            raise ValueError(empty_response_error)
         return response_content
 
     def _format_conv_for_api_util(
