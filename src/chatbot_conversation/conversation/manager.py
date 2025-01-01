@@ -42,35 +42,6 @@ class ConversationManager:
             ConversationManager: An instance of ConversationManager.
         """
         config = ConfigurationLoader.load_config(config_path)
-
-        if not config.get("conversation_seed"):
-            raise ValueError("Conservation seed cannot be empty")
-
-        if config["rounds"] <= 0:
-            raise ValueError("Rounds must be a positive integer")
-
-        if not config.get("shared_prefix"):
-            raise ValueError("Shared system prompt prefix cannot be empty")
-
-        if not config.get("first_round_postfix"):
-            raise ValueError("First round system prompt postfix cannot be empty")
-
-        if not config.get("last_round_postfix"):
-            raise ValueError("Last round system prompt postfix cannot be empty")
-
-        if not config.get("bots") or len(config["bots"]) == 0:
-            raise ValueError("Bots list cannot be empty")
-
-        for bot in config["bots"]:
-            if not bot["bot_name"]:
-                raise ValueError("Each bot must have a non-empty 'bot_name' field")
-            if not bot["bot_type"]:
-                raise ValueError("Each bot must have a non-empty 'bot_type' field")
-            if not bot["bot_version"]:
-                raise ValueError("Each bot must have a non-empty 'bot_version' field")
-            if not bot["bot_prompt"]:
-                raise ValueError("Each bot must have a non-empty 'bot_prompt' field")
-
         return cls(config)
 
     def __init__(self, config: ConversationConfig):
