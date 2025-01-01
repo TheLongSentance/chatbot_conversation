@@ -20,7 +20,7 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
     Args:
         test_config_path: Path to the test configuration file
     """
-    manager = ConversationManager.from_config(test_config_path)
+    manager = ConversationManager(test_config_path)
     assert manager is not None
     assert len(manager.bots) == 2  # Based on test_config.json
 
@@ -56,7 +56,7 @@ def test_run_round(test_config_path: str) -> None:
     Args:
         test_config_path: Path to the test configuration file
     """
-    manager = ConversationManager.from_config(test_config_path)
+    manager = ConversationManager(test_config_path)
     manager.run_round()
     assert len(manager.conversation) > 1  # Initial message + at least one response
 
@@ -64,7 +64,7 @@ def test_run_round(test_config_path: str) -> None:
 def test_invalid_config_path() -> None:
     """Test handling of invalid configuration file path."""
     with pytest.raises(FileNotFoundError):
-        ConversationManager.from_config("nonexistent.json")
+        ConversationManager("nonexistent.json")
 
 
 def test_multiple_rounds(test_config_path: str) -> None:
@@ -73,7 +73,7 @@ def test_multiple_rounds(test_config_path: str) -> None:
     Args:
         test_config_path: Path to the test configuration file
     """
-    manager = ConversationManager.from_config(test_config_path)
+    manager = ConversationManager(test_config_path)
     initial_length = len(manager.conversation)
     num_rounds = 3
     for _ in range(num_rounds):
@@ -89,4 +89,4 @@ def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
         test_config_empty_path: Path to the empty test configuration file
     """
     with pytest.raises(ValueError, match="Conservation seed cannot be empty"):
-        ConversationManager.from_config(test_config_empty_path)
+        ConversationManager(test_config_empty_path)

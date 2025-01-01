@@ -14,7 +14,7 @@ import json
 import os
 from typing import Dict, List
 
-from chatbot_conversation.conversation import ConfigurationLoader, ConversationConfig
+from chatbot_conversation.conversation import ConfigurationLoader
 from chatbot_conversation.models import (
     BotConfig,
     BotRegistry,
@@ -30,28 +30,15 @@ logger = get_logger("conversation")
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
 
-    @classmethod
-    def from_config(cls, config_path: str) -> "ConversationManager":
+    def __init__(self, config_path: str):
         """
-        Create ConversationManager from config file.
+        Initialize conversation manager from config file.
 
         Args:
             config_path (str): Path to JSON configuration file.
-
-        Returns:
-            ConversationManager: An instance of ConversationManager.
-        """
-        config = ConfigurationLoader.load_config(config_path)
-        return cls(config)
-
-    def __init__(self, config: ConversationConfig):
-        """
-        Initialize conversation with starting message.
-
-        Args:
-            config (ConversationConfig): Conversation configuration.
         """
         logger.info("Initializing conversation manager")
+        config = ConfigurationLoader.load_config(config_path)
         self.config = config
         self.conversation_seed: str = config["conversation_seed"]
         self.num_rounds = self.config["rounds"]
