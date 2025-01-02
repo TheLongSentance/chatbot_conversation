@@ -74,7 +74,7 @@ def test_empty_conversation(claude_chatbot: ClaudeChatbot) -> None:
             conversation
         )  # No need to assign to a variable given the assert
     assert isinstance(exc_info.value, Exception)
-    assert "at least one message is required" in str(exc_info.value)
+    assert "BadRequestError" in str(exc_info.value)
 
 
 def test_multiple_bots() -> None:

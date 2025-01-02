@@ -13,6 +13,7 @@ Classes:
 
 from typing import Any, List
 
+import httpx
 import ollama
 from ollama import ChatResponse
 
@@ -37,6 +38,21 @@ class OllamaChatbot(ChatbotBase):
             None: Ollama doesn't need initialization.
         """
         return None  # Ollama doesn't need initialization
+
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """
+        Check if the exception is a network error or timeout.
+
+        Args:
+            exception (Exception): The exception to check.
+
+        Returns:
+            bool: True if the exception is a network error or timeout, False otherwise.
+        """
+        return isinstance(
+            exception,
+            (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError),
+        )
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """

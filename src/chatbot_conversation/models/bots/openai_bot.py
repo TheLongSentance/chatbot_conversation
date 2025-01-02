@@ -13,7 +13,7 @@ Classes:
 
 from typing import Any, List
 
-from openai import OpenAI
+from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -42,6 +42,18 @@ class OpenAIChatbot(ChatbotBase):
         """
         return OpenAI()
 
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """
+        Check if the exception is a network error or timeout.
+
+        Args:
+            exception (Exception): The exception to check.
+
+        Returns:
+            bool: True if the exception is a network error or timeout, False otherwise.
+        """
+        return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
+
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
         Private method to generate response using OpenAI's chat completion.
@@ -55,7 +67,7 @@ class OpenAIChatbot(ChatbotBase):
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
         completion = self.api.chat.completions.create(
-            model=self.model_version, messages=formatted_messages, timeout=10
+            model=self.model_version, messages=formatted_messages, timeout=5
         )
         response_content = completion.choices[0].message.content
         return response_content

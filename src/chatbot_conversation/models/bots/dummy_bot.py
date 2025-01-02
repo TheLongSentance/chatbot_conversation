@@ -45,6 +45,18 @@ class DummyChatbot(ChatbotBase):
             "What would you like to know today?",
         ]
 
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """
+        Check if the exception is a network error or timeout.
+
+        Args:
+            exception (Exception): The exception to check.
+
+        Returns:
+            bool: True if the exception is a network error or timeout, False otherwise.
+        """
+        return False
+
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
         Private method to generate a random response from the predefined list.

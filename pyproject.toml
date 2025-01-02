@@ -16,7 +16,8 @@ dependencies = [
     "ollama>=0.1.7",
     "python-dotenv>=1.0.0",
     "typing-extensions>=4.9.0",
-    "pydantic>=2.10.3"
+    "pydantic>=2.10.3",
+    "tenacity>=8.5.0"
 ]
 
 [project.scripts]

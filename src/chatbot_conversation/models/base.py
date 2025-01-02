@@ -13,6 +13,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, TypedDict
 
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_fixed
+
 from chatbot_conversation.utils import get_logger
 
 logger = get_logger("models")
@@ -127,6 +129,11 @@ class ChatbotBase(ABC):
         pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """Bot-specific logic for which exceptions warrant retry."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @abstractmethod
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
         Private method to generate a response from the model without any formatting.
@@ -149,7 +156,22 @@ class ChatbotBase(ABC):
         Returns:
             str: The response from the model.
         """
-        response_content = self._generate_response(conversation)
+
+        @retry(
+            stop=stop_after_attempt(3),
+            wait=wait_fixed(5),
+            retry=retry_if_exception(
+                lambda e: (
+                    self._should_retry_on_exception(e)
+                    if isinstance(e, Exception)
+                    else False
+                )
+            ),
+        )
+        def _inner_generate_response() -> str:
+            return self._generate_response(conversation)
+
+        response_content: str = _inner_generate_response()
         if response_content == "":
             empty_response_error = "Model returned an empty response"
             self._log_error(empty_response_error)

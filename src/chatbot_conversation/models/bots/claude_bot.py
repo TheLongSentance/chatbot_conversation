@@ -14,6 +14,7 @@ Classes:
 from typing import Any, List
 
 import anthropic
+from anthropic import APIConnectionError, APIError, RateLimitError
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -42,6 +43,18 @@ class ClaudeChatbot(ChatbotBase):
         """
         return anthropic.Anthropic()
 
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """
+        Check if the exception is a network error or timeout.
+
+        Args:
+            exception (Exception): The exception to check.
+
+        Returns:
+            bool: True if the exception is a network error or timeout, False otherwise.
+        """
+        return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
+
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
         Private method to generate response using Claude's chat model.
@@ -61,7 +74,7 @@ class ClaudeChatbot(ChatbotBase):
             system=self.system_prompt,
             messages=formatted_messages,
             max_tokens=500,
-            timeout=10,
+            timeout=5,
         )
         response_content = message.content[0].text
         return response_content

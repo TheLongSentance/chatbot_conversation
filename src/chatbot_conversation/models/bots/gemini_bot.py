@@ -12,9 +12,10 @@ Classes:
     GeminiChatbot: Concrete implementation of chatbot using Google's Gemini API service.
 """
 
-import asyncio
 import json
 from typing import Any, List, TypedDict
+
+import google.api_core.exceptions
 
 # no stub file from google.generativeai so ignore for pylance etc
 import google.generativeai  # type: ignore
@@ -53,32 +54,26 @@ class GeminiChatbot(ChatbotBase):
         """
         # no stub file from google.generativeai so ignore for pylance etc
         google.generativeai.configure()  # type: ignore
+
+        # todo: system prompt is hardcoded, should be udatable within the chatbot
         return google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
 
-    async def _generate_with_timeout(
-        self, formatted_messages: List[_GeminiMessage], timeout: int = 30
-    ) -> str:
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Wrapper to call Gemini API with timeout.
-
-        Args:
-            formatted_messages (List[_GeminiMessage]): Formatted messages for the API.
-            timeout (int, optional): Timeout in seconds. Defaults to 30.
+        Flags whether a gemini API exception should trigger a retry.
 
         Returns:
-            str: The response text from the Gemini API.
+            bool: True if the exception should trigger a retry, False otherwise.
         """
-        response_content: str = ""
-        message = await asyncio.wait_for(
-            asyncio.get_event_loop().run_in_executor(
-                None, lambda: self.api.generate_content(formatted_messages)
+        return isinstance(
+            exception,
+            (
+                google.api_core.exceptions.DeadlineExceeded,
+                google.api_core.exceptions.ServiceUnavailable,
             ),
-            timeout=timeout,
         )
-        response_content = message.text
-        return response_content
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -91,7 +86,8 @@ class GeminiChatbot(ChatbotBase):
             str: The response from the Gemini model.
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
-        response = asyncio.run(self._generate_with_timeout(formatted_messages))
+        message = self.api.generate_content(formatted_messages)
+        response: str = message.text
         return response
 
     def _format_conv_for_gemini_api(
