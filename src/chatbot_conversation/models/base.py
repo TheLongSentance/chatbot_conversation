@@ -157,6 +157,9 @@ class ChatbotBase(ABC):
             str: The response from the model.
         """
 
+        # @retry around _inner_generate_response inside generate_response because
+        # scope of self._should_retry_on_exception is not available to tenacity
+        # when applied as a decorator to _generate_response directly
         @retry(
             stop=stop_after_attempt(3),
             wait=wait_fixed(5),
