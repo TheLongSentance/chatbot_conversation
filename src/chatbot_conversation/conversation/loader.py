@@ -13,12 +13,13 @@ Classes:
 """
 
 import json
-import typing
-from typing import List, TypedDict
+from typing import List
+
+from pydantic import BaseModel, Field, ValidationError
 
 
-class BotConfigData(TypedDict):
-    """Typed dictionary representing the configuration for a single bot."""
+class BotConfigData(BaseModel):
+    """Pydantic model representing the configuration for a single bot."""
 
     bot_name: str
     bot_type: str
@@ -26,15 +27,19 @@ class BotConfigData(TypedDict):
     bot_prompt: str
 
 
-class ConversationConfig(TypedDict):
-    """Typed dictionary representing the configuration for a conversation."""
+class ConversationConfig(BaseModel):
+    """Pydantic model representing the configuration for a conversation."""
 
-    conversation_seed: str
-    rounds: int
+    conversation_seed: str = Field(
+        ..., min_length=1, description="Conversation seed cannot be empty"
+    )
+    rounds: int = Field(gt=0, description="Rounds must be a positive integer")
     shared_prefix: str
     first_round_postfix: str
     last_round_postfix: str
-    bots: List[BotConfigData]
+    bots: List[BotConfigData] = Field(
+        ..., min_length=1, description="Bots list cannot be empty"
+    )
 
 
 class ConfigurationLoader:  # pylint: disable=too-few-public-methods
@@ -66,47 +71,7 @@ class ConfigurationLoader:  # pylint: disable=too-few-public-methods
             raise RuntimeError(f"Error reading configuration: {str(e)}") from e
 
         try:
-            config = typing.cast(ConversationConfig, data)
-            ConfigurationLoader.validate_config(config)
+            config = ConversationConfig(**data)
             return config
-        except ValueError as e:
+        except ValidationError as e:
             raise ValueError(f"Configuration validation failed: {str(e)}") from e
-
-    @staticmethod
-    def validate_config(config: ConversationConfig) -> None:
-        """
-        Validate the conversation configuration.
-
-        Args:
-            config (ConversationConfig): The configuration to validate.
-
-        Raises:
-            ValueError: If any configuration parameter is invalid.
-        """
-        if not config.get("conversation_seed"):
-            raise ValueError("Conservation seed cannot be empty")
-
-        if config["rounds"] <= 0:
-            raise ValueError("Rounds must be a positive integer")
-
-        if not config.get("shared_prefix"):
-            raise ValueError("Shared system prompt prefix cannot be empty")
-
-        if not config.get("first_round_postfix"):
-            raise ValueError("First round system prompt postfix cannot be empty")
-
-        if not config.get("last_round_postfix"):
-            raise ValueError("Last round system prompt postfix cannot be empty")
-
-        if not config.get("bots") or len(config["bots"]) == 0:
-            raise ValueError("Bots list cannot be empty")
-
-        for bot in config["bots"]:
-            if not bot["bot_name"]:
-                raise ValueError("Each bot must have a non-empty 'bot_name' field")
-            if not bot["bot_type"]:
-                raise ValueError("Each bot must have a non-empty 'bot_type' field")
-            if not bot["bot_version"]:
-                raise ValueError("Each bot must have a non-empty 'bot_version' field")
-            if not bot["bot_prompt"]:
-                raise ValueError("Each bot must have a non-empty 'bot_prompt' field")

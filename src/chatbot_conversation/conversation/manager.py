@@ -12,7 +12,7 @@ Classes:
 
 import json
 import os
-from typing import Dict, List
+from typing import List
 
 from chatbot_conversation.conversation import ConfigurationLoader
 from chatbot_conversation.models import (
@@ -46,39 +46,31 @@ class ConversationManager:
                 f"Conversation manager initialization failed: {str(e)}"
             ) from e
 
-        self.conversation_seed: str = self.config["conversation_seed"]
-        self.num_rounds = self.config["rounds"]
-        self.system_prompts: Dict[str, str] = {
-            "shared_prefix": self.config.get("shared_prefix", ""),
-            "first_round_postfix": self.config.get("first_round_postfix", ""),
-            "last_round_postfix": self.config.get("last_round_postfix", ""),
-        }
         self.bots: List[ChatbotBase] = []
 
         # This is the seed message with the bot index set to a dummy bot index value of 0
         self.conversation: List[ConversationMessage] = [
-            {"bot_index": 0, "content": self.conversation_seed}
+            {"bot_index": 0, "content": self.config.conversation_seed}
         ]
 
         bot_registry = BotRegistry()  # get the singleton instance
 
         factory = ChatbotFactory(bot_registry)
-        for bot_config in self.config["bots"]:
+        for bot_config in self.config.bots:
 
             # Format bot_name into shared prefix and add bot-specific prompt
-            bot_name = bot_config.get("bot_name", "")
-            formatted_prefix = self.system_prompts["shared_prefix"].replace(
-                "{bot_name}", bot_name
+            formatted_prefix = self.config.shared_prefix.replace(
+                "{bot_name}", bot_config.bot_name
             )
-            bot_specific_system_prompt = bot_config.get("bot_prompt", "")
+            bot_specific_system_prompt = bot_config.bot_prompt
             bot_system_prompt = formatted_prefix + bot_specific_system_prompt
 
             bot = factory.create_bot(
                 BotConfig(
-                    bot_type=bot_config.get("bot_type", ""),
-                    bot_version=bot_config.get("bot_version", ""),
+                    bot_type=bot_config.bot_type,
+                    bot_version=bot_config.bot_version,
                     bot_system_prompt=bot_system_prompt,
-                    bot_name=bot_name,
+                    bot_name=bot_config.bot_name,
                 )
             )
             self.add_bot(bot)
@@ -177,13 +169,11 @@ class ConversationManager:
         print(f'{self.conversation[0]["content"]}\n')
         print("**********************************\n")
 
-        for round_num in range(
-            self.num_rounds
-        ):  # Run the second to the last but one round
-            print(f"\n--- Round {round_num + 1} of {self.num_rounds} ---")
+        for round_num in range(self.config.rounds):
+            print(f"\n--- Round {round_num + 1} of {self.config.rounds} ---")
             if round_num == 0:
                 self.tell_bots_first_round()  # Add the first round system prompt postfix
-            if round_num == self.num_rounds - 1:
+            if round_num == self.config.rounds - 1:
                 self.tell_bots_last_round()  # Add the last round system prompt postfix
             self.run_round()
             if round_num == 0:
@@ -198,18 +188,18 @@ class ConversationManager:
         Inform bots that the conversation is about to end.
         """
         for bot in self.bots:
-            bot.append_to_system_prompt(self.system_prompts["last_round_postfix"])
+            bot.append_to_system_prompt(self.config.last_round_postfix)
 
     def tell_bots_first_round(self) -> None:
         """
         Inform bots that the conversation is about to start.
         """
         for bot in self.bots:
-            bot.append_to_system_prompt(self.system_prompts["first_round_postfix"])
+            bot.append_to_system_prompt(self.config.first_round_postfix)
 
     def tell_bots_not_first_round(self) -> None:
         """
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            bot.unappend_from_system_prompt(self.system_prompts["first_round_postfix"])
+            bot.unappend_from_system_prompt(self.config.first_round_postfix)

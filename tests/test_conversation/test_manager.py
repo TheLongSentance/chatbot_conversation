@@ -30,8 +30,8 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
     assert manager.conversation[0]["content"] == "This is a test conversation"
 
     # Verify bot configurations
-    assert manager.config["rounds"] == 2
-    assert len(manager.config["bots"]) == 2
+    assert manager.config.rounds == 2
+    assert len(manager.config.bots) == 2
 
     # Verify first bot configuration
     assert manager.bots[0].name == "TestBot1"
@@ -91,4 +91,4 @@ def test_invalid_config_empty_seed(test_config_empty_path: str) -> None:
     with pytest.raises(RuntimeError) as exc_info:
         ConversationManager(test_config_empty_path)
     assert isinstance(exc_info.value, Exception)
-    assert "Conservation seed cannot be empty" in str(exc_info.value)
+    assert "Configuration validation failed" in str(exc_info.value)
