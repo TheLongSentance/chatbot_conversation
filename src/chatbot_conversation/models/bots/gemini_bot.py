@@ -55,7 +55,9 @@ class GeminiChatbot(ChatbotBase):
         # no stub file from google.generativeai so ignore for pylance etc
         google.generativeai.configure()  # type: ignore
 
-        # todo: system prompt is hardcoded, should be udatable within the chatbot
+        # system prompt is not part of each response unlike most other models
+        # so we set it here (for consistency with the intended purpose of the method) 
+        # but reset self.api each time the _generate_response method is called below
         return google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
@@ -86,7 +88,12 @@ class GeminiChatbot(ChatbotBase):
             str: The response from the Gemini model.
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
-        message = self.api.generate_content(formatted_messages)
+        # re-initialize the API each time in order to reset the system prompt
+        # not typical for other models but necessary for Gemini
+        self.api = google.generativeai.GenerativeModel(
+            model_name=self.model_version, system_instruction=self.system_prompt
+        )
+        message = self.api.generate_content(formatted_messages) # type: ignore
         response: str = message.text
         return response
 
