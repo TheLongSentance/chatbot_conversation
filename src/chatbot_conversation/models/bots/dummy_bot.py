@@ -44,6 +44,7 @@ class DummyChatbot(ChatbotBase):
             "Ask me anything, I'm here to help.",
             "What would you like to know today?",
         ]
+        return None        
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
