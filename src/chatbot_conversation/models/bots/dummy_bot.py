@@ -10,7 +10,7 @@ Classes:
 """
 
 import random
-from typing import List
+from typing import List, Any
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -25,7 +25,7 @@ class DummyChatbot(ChatbotBase):
         responses: List of predefined responses.
     """
 
-    def _initialize_api(self) -> None:
+    def _initialize_api(self) -> Any:
         """
         Dummy initialization method.
 
@@ -44,7 +44,9 @@ class DummyChatbot(ChatbotBase):
             "Ask me anything, I'm here to help.",
             "What would you like to know today?",
         ]
-        return None        
+        # None is returned and assigned to self.api in ChatbotBase
+        # Ordinarily, this method would return an API client instance
+        return None
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
