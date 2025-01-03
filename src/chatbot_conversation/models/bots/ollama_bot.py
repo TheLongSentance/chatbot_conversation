@@ -57,6 +57,8 @@ class OllamaChatbot(ChatbotBase):
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
         Private method to generate response using Ollama's chat model.
+        No timeout handling is available in the Ollama API client.
+        Timeout handling is done in ChatbotBase with @retry decorator.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.

@@ -13,9 +13,24 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, TypedDict
 
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_fixed
+from tenacity import (
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    stop_after_delay,
+    stop_any,
+    wait_random_exponential,
+)
 
 from chatbot_conversation.utils import get_logger
+
+# Timeout constants (in seconds)
+DEFAULT_TOTAL_TIMEOUT = 30  # Maximum time for total trip through API
+DEFAULT_API_TIMEOUT = 6  # For per try of API call if child classes api parameter
+DEFAULT_MAX_RETRIES = 5  # Maximum number of retry attempts
+DEFAULT_MIN_WAIT = 1
+DEFAULT_MAX_WAIT = 10
+DEFAULT_WAIT_MULTIPLIER = 1.5
 
 logger = get_logger("models")
 
@@ -42,6 +57,18 @@ class BotConfig:
     bot_version: str
     bot_system_prompt: str
     bot_name: str
+
+
+@dataclass
+class ChatbotTimeout:
+    """Configuration settings for chatbot behavior."""
+
+    total: int = DEFAULT_TOTAL_TIMEOUT
+    api_timeout: int = DEFAULT_API_TIMEOUT
+    max_retries: int = DEFAULT_MAX_RETRIES
+    min_wait: int = DEFAULT_MIN_WAIT
+    max_wait: int = DEFAULT_MAX_WAIT
+    wait_multiplier: float = DEFAULT_WAIT_MULTIPLIER
 
 
 class ChatbotBase(ABC):
@@ -71,6 +98,8 @@ class ChatbotBase(ABC):
             bot_system_prompt (str): The system prompt for the bot.
             bot_name (str): The name of the bot.
         """
+
+        self.timeout = ChatbotTimeout()
         self.model_version: str = bot_model_version
         self._system_prompt: str = bot_system_prompt
         self.name: str = bot_name
@@ -161,8 +190,15 @@ class ChatbotBase(ABC):
         # scope of self._should_retry_on_exception is not available to tenacity
         # when applied as a decorator to _generate_response directly
         @retry(
-            stop=stop_after_attempt(3),
-            wait=wait_fixed(5),
+            stop=stop_any(
+                stop_after_attempt(self.timeout.max_retries),
+                stop_after_delay(self.timeout.total),
+            ),
+            wait=wait_random_exponential(
+                multiplier=self.timeout.wait_multiplier,
+                min=self.timeout.min_wait,
+                max=self.timeout.max_wait,
+            ),
             retry=retry_if_exception(
                 lambda e: (
                     self._should_retry_on_exception(e)

@@ -74,7 +74,7 @@ class ClaudeChatbot(ChatbotBase):
             system=self.system_prompt,
             messages=formatted_messages,
             max_tokens=500,
-            timeout=5,
+            timeout=self.timeout.api_timeout,
         )
         response_content = message.content[0].text
         return response_content

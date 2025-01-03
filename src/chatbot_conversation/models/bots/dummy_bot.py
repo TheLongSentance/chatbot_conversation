@@ -10,7 +10,7 @@ Classes:
 """
 
 import random
-from typing import List, Any
+from typing import Any, List
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -70,4 +70,6 @@ class DummyChatbot(ChatbotBase):
         Returns:
             str: A random response from the predefined list.
         """
+        # Dummy bot returns a random response from the predefined list
+        # instead of using an API to generate a response
         return random.choice(self.responses)

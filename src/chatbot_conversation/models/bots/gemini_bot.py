@@ -79,7 +79,9 @@ class GeminiChatbot(ChatbotBase):
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Private method to generate response using Gemini model with timeout.
+        Private method to generate response using Gemini model.
+        No timeout handling is available for Gemini, so handled in ChatbotBase.
+        No passing of system prompt in generate_content, so reset self.api each time.
 
         Args:
             conversation (List[ConversationMessage]): The conversation history.
@@ -88,11 +90,13 @@ class GeminiChatbot(ChatbotBase):
             str: The response from the Gemini model.
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
+
         # re-initialize the API each time in order to reset the system prompt
         # not typical for other models but necessary for Gemini
         self.api = google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
+
         message = self.api.generate_content(formatted_messages)  # type: ignore
         response: str = message.text
         return response
