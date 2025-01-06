@@ -188,18 +188,18 @@ class ConversationManager:
         Inform bots that the conversation is about to end.
         """
         for bot in self.bots:
-            bot.append_to_system_prompt(self.config.last_round_postfix)
+            bot.system_prompt_add_suffix(self.config.last_round_postfix)
 
     def tell_bots_first_round(self) -> None:
         """
         Inform bots that the conversation is about to start.
         """
         for bot in self.bots:
-            bot.append_to_system_prompt(self.config.first_round_postfix)
+            bot.system_prompt_add_suffix(self.config.first_round_postfix)
 
     def tell_bots_not_first_round(self) -> None:
         """
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            bot.unappend_from_system_prompt(self.config.first_round_postfix)
+            bot.system_prompt_remove_suffix(self.config.first_round_postfix)

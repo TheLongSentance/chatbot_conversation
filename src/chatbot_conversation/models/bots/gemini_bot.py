@@ -91,11 +91,13 @@ class GeminiChatbot(ChatbotBase):
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
-        # re-initialize the API each time in order to reset the system prompt
-        # not typical for other models but necessary for Gemini
-        self.api = google.generativeai.GenerativeModel(
-            model_name=self.model_version, system_instruction=self.system_prompt
-        )
+        # test if system prompt has changed and re-initialize API in order
+        # to reset the system prompt for Gemini API (not typical for other models)
+        if self.system_prompt_needs_update:
+            self.api = google.generativeai.GenerativeModel(
+                model_name=self.model_version, system_instruction=self.system_prompt
+            )
+            self.system_prompt_updated()
 
         message = self.api.generate_content(formatted_messages)  # type: ignore
         response: str = message.text
