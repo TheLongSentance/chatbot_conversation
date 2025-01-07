@@ -137,8 +137,8 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
     "conversation_seed": "I think Roger Federer is the GOAT!",
     "rounds": 2,
     "shared_prefix": "You are about to take part in a conversation...",
-    "first_round_postfix": "This is the first round of the conversation. Please introduce yourself by name and state your first contribution to the conversation. ",
-    "last_round_postfix": "This is now the last round of the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Do not end this your final and last contribution to the conversation with more questions or prompts for the other participants. ",
+    "first_round_postfix": "This is the first round of the conversation. Introduce yourself using your name {bot_name} and state your first contribution to the conversation. ",
+    "last_round_postfix": "This is now the last round of the conversation. This is your last response that will be added the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If you have been told that this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Never end your summary response with a question, but rather bring things to a natural close. ",
     "bots": [
         {
             "bot_name": "RogerFan",

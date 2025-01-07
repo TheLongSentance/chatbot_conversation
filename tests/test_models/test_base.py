@@ -7,14 +7,14 @@ content management, and update tracking functionality.
 from chatbot_conversation.models.base import SystemPrompt
 
 
-def test_system_prompt_initialization():
+def test_system_prompt_initialization() -> None:
     """Test that SystemPrompt initializes with empty content and needs_update flag set."""
     prompt = SystemPrompt()
     assert prompt.content == ""
     assert prompt.needs_update is True
 
 
-def test_system_prompt_content_property():
+def test_system_prompt_content_property() -> None:
     """Test the content property getter and setter functionality."""
     prompt = SystemPrompt("Initial content")
     assert prompt.content == "Initial content"
@@ -23,7 +23,7 @@ def test_system_prompt_content_property():
     assert prompt.needs_update is True
 
 
-def test_system_prompt_needs_update_property():
+def test_system_prompt_needs_update_property() -> None:
     """Test the needs_update property behavior when content is modified."""
     prompt = SystemPrompt("Initial content")
     assert prompt.needs_update is True
@@ -31,14 +31,14 @@ def test_system_prompt_needs_update_property():
     assert prompt.needs_update is False
 
 
-def test_system_prompt_mark_updated():
+def test_system_prompt_mark_updated() -> None:
     """Test the mark_updated method for resetting the needs_update flag."""
     prompt = SystemPrompt("Initial content")
     prompt.mark_updated()
     assert prompt.needs_update is False
 
 
-def test_system_prompt_add_suffix():
+def test_system_prompt_add_suffix() -> None:
     """Test adding a suffix to the prompt content."""
     prompt = SystemPrompt("Initial content")
     prompt.add_suffix(" Suffix")
@@ -46,7 +46,7 @@ def test_system_prompt_add_suffix():
     assert prompt.needs_update is True
 
 
-def test_system_prompt_remove_suffix():
+def test_system_prompt_remove_suffix() -> None:
     """Test removing a suffix from the prompt content."""
     prompt = SystemPrompt("Initial content Suffix")
     prompt.remove_suffix(" Suffix")
@@ -54,7 +54,7 @@ def test_system_prompt_remove_suffix():
     assert prompt.needs_update is True
 
 
-def test_system_prompt_add_prefix():
+def test_system_prompt_add_prefix() -> None:
     """Test adding a prefix to the prompt content."""
     prompt = SystemPrompt("content")
     prompt.add_prefix("Prefix ")
@@ -62,7 +62,7 @@ def test_system_prompt_add_prefix():
     assert prompt.needs_update is True
 
 
-def test_system_prompt_remove_prefix():
+def test_system_prompt_remove_prefix() -> None:
     """Test removing a prefix from the prompt content."""
     prompt = SystemPrompt("Prefix content")
     prompt.remove_prefix("Prefix ")

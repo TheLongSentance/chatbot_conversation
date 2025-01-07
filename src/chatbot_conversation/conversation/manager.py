@@ -14,6 +14,9 @@ import json
 import os
 from typing import List
 
+from rich.console import Console
+from rich.markdown import Markdown
+
 from chatbot_conversation.conversation import ConfigurationLoader
 from chatbot_conversation.models import (
     BotConfig,
@@ -59,11 +62,10 @@ class ConversationManager:
         for bot_config in self.config.bots:
 
             # Format bot_name into shared prefix and add bot-specific prompt
-            formatted_prefix = self.config.shared_prefix.replace(
-                "{bot_name}", bot_config.bot_name
+            bot_system_prompt = self.config.shared_prefix + bot_config.bot_prompt
+            bot_system_prompt = self.insert_bot_name(
+                bot_system_prompt, bot_config.bot_name
             )
-            bot_specific_system_prompt = bot_config.bot_prompt
-            bot_system_prompt = formatted_prefix + bot_specific_system_prompt
 
             bot = factory.create_bot(
                 BotConfig(
@@ -75,6 +77,8 @@ class ConversationManager:
             )
             self.add_bot(bot)
 
+        self.console = Console()  # Initialize the console for rich text output
+
     def add_bot(self, bot: ChatbotBase) -> None:
         """
         Add a chatbot to the conversation.
@@ -84,77 +88,6 @@ class ConversationManager:
         """
         self.bots.append(bot)
 
-    def run_round(self) -> None:
-        """
-        Run one round of responses from all bots.
-        """
-        logger.debug("Starting new conversation round")
-        try:
-            for bot in self.bots:
-                try:
-                    raw_response = bot.generate_response(self.conversation)
-                except (IndexError, KeyError, AttributeError, ValueError) as e:
-                    error_message = f"Exception: index/key/attribute/value error: {e}"
-                    logger.error(error_message)
-                    raw_response = (
-                        "I'm sorry, I can't think of a response right now. "
-                        "The values in my head are all over the place."
-                    )
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    error_message = (
-                        f"Exception: Unknown/API error generating response: {e}"
-                    )
-                    logger.error(error_message)
-                    raw_response = (
-                        "I'm sorry, I can't think of a response right now. "
-                        "My mind seems to be elsewhere."
-                    )
-                clean_response: str = self._format_response(bot.name, raw_response)
-                self.conversation.append(
-                    {"bot_index": bot.bot_index, "content": clean_response}
-                )
-                logger.debug(
-                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
-                    bot.__class__.__name__,
-                    bot.name,
-                    bot.bot_index,
-                    json.dumps(self.conversation, indent=2),
-                )
-                print(
-                    f"\n*** {bot.__class__.__name__} Bot#{bot.bot_index} ***\n\n{clean_response}\n"
-                )
-            logger.info("Round completed successfully")
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Unexpected error during conversation round: %s", str(e))
-
-    def _format_response(self, bot_name: str, raw_response: str) -> str:
-        """
-        Format response with bot name prefix.
-
-        Args:
-            bot_name (str): The name of the bot.
-            raw_response (str): The raw response string.
-
-        Returns:
-            str: The formatted response with bot name prefix.
-        """
-        clean_response = self._strip_name_prefix(bot_name, raw_response)
-        return f"<<< {bot_name} >>> {clean_response}"
-
-    def _strip_name_prefix(self, bot_name: str, response: str) -> str:
-        """
-        Remove bot name prefix if present in response.
-
-        Args:
-            bot_name (str): The name of the bot.
-            response (str): The response string.
-
-        Returns:
-            str: The response without the bot name prefix.
-        """
-        prefix = f"<<< {bot_name} >>> "
-        return response[len(prefix) :] if response.startswith(prefix) else response
-
     def run_conversation(self) -> None:
         """
         Run the conversation for the configured number of rounds.
@@ -163,14 +96,12 @@ class ConversationManager:
         # Clear the terminal screen
         os.system("cls" if os.name == "nt" else "clear")
 
-        print("**********************************")
-        print("***   Starting conversation:   ***")
-        print("**********************************\n")
-        print(f'{self.conversation[0]["content"]}\n')
-        print("**********************************\n")
+        self.console.print(Markdown(f'# {self.conversation[0]["content"]}\n'))
 
         for round_num in range(self.config.rounds):
-            print(f"\n--- Round {round_num + 1} of {self.config.rounds} ---")
+            self.console.print(
+                Markdown(f"## Round {round_num + 1} of {self.config.rounds}\n\n---\n\n")
+            )
             if round_num == 0:
                 self.tell_bots_first_round()  # Add the first round system prompt postfix
             if round_num == self.config.rounds - 1:
@@ -179,27 +110,81 @@ class ConversationManager:
             if round_num == 0:
                 self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
 
-        print("\n**********************************")
-        print("***   Conversation completed   ***")
-        print("**********************************\n\n")
+        self.console.print(Markdown("\n# Conversation completed\n"))
 
-    def tell_bots_last_round(self) -> None:
+    def run_round(self) -> None:
         """
-        Inform bots that the conversation is about to end.
+        Run one round of responses from all bots.
         """
-        for bot in self.bots:
-            bot.system_prompt_add_suffix(self.config.last_round_postfix)
+        logger.debug("Starting new conversation round")
+        try:
+            for bot in self.bots:
+                try:
+                    response = bot.generate_response(self.conversation)
+                except (IndexError, KeyError, AttributeError, ValueError) as e:
+                    error_message = f"Exception: index/key/attribute/value error: {e}"
+                    logger.error(error_message)
+                    response = (
+                        f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
+                        "The values in my head are all over the place."
+                    )
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    error_message = (
+                        f"Exception: Unknown/API error generating response: {e}"
+                    )
+                    logger.error(error_message)
+                    response = (
+                        f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
+                        "My mind seems to be elsewhere."
+                    )
+                self.conversation.append(
+                    {"bot_index": bot.bot_index, "content": response}
+                )
+                logger.debug(
+                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
+                    bot.__class__.__name__,
+                    bot.name,
+                    bot.bot_index,
+                    json.dumps(self.conversation, indent=2),
+                )
+                self.console.print(Markdown(f"{response}\n\n---\n\n"))
+            logger.info("Round completed successfully")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.error("Unexpected error during conversation round: %s", str(e))
 
     def tell_bots_first_round(self) -> None:
         """
         Inform bots that the conversation is about to start.
         """
         for bot in self.bots:
-            bot.system_prompt_add_suffix(self.config.first_round_postfix)
+            suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
+            bot.system_prompt_add_suffix(suffix)
 
     def tell_bots_not_first_round(self) -> None:
         """
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            bot.system_prompt_remove_suffix(self.config.first_round_postfix)
+            suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
+            bot.system_prompt_remove_suffix(suffix)
+
+    def tell_bots_last_round(self) -> None:
+        """
+        Inform bots that the conversation is about to end.
+        """
+        for bot in self.bots:
+            suffix = self.insert_bot_name(self.config.last_round_postfix, bot.name)
+            bot.system_prompt_add_suffix(suffix)
+
+    def insert_bot_name(self, text: str, bot_name: str) -> str:
+        """
+        Insert the bot name into the text.
+
+        Args:
+            text (str): Text to insert the bot name into.
+            bot_name (str): Name of the bot.
+
+        Returns:
+            str: Text with the bot name inserted.
+        """
+        return text.replace("{bot_name}", bot_name)
