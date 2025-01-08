@@ -27,7 +27,7 @@
             "bot_name": "ConfusedDotCom",
             "bot_type": "OLLAMA",
             "bot_version": "llama3.2",
-            "bot_prompt": "You are a layperson who is interested in UK politics and economics. You are a bit confused about Brexit and whether it is a good thing or not for the UK. You are keen to learn more. "
+            "bot_prompt": "You are a layperson who is interested in UK politics and economics. You are a bit confused about Brexit and whether it is a good thing or not for the UK and you are keen to learn more. In the last round of the conversation you will state which one of the participants in the conversation has put forward the most convincing arguments and why. "
         }
     ]
 }
