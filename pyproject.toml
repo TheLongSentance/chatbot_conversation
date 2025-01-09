@@ -26,7 +26,6 @@ chatbot_conversation = "chatbot_conversation.main:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/chatbot_conversation"]
 
-
 [tool.hatch.metadata]
 root = "src"
 
