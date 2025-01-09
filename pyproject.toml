@@ -24,7 +24,11 @@ dependencies = [
 chatbot_conversation = "chatbot_conversation.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["chatbot_conversation"]
+packages = ["src/chatbot_conversation"]
+
+
+[tool.hatch.metadata]
+root = "src"
 
 [tool.hatch.envs.test]
 dependencies = [
@@ -64,10 +68,4 @@ filterwarnings = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["my_project"]
-
-
-
-
-
-
+packages = ["chatbot_conversation"]
