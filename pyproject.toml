@@ -65,7 +65,3 @@ filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::UserWarning",
 ]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["chatbot_conversation"]
