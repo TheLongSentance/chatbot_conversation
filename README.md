@@ -151,14 +151,14 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 ```
 
 Configuration parameters:
-- `conversation_seed`: The initial prompt to start the discussion
-- `rounds`: Number of conversation rounds
-- `shared_prefix`: Common instructions provided to all bots about conversation structure which forms part of the system prompt for each bot
+- `conversation_seed`: The initial prompt to start the discussion.
+- `rounds`: Number of conversation rounds.
+- `shared_prefix`: Common instructions provided to all bots about conversation structure which forms part of the system prompt for each bot.
   - Supports template variable `{bot_name}` which gets replaced with each bot's name from their configuration
   - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
-- `first_round_postfix`: Instructions for the first round of the conversation which get appended to each bot's system prompt only for the first round of the conversation
-- `last_round_postfix`: Instructions for the last round of the conversation which get appended to each bot's system prompt only for the last round of the conversation 
-- `bots`: Array of bot configurations
+- `first_round_postfix`: Instructions for the first round of the conversation which get appended to each bot's system prompt only for the first round of the conversation. This could be used to ask each bot to introduce themselves for example. This will be removed from each bot's system prompt at the end of the first round and the system prompt re-applied.
+- `last_round_postfix`: Instructions for the last round of the conversation which get appended to each bot's system prompt only for the last round of the conversation. This could be used to ask each bot to draw conclusions from the conversation for example.
+- `bots`: Array of bot configurations:
   - `bot_name`: Display name for the bot (also used in shared system prompt templating)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
   - `bot_version`: Specific model version to use
@@ -166,10 +166,10 @@ Configuration parameters:
 
 ### Template Variables
 
-The `shared_prefix` supports the following template variables:
+The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_prompt` all support the following template variable:
 - `{bot_name}`: Replaced with the bot's name from its configuration
-  - This allows the shared prompt to reference each bot's specific identity
-  - Used for making the system prompt more personalized to each bot
+  - Used for example to suggest in `first_round_postfix` that each bot should introduce itself by name in their first contribution to the conversation.
+  - Used for making the system prompt more personalized to each bot at all stages of the conversation.
 
 ## Usage
 
