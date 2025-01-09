@@ -10,7 +10,7 @@ A Python application that facilitates conversations between multiple AI chatbots
   - Google Gemini
   - Ollama (local models)
 - Configurable conversation settings via JSON
-- Extensible architecture for adding new models
+- Extensible drop-in architecture for adding new models without adding code to core project files.
   - see dummy_bot.py for example of how to add a new model
 - Type-safe implementation
 - Comprehensive logging
