@@ -91,32 +91,168 @@ The project is organized into the following components:
 
 ## Installation
 
-You can set up the project using either Conda (recommended) or pip:
+You can set up the project using either pip (recommended) or Conda:
 
-### Using Conda
+### Using pip (Recommended)
 ```bash
 # Clone the repository
 git clone https://github.com/TheLongSentance/chatbot_conversation.git
 cd chatbot_conversation
 
-# Create and activate environment using environment.yml
-conda env create -f environment.yml
-conda activate chatbots
-```
-
-### Alternative: Using pip
-```bash
-# Clone the repository
-git clone https://github.com/TheLongSentance/chatbot_conversation.git
-cd chatbot_conversation
-
-# Create and activate virtual environment (optional)
+# Create and activate virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install requirements
-pip install -r requirements.txt
+# Install the package in editable mode with development dependencies
+pip install -e ".[test]"  # Include [test] for development dependencies
 ```
+
+This will:
+- Install all runtime dependencies specified in pyproject.toml
+- Install all development dependencies (pytest, black, etc.) if you include [test]
+- Install the package in editable mode for development
+- Set up the CLI command specified in pyproject.toml
+
+### Alternative: Using Conda
+
+You have two options when using Conda:
+
+#### Option 1: Conda + pip (Recommended for Conda users)
+```bash
+# Clone the repository
+git clone https://github.com/TheLongSentance/chatbot_conversation.git
+cd chatbot_conversation
+
+# Create and activate conda environment
+conda env create -f environment.yml
+conda activate chatbots
+
+# Install the package in editable mode with development dependencies
+pip install -e ".[test]"  # Include [test] for development dependencies
+```
+
+This approach:
+- Uses Conda to manage the Python environment
+- Uses pip/Hatch to handle package dependencies and development setup
+- Gives you access to all development tools configured in pyproject.toml
+
+#### Option 2: Pure Conda Development
+```bash
+# Clone the repository
+git clone https://github.com/TheLongSentance/chatbot_conversation.git
+cd chatbot_conversation
+
+# Create and activate conda environment
+conda env create -f environment.yml
+conda activate chatbots
+
+# Register the package for development
+conda develop .
+```
+
+Note about Option 2:
+- Only registers the package for development
+- Requires all dependencies to be listed in environment.yml
+- Doesn't support development extras like [test]
+- Doesn't use the build configuration from pyproject.toml
+- May miss out on development tools unless manually installed
+
+We recommend Option 1 (Conda + pip) as it gives you the best of both worlds: Conda's environment management and modern Python packaging tools.
+
+### Alternative: Manual Setup Without Build Tools
+
+If you prefer not to use Hatch/pip's editable install, then when you try to import a Python module, Python searches for it in a list of directories. By default, this includes:
+- The directory containing the input script (or current directory when no file is specified)
+- The Python standard library
+- The site-packages directory where pip installs packages
+
+For a project with a `src` directory layout like this one, Python won't automatically find your package unless:
+1. You install it properly using `pip install -e .` (recommended - see above), OR
+2. You add the `src` directory to Python's search path
+
+#### Checking Python's Search Path
+
+You can check what directories Python is searching with this command:
+```bash
+python -c "import sys; print('\n'.join(sys.path))"
+```
+
+What to look for in the output:
+- If using a virtual environment: The path should start with your virtual environment's site-packages
+- If using `pip install -e .`: You should see your project's src directory or .egg-link in the virtual environment
+- If setting PYTHONPATH manually: You should see your project's src directory in the list
+
+For example, a correctly configured environment might show:
+```
+/Users/username/projects/chatbot_conversation/venv/lib/python3.8/site-packages
+/Users/username/projects/chatbot_conversation/src
+/Users/username/projects/chatbot_conversation/venv/lib/python3.8/lib-dynload
+/usr/local/lib/python3.8
+/usr/local/lib/python3.8/lib-dynload
+/Users/username/projects/chatbot_conversation/venv/lib/python3.8/site-packages
+```
+
+You can also check just the PYTHONPATH environment variable:
+```bash
+python -c "import os; print(os.environ.get('PYTHONPATH', 'PYTHONPATH is not set'))"
+```
+
+#### Terminal Setup
+On Linux/Mac:
+```bash
+export PYTHONPATH="${PYTHONPATH}:/path/to/your/project/src"
+```
+
+On Windows (Command Prompt):
+```cmd
+set PYTHONPATH=%PYTHONPATH%;C:\path\to\your\project\src
+```
+
+On Windows (PowerShell):
+```powershell
+$env:PYTHONPATH = "$env:PYTHONPATH;C:\path\to\your\project\src"
+```
+
+#### VS Code Setup
+Create or modify `.vscode/settings.json` in your project:
+```json
+{
+    "python.analysis.extraPaths": ["./src"],
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+    }
+}
+```
+
+### Troubleshooting Package Imports
+
+If you can't import your package, verify:
+1. You're in the right virtual environment
+2. Your project's src directory is in Python's search path (check using commands above)
+
+We strongly recommend using `pip install -e ".[test]"` over manual path configuration because:
+
+**Automated Setup (`pip install -e ".[test]"`)**:
+- Handles all path configuration automatically
+- Installs all dependencies from pyproject.toml
+- Sets up development tools and test requirements
+- Makes it easy for others to set up your project
+- Works consistently across different terminals and sessions
+
+**Manual Setup (setting PYTHONPATH)**:
+- Requires manually setting PYTHONPATH in every new terminal session
+- Needs manual dependency installation
+- May break development tools that expect proper package installation
+- Makes collaboration harder as others need to replicate your exact setup
+- Requires additional VS Code/IDE configuration
+
+The small extra effort of setting up pyproject.toml and using `pip install -e ".[test]"` saves considerable time and prevents common development environment issues.
 
 ## Environment Setup
 
