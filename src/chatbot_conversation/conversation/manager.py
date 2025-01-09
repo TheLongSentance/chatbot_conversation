@@ -17,7 +17,7 @@ from typing import List
 from rich.console import Console
 from rich.markdown import Markdown
 
-from chatbot_conversation.conversation import ConfigurationLoader
+from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.models import (
     BotConfig,
     BotRegistry,
