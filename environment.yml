@@ -1,4 +1,4 @@
-Copyname: chatbots
+name: botconv
 channels:
   - conda-forge
   - defaults
