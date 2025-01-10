@@ -26,9 +26,13 @@ class APIConfig:  # pylint: disable=too-few-public-methods
     @staticmethod
     def _load_config() -> None:
         """Initialize and validate API keys."""
-        load_dotenv(
-            dotenv_path=os.path.join(os.path.dirname(__file__), "../../../config/.env")
-        )
+        dotenv_path = os.path.join(os.path.dirname(__file__), "../../../config/.env")
+
+        if not os.path.exists(dotenv_path):
+            raise FileNotFoundError(f".env file not found at path: {dotenv_path}")
+
+        load_dotenv(dotenv_path=dotenv_path)
+
         keys = [
             ("OpenAI", os.getenv("OPENAI_API_KEY")),
             ("Anthropic", os.getenv("ANTHROPIC_API_KEY")),
