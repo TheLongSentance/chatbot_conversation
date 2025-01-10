@@ -139,10 +139,7 @@ cd chatbot_conversation
 
 # Create and activate conda environment
 conda env create -f environment.yml
-conda activate chatbots
-
-# Install build requirements
-pip install hatch hatchling
+conda activate botconv
 
 # Install the package in editable mode with development dependencies
 pip install -e ".[test]"  # Include [test] for development dependencies
@@ -161,10 +158,7 @@ cd chatbot_conversation
 
 # Create and activate conda environment
 conda env create -f environment.yml
-conda activate chatbots
-
-# Install build requirements
-conda install hatch hatchling
+conda activate botconv
 
 # Register the package for development
 conda develop .
