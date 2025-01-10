@@ -1,10 +1,10 @@
 # Chatbot Conversation
 
-A Python application that facilitates conversations between multiple AI chatbots using different language models (GPT, Claude, Gemini, and Ollama).
+An extensible Python application that facilitates conversations between multiple AI chatbots using different language models (existing chatbot support includes GPT, Claude, Gemini, and Ollama but more providers can easily be added).
 
 ## Features
 
-- Support for multiple AI models:
+- Existing support for multiple AI models:
   - OpenAI GPT
   - Anthropic Claude
   - Google Gemini
@@ -278,7 +278,7 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
     "rounds": 2,
     "shared_prefix": "You are about to take part in a conversation...",
     "first_round_postfix": "This is the first round of the conversation. Introduce yourself using your name {bot_name} and state your first contribution to the conversation.",
-    "last_round_postfix": "This is now the last round of the conversation. This is your last response that will be added to the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If you have been told that this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Never end your summary response with a question, but rather bring things to a natural close.",
+    "last_round_postfix": "This is now the last round of the conversation. This is your last response that will be added to the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If you have been told that this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Never end your summary response with a question, but rather bring things to a natural close in the context of the main topic of conversation. ",
     "bots": [
         {
             "bot_name": "RogerFan",
