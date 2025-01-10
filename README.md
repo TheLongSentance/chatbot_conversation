@@ -1,15 +1,15 @@
 # Chatbot Conversation
 
-An extensible Python application that facilitates conversations between multiple AI chatbots using different language models (existing chatbot support includes GPT, Claude, Gemini, and Ollama but more providers can easily be added).
+An extensible Python application that facilitates conversations between multiple AI chatbots using different language models.
 
 ## Features
 
+- Configurable conversation settings via JSON
 - Existing support for multiple AI models:
   - OpenAI GPT
   - Anthropic Claude
   - Google Gemini
   - Ollama (local models)
-- Configurable conversation settings via JSON
 - Extensible drop-in architecture for adding new models without modifying core project files.
   - See `dummy_bot.py` for an example of how to add a new model
 - Type-safe implementation
