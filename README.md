@@ -21,36 +21,47 @@ A Python application that facilitates conversations between multiple AI chatbots
 ```
 chatbot_conversation/
 ├── tests/
-│   ├── __init__.py
+│   ├── fixtures/
+|   |   ├── test_config.json
+│   │   └── test_config_empty.json
 │   ├── test_conversation/
+|   |   ├── __init__.py
 │   │   └── test_manager.py
-│   └── test_models/
-│       └── test_base.py
+│   ├── test_models/
+|   |   ├── __init__.py
+|   |   ├── conftest.py
+|   |   ├── test_base.py
+|   |   ├── test_claude_bot.py
+|   |   ├── test_factory.py
+|   |   ├── test_gemini_bot.py
+|   |   ├── test_ollama_bot.py
+│   │   └── test_openai_bot.py
+|   ├── __init__.py
+│   └── conftest.py
 ├── src/
-│   ├── chatbot_conversation/
-│   │   ├── conversation/
-|   |   |   ├── __init__.py
-|   |   |   ├── loader.py
-|   |   |   └── manager.py
-│   │   ├── models/
-│   │   |   ├── bots/
-|   |   |   |   ├── __init__.py
-|   |   |   |   ├── claude_bot.py
-|   |   |   |   ├── dummy_bot.py
-|   |   |   |   ├── gemini_bot.py
-|   |   |   |   ├── ollama_bot.py
-|   |   |   |   └── openai_bot.py
-|   |   |   ├── __init__.py
-|   |   |   ├── base.py
-|   |   |   ├── bot_registry.py
-|   |   |   └── factory.py
-│   │   ├── utils/
-|   |   |   ├── __init__.py
-|   |   |   ├── env.py
-|   |   |   └── logging_util.py
-│   │   ├── __init__.py
-│   │   └── main.py
-│   └── __init__.py
+│   └── chatbot_conversation/
+│       ├── conversation/
+|       |   ├── __init__.py
+|       |   ├── loader.py
+|       |   └── manager.py
+│       ├── models/
+│       |   ├── bots/
+|       |   |   ├── __init__.py
+|       |   |   ├── claude_bot.py
+|       |   |   ├── dummy_bot.py
+|       |   |   ├── gemini_bot.py
+|       |   |   ├── ollama_bot.py
+|       |   |   └── openai_bot.py
+|       |   ├── __init__.py
+|       |   ├── base.py
+|       |   ├── bot_registry.py
+|       |   └── factory.py
+│       ├── utils/
+|       |   ├── __init__.py
+|       |   ├── env.py
+|       |   └── logging_util.py
+│       ├── __init__.py
+│       └── main.py
 ├── config/
 │   ├── examples/
 │   │   ├── brexit.config.json
