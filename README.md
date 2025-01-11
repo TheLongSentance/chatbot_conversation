@@ -301,14 +301,19 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
     "conversation_seed": "I think Roger Federer is the GOAT!",
     "rounds": 2,
     "shared_prefix": "You are about to take part in a conversation...",
-    "first_round_postfix": "This is the first round of the conversation. Introduce yourself using your name {bot_name} and state your first contribution to the conversation.",
-    "last_round_postfix": "This is now the last round of the conversation. This is your last response that will be added to the conversation. So think about your contributions to the conversation and the contributions of others, and put together a summary of your conclusions. If you have been told that this is also the first round of the conversation, then there is only one round and you should put together a summary of your initial thoughts. Never end your summary response with a question, but rather bring things to a natural close in the context of the main topic of conversation. ",
-    "bots": [
+    "first_round_postfix": "This is the first round of the conversation...",
+    "last_round_postfix": "This is now the last round of the conversation...",
         {
             "bot_name": "RogerFan",
             "bot_type": "GPT",
             "bot_version": "gpt-4-mini",
-            "bot_prompt": "You are an expert on modern professional tennis..."
+            "bot_prompt": "You are a fan of tennis and Roger Federer..."
+        },
+        {
+            "bot_name": "RafaFan",
+            "bot_type": "CLAUDE",
+            "bot_version": "claude-3-haiku-20240307",
+            "bot_prompt": "You are a fan of tennis and Rafael Nadal..."
         }
     ]
 }
