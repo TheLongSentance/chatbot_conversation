@@ -12,8 +12,8 @@ Classes:
 
 import json
 import os
-from typing import List
 from datetime import datetime
+from typing import List
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -27,6 +27,8 @@ from chatbot_conversation.models import (
     ConversationMessage,
 )
 from chatbot_conversation.utils import get_logger
+
+TRANSCRIPT_FILE_PATH = "transcript.md"
 
 logger = get_logger("conversation")
 
@@ -140,7 +142,7 @@ class ConversationManager:
             if round_index == 0:
                 self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
         self.display_finished()
-        self.write_conversation_to_file("transcript.md")
+        self.write_conversation_to_file(TRANSCRIPT_FILE_PATH)
 
     def run_round(self) -> None:
         """
@@ -227,7 +229,7 @@ class ConversationManager:
             file_path (str): Path to the markdown file.
         """
         try:
-            with open(file_path, 'w', encoding='utf-8') as file:
+            with open(file_path, "w", encoding="utf-8") as file:
                 # Write the title
                 file.write(f"# {self.conversation[0]['content']}\n\n")
 
@@ -235,15 +237,23 @@ class ConversationManager:
                 round_index = 1
                 for i, message in enumerate(self.conversation[1:], start=1):
                     if (i - 1) % len(self.bots) == 0:
-                        file.write(f"## Round {round_index} of {self.config.rounds}\n\n")
+                        file.write(
+                            f"## Round {round_index} of {self.config.rounds}\n\n"
+                        )
                         round_index += 1
                     file.write(f"{message['content']}\n\n---\n\n")
 
                 # Write the finish message
-                file.write(f"## Conversation Finished - {self.config.rounds} Rounds With {len(self.bots)} Bots Completed!\n\n")
+                file.write(
+                    f"## Conversation Finished - {self.config.rounds} Rounds With "
+                    f"{len(self.bots)} Bots Completed!\n\n"
+                )
 
                 # Write the conversation generated datetime
-                file.write(f"## *Conversation Generated* : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+                file.write(
+                    "## *Conversation Generated* : "
+                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                )
 
                 # Write the configuration author name
                 file.write(f"## *Configuration Author* : {self.config.author}\n\n")
@@ -255,5 +265,5 @@ class ConversationManager:
                 file.write("\n```\n")
 
             logger.info("Conversation successfully written to %s", file_path)
-        except Exception as e:
+        except (IOError, ValueError) as e:
             logger.error("Failed to write conversation to file: %s", str(e))
