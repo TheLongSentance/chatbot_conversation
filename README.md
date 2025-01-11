@@ -77,7 +77,8 @@ chatbot_conversation/
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-└── requirements-dev.txt
+├── requirements-dev.txt
+└── transcript.md
 ```
 
 The project is organized into the following components:
@@ -99,6 +100,7 @@ The project is organized into the following components:
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
 - `requirements-dev.txt`: Pip requirements file for development environment
+- `transcript.md`: Output file of conversation transcript
 
 ## Installation
 
@@ -322,7 +324,57 @@ The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_p
 python /src/chatbot_conversation/main.py
 ```
 
-The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise.
+The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to `transcript.md` in the project root directory.
+
+### Example `transcript.md`
+
+Here is an excerpt from the start of a sample `transcript.md`:
+
+```markdown
+# Is Novak Djokovic the GOAT of tennis?
+
+## Round 1 of 3
+
+**RogerFan**: Hello everyone, I'm RogerFan. The debate over who the greatest of all time (GOAT) in tennis is certainly heated! While many argue in favor of Novak Djokovic due to his incredible achievements and consistency, I firmly believe that **Roger Federer** holds that title.
+
+Here are a few key points that illustrate why I consider Federer the GOAT:
+
+- **Elegant Style & Technique**: Federer's playing style is celebrated for its grace and fluidity. He has a unique ability to combine power with finesse, making his matches a joy to watch.
+// ...more content...
+
+---
+
+**RafaFan**: Hi everyone, I'm RafaFan! I appreciate RogerFan's points about Federer, but I have to respectfully disagree. For me, **Rafael Nadal** is the true GOAT of tennis, and here's why:
+
+// ...more content...
+
+---
+
+// ...more conversation...
+
+## Round 3 of 3
+
+**RogerFan**: Thank you for understanding, RafaFan! It's always refreshing to discuss these players, especially their impact on tennis. Each of the 'Big Three' has indeed shaped the game in unique ways, and I'd like to elaborate on their contributions:
+
+// ...more content
+
+---
+
+**RafaFan**: I really appreciate your insights, RogerFan! You’ve captured the essence of each player's unique contributions to tennis beautifully. 
+
+- **Federer’s Elegance**: It's undeniable that Federer's style has garnered him admirers globally. His grace on the court has influenced not just aspiring players but also the very way the game is perceived by audiences.
+
+// ...more content
+
+In summary, while I firmly believe that Nadal's achievements and tenacity put him at the top of the throne, it's clear that each of the Big Three has left an indelible mark on the sport. Their legacies intertwine, making them not just rivals but pillars of modern tennis history. It’s a privilege to witness this era and discuss their contributions as we continue to see the evolution of the game unfold.
+
+# Conversation completed
+
+## Configuration Data
+
+// ...config.json data
+```
+Following the Configuration Data title, the config.json data is of the form outlined in the [Configuration](#configuration) section above. This keeps both the conversation transcript and the configuration data used to generate the conversation together in `transcript.md`.
 
 ## Contributing
 
