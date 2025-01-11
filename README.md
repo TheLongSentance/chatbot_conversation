@@ -303,6 +303,7 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
     "shared_prefix": "You are about to take part in a conversation...",
     "first_round_postfix": "This is the first round of the conversation...",
     "last_round_postfix": "This is now the last round of the conversation...",
+    "bots": [
         {
             "bot_name": "RogerFan",
             "bot_type": "GPT",
