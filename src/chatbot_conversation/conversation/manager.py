@@ -88,29 +88,57 @@ class ConversationManager:
         """
         self.bots.append(bot)
 
+    def display_clear(self) -> None:
+        """
+        Clear the terminal screen.
+        """
+        os.system("cls" if os.name == "nt" else "clear")
+
+    def display_title(self) -> None:
+        """
+        Display the title of the conversation.
+        """
+        self.console.print(Markdown(f"# {self.conversation[0]["content"]}\n"))
+
+    def display_finished(self) -> None:
+        """
+        Display a message indicating the conversation has finished.
+        """
+        self.console.print(Markdown("\n# Conversation completed\n"))
+
+    def display_round(self, round_num: int) -> None:
+        """
+        Display the current round number.
+        """
+        self.console.print(
+            Markdown(f"## Round {round_num} of {self.config.rounds}\n\n---\n\n")
+        )
+
+    def display_response(self, response: str) -> None:
+        """
+        Display a response from a chatbot.
+
+        Args:
+            response (str): Response text to display.
+        """
+        self.console.print(Markdown(f"{response}\n\n---\n\n"))
+
     def run_conversation(self) -> None:
         """
         Run the conversation for the configured number of rounds.
         """
-
-        # Clear the terminal screen
-        os.system("cls" if os.name == "nt" else "clear")
-
-        self.console.print(Markdown(f'# {self.conversation[0]["content"]}\n'))
-
-        for round_num in range(self.config.rounds):
-            self.console.print(
-                Markdown(f"## Round {round_num + 1} of {self.config.rounds}\n\n---\n\n")
-            )
-            if round_num == 0:
+        self.display_clear()
+        self.display_title()
+        for round_index in range(self.config.rounds):
+            self.display_round(round_index + 1)
+            if round_index == 0:
                 self.tell_bots_first_round()  # Add the first round system prompt postfix
-            if round_num == self.config.rounds - 1:
+            if round_index == self.config.rounds - 1:
                 self.tell_bots_last_round()  # Add the last round system prompt postfix
             self.run_round()
-            if round_num == 0:
+            if round_index == 0:
                 self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
-
-        self.console.print(Markdown("\n# Conversation completed\n"))
+        self.display_finished()
 
     def run_round(self) -> None:
         """
@@ -147,7 +175,7 @@ class ConversationManager:
                     bot.bot_index,
                     json.dumps(self.conversation, indent=2),
                 )
-                self.console.print(Markdown(f"{response}\n\n---\n\n"))
+                self.display_response(response)
             logger.info("Round completed successfully")
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Unexpected error during conversation round: %s", str(e))
