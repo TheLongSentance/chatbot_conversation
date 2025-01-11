@@ -98,7 +98,7 @@ class ConversationManager:
         """
         Display the title of the conversation.
         """
-        self.console.print(Markdown(f"# {self.conversation[0]["content"]}\n"))
+        self.console.print(Markdown(f"# {self.conversation[0]['content']}\n"))
 
     def display_finished(self) -> None:
         """
@@ -139,6 +139,7 @@ class ConversationManager:
             if round_index == 0:
                 self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
         self.display_finished()
+        self.write_conversation_to_file("transcript.md")
 
     def run_round(self) -> None:
         """
@@ -216,3 +217,30 @@ class ConversationManager:
             str: Text with the bot name inserted.
         """
         return text.replace("{bot_name}", bot_name)
+
+    def write_conversation_to_file(self, file_path: str) -> None:
+        """
+        Write the entire conversation to a markdown file.
+
+        Args:
+            file_path (str): Path to the markdown file.
+        """
+        try:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                # Write the title
+                file.write(f"# {self.conversation[0]['content']}\n\n")
+
+                # Write each round and responses
+                round_index = 1
+                for i, message in enumerate(self.conversation[1:], start=1):
+                    if (i - 1) % len(self.bots) == 0:
+                        file.write(f"## Round {round_index} of {self.config.rounds}\n\n")
+                        round_index += 1
+                    file.write(f"{message['content']}\n\n---\n\n")
+
+                # Write the finish message
+                file.write("\n# Conversation completed\n")
+                
+            logger.info("Conversation successfully written to %s", file_path)
+        except Exception as e:
+            logger.error("Failed to write conversation to file: %s", str(e))
