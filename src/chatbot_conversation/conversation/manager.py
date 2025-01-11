@@ -240,6 +240,12 @@ class ConversationManager:
 
                 # Write the finish message
                 file.write("\n# Conversation completed\n")
+
+                # Write the configuration data
+                file.write("\n## Configuration Data\n")
+                file.write("```json\n")
+                file.write(json.dumps(self.config.model_dump(), indent=4))
+                file.write("\n```\n")
                 
             logger.info("Conversation successfully written to %s", file_path)
         except Exception as e:
