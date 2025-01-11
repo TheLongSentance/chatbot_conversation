@@ -100,7 +100,7 @@ The project is organized into the following components:
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
 - `requirements-dev.txt`: Pip requirements file for development environment
-- `transcript.md`: Output file of conversation transcript
+- `transcript.md`: Output file containing conversation transcript and associated configuration
 
 ## Installation
 
