@@ -13,6 +13,7 @@ Classes:
 import json
 import os
 from typing import List
+from datetime import datetime
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -104,7 +105,7 @@ class ConversationManager:
         """
         Display a message indicating the conversation has finished.
         """
-        self.console.print(Markdown("\n# Conversation completed\n"))
+        self.console.print(Markdown("\n# Conversation Completed!\n"))
 
     def display_round(self, round_num: int) -> None:
         """
@@ -239,14 +240,20 @@ class ConversationManager:
                     file.write(f"{message['content']}\n\n---\n\n")
 
                 # Write the finish message
-                file.write("\n# Conversation completed\n")
+                file.write(f"## Conversation Finished - {self.config.rounds} Rounds With {len(self.bots)} Bots Completed!\n\n")
+
+                # Write the conversation generated datetime
+                file.write(f"## *Conversation Generated* : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+
+                # Write the configuration author name
+                file.write(f"## *Configuration Author* : {self.config.author}\n\n")
 
                 # Write the configuration data
-                file.write("\n## Configuration Data\n")
+                file.write("## *Configuration Data (config.json)* :\n\n")
                 file.write("```json\n")
                 file.write(json.dumps(self.config.model_dump(), indent=4))
                 file.write("\n```\n")
-                
+
             logger.info("Conversation successfully written to %s", file_path)
         except Exception as e:
             logger.error("Failed to write conversation to file: %s", str(e))

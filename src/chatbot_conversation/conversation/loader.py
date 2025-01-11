@@ -30,6 +30,7 @@ class BotConfigData(BaseModel):
 class ConversationConfig(BaseModel):
     """Pydantic model representing the configuration for a conversation."""
 
+    author: str = Field(..., description="Author of the conversation")
     conversation_seed: str = Field(
         ..., min_length=1, description="Conversation seed cannot be empty"
     )
