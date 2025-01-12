@@ -28,7 +28,8 @@ from chatbot_conversation.models import (
 )
 from chatbot_conversation.utils import get_logger
 
-TRANSCRIPT_FILE_PATH = "transcript.md"
+TRANSCRIPT_FILE_STUB = "transcript_"
+TRANSCRIPT_OUTPUT_DIR = "./output/"
 
 logger = get_logger("conversation")
 
@@ -142,7 +143,7 @@ class ConversationManager:
             if round_index == 0:
                 self.tell_bots_not_first_round()  # Remove the first round system prompt postfix
         self.display_finished()
-        self.write_conversation_to_file(TRANSCRIPT_FILE_PATH)
+        self.write_conversation_to_file()
 
     def run_round(self) -> None:
         """
@@ -221,14 +222,16 @@ class ConversationManager:
         """
         return text.replace("{bot_name}", bot_name)
 
-    def write_conversation_to_file(self, file_path: str) -> None:
+    def write_conversation_to_file(self) -> None:
         """
         Write the entire conversation to a markdown file.
-
-        Args:
-            file_path (str): Path to the markdown file.
         """
         try:
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            file_path = os.path.join(
+                TRANSCRIPT_OUTPUT_DIR, f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"
+            )
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as file:
                 # Write the title
                 file.write(f"# {self.conversation[0]['content']}\n\n")

@@ -71,14 +71,15 @@ chatbot_conversation/
 │   ├── .env.example
 │   ├── config.json
 │   └── logging.conf
+├── output/
+│   └── transcript_<yymmdd>_<hhmmss>.md
 ├── .gitignore
 ├── environment.yml
 ├── LICENSE
 ├── pyproject.toml
 ├── README.md
 ├── requirements.txt
-├── requirements-dev.txt
-└── transcript.md
+└── requirements-dev.txt
 ```
 
 The project is organized into the following components:
@@ -100,7 +101,7 @@ The project is organized into the following components:
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
 - `requirements-dev.txt`: Pip requirements file for development environment
-- `transcript.md`: Output file containing conversation transcript and associated configuration
+- `output/`: Directory containing conversation transcripts with date and time in their name in the pattern *transcript_\<yymmdd>_\<hhmmss>.md*
 
 ## Installation
 
@@ -355,11 +356,11 @@ The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_p
 python /src/chatbot_conversation/main.py
 ```
 
-The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to `transcript.md` in the project root directory.
+The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to the `./output` directory with a filename that includes the date and time of the conversation in the pattern *transcript_\<yymmdd>_\<hhmmss>.md* so for example *"transcript_250112_095235.md"*
 
-### Example `transcript.md`
+### Example `transcript_<yymmdd>_<hhmmss>.md`
 
-Here is an excerpt from the start of a sample `transcript.md`:
+Here is an excerpt from the start of a sample `transcript_250111_172128.md`:
 
 ```markdown
 # Is Novak Djokovic the GOAT of tennis?
@@ -368,20 +369,15 @@ Here is an excerpt from the start of a sample `transcript.md`:
 
 **RogerFan**: Hello everyone, I'm RogerFan. The debate over who the greatest of all time (GOAT) in tennis is certainly heated! While many argue in favor of Novak Djokovic due to his incredible achievements and consistency, I firmly believe that **Roger Federer** holds that title.
 
-Here are a few key points that illustrate why I consider Federer the GOAT:
-
-- **Elegant Style & Technique**: Federer's playing style is celebrated for its grace and fluidity. He has a unique ability to combine power with finesse, making his matches a joy to watch.
 // ...more content...
 
 ---
 
 **RafaFan**: Hi everyone, I'm RafaFan! I appreciate RogerFan's points about Federer, but I have to respectfully disagree. For me, **Rafael Nadal** is the true GOAT of tennis, and here's why:
 
-// ...more content...
+// ...more content and another round of conversation...
 
 ---
-
-// ...more conversation...
 
 ## Round 3 of 3
 
@@ -393,11 +389,9 @@ Here are a few key points that illustrate why I consider Federer the GOAT:
 
 **RafaFan**: I really appreciate your insights, RogerFan! You’ve captured the essence of each player's unique contributions to tennis beautifully. 
 
-- **Federer’s Elegance**: It's undeniable that Federer's style has garnered him admirers globally. His grace on the court has influenced not just aspiring players but also the very way the game is perceived by audiences.
-
 // ...more content
 
-In summary, while I firmly believe that Nadal's achievements and tenacity put him at the top of the throne, it's clear that each of the Big Three has left an indelible mark on the sport. Their legacies intertwine, making them not just rivals but pillars of modern tennis history. It’s a privilege to witness this era and discuss their contributions as we continue to see the evolution of the game unfold.
+---
 
 ## Conversation Finished - 3 Rounds Completed!
 
@@ -408,10 +402,9 @@ In summary, while I firmly believe that Nadal's achievements and tenacity put hi
 ## *Configuration Data (config.json)* :
 
 // ...config.json data
-
 ```
 
-Following the Configuration Data title, the config.json data is of the form outlined in the [Configuration](#configuration) section above. This keeps both the conversation transcript and the configuration data used to generate the conversation together in `transcript.md`.
+Following the Configuration Data title, the config.json data is of the form outlined in the [Configuration](#configuration) section above. This keeps both the conversation transcript and the configuration data used to generate the conversation together in the transcript file located in the `./output` directory.
 
 ## Contributing
 

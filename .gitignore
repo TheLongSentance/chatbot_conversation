@@ -169,4 +169,7 @@ cython_debug/
 logs/
 
 # Transcript of the bots' conversation in markdown file format
-transcript.md
+# Ignore all files in the output directory containing conversation transcripts
+output/*
+# Except the examples sub-directory which contains example transcripts
+!output/examples/
