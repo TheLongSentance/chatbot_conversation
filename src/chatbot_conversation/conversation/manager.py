@@ -45,15 +45,9 @@ class ConversationManager:
             config_path (str): Path to JSON configuration file.
         """
         logger.info("Initializing conversation manager")
-        self.config_path = config_path
-        try:
-            self.config = ConfigurationLoader.load_config(config_path)
-        except Exception as e:
-            logger.error("Failed to initialize conversation manager: %s", str(e))
-            raise RuntimeError(
-                f"Conversation manager initialization failed: {str(e)}"
-            ) from e
 
+        self.config_path = config_path
+        self.config = ConfigurationLoader.load_config(config_path)
         self.bots: List[ChatbotBase] = []
 
         # This is the seed message with the bot index set to a dummy bot index value of 0
@@ -151,40 +145,33 @@ class ConversationManager:
         Run one round of responses from all bots.
         """
         logger.debug("Starting new conversation round")
-        try:
-            for bot in self.bots:
-                try:
-                    response = bot.generate_response(self.conversation)
-                except (IndexError, KeyError, AttributeError, ValueError) as e:
-                    error_message = f"Exception: index/key/attribute/value error: {e}"
-                    logger.error(error_message)
-                    response = (
-                        f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
-                        "The values in my head are all over the place."
-                    )
-                except Exception as e:  # pylint: disable=broad-exception-caught
-                    error_message = (
-                        f"Exception: Unknown/API error generating response: {e}"
-                    )
-                    logger.error(error_message)
-                    response = (
-                        f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
-                        "My mind seems to be elsewhere."
-                    )
-                self.conversation.append(
-                    {"bot_index": bot.bot_index, "content": response}
+        for bot in self.bots:
+            try:
+                response = bot.generate_response(self.conversation)
+            except (IndexError, KeyError, AttributeError, ValueError) as e:
+                error_message = f"Exception: index/key/attribute/value error: {e}"
+                logger.error(error_message)
+                response = (
+                    f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
+                    "The values in my head are all over the place."
                 )
-                logger.debug(
-                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
-                    bot.__class__.__name__,
-                    bot.name,
-                    bot.bot_index,
-                    json.dumps(self.conversation, indent=2),
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                error_message = f"Exception: Unknown/API error generating response: {e}"
+                logger.error(error_message)
+                response = (
+                    f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
+                    "My mind seems to be elsewhere."
                 )
-                self.display_response(response)
-            logger.info("Round completed successfully")
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Unexpected error during conversation round: %s", str(e))
+            self.conversation.append({"bot_index": bot.bot_index, "content": response})
+            logger.debug(
+                "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
+                bot.__class__.__name__,
+                bot.name,
+                bot.bot_index,
+                json.dumps(self.conversation, indent=2),
+            )
+            self.display_response(response)
+        logger.info("Round completed successfully")
 
     def tell_bots_first_round(self) -> None:
         """
