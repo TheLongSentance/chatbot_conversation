@@ -2,7 +2,6 @@
 This module initializes and runs the chatbot conversation.
 """
 
-import json
 import logging
 import os
 import sys
@@ -16,53 +15,29 @@ logger = logging.getLogger("root")
 def main() -> None:
     """
     Main function to set up environment variables, load configuration,
-    initialize the conversation manager, and run the conversation.
+    initialize the conversation manager, and run the chatbot conversation.
+
+    It handles any unexpected exceptions by logging the error and exiting the program.
     """
     try:
         # Set up environment variables for API access
         APIConfig.setup_env()
-    except FileNotFoundError as e:
-        error_message = f"Failed to set environment variables: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
-        sys.exit(1)
 
-    # Get config path from command line or use default
-    config_path = (
-        sys.argv[1] if len(sys.argv) > 1 else os.path.join("config", "config.json")
-    )
-
-    try:
         # Load configuration and initialize conversation manager
+        config_path = (
+            sys.argv[1] if len(sys.argv) > 1 else os.path.join("config", "config.json")
+        )
         manager = ConversationManager(config_path)
-    except FileNotFoundError as e:
-        error_message = f"Configuration file not found: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        error_message = f"Error decoding JSON configuration: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
-        sys.exit(1)
-    except ValueError as e:
-        error_message = f"Value error loading configuration: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
-        sys.exit(1)
-    except RuntimeError as e:
-        error_message = f"Runtime error loading configuration: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
-        sys.exit(1)
 
-    try:
-        # Run conversation for configured number of rounds
+        # Run conversation
         manager.run_conversation()
     except Exception as e:  # pylint: disable=broad-exception-caught
-        error_message = f"Error during conversation: {str(e)}"
-        print(error_message)
-        logger.error(error_message)
+        # Global error handling
+
+        print("An unexpected error occurred. Please check the logs for details.")    
+        
+        logger.error("An unexpected error occurred: %s", str(e), exc_info=True)
+                
         sys.exit(1)
 
 
