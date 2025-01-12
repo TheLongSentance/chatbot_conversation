@@ -72,6 +72,11 @@ chatbot_conversation/
 │   ├── config.json
 │   └── logging.conf
 ├── output/
+│   ├── examples/
+│   │   ├── brexit.transcript_250112_111207.md
+│   │   ├── churchill.transcript_250112_110658.md
+│   │   ├── dummy.transcript_250112_111856.md
+│   │   └── tennis.transcript_250112_111705.md
 │   └── transcript_<yymmdd>_<hhmmss>.md
 ├── .gitignore
 ├── environment.yml
@@ -349,14 +354,21 @@ The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_p
 
 1. Set up environment variables in `/config/.env`
 2. Configure/check logging in `/config/logging.conf`
-3. Configure your bots and conversation in `/config/config.json`
-4. Run the conversation:
+3. Configure your bots and conversation by either:
+   - Editing the default `/config/config.json`, or
+   - Creating a custom configuration file (see examples in `/config/examples/`)
+4. Run the conversation using either:
+   ```bash
+   # Using default config.json
+   python /src/chatbot_conversation/main.py
+   
+   # Or specifying a custom config file
+   python /src/chatbot_conversation/main.py /config/examples/tennis.config.json
+   ```
 
-```bash
-python /src/chatbot_conversation/main.py
-```
+The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to the `./output` directory with a filename that includes the date and time in the pattern *transcript_\<yymmdd>_\<hhmmss>.md* for example *"transcript_250112_095235.md"*
 
-The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to the `./output` directory with a filename that includes the date and time of the conversation in the pattern *transcript_\<yymmdd>_\<hhmmss>.md* so for example *"transcript_250112_095235.md"*
+The transcript file will also include the configuration data used to generate the conversation and the name of the configuration file that was used.
 
 ### Example `transcript_<yymmdd>_<hhmmss>.md`
 
@@ -393,13 +405,14 @@ Here is an excerpt from the start of a sample `transcript_250111_172128.md`:
 
 ---
 
-## Conversation Finished - 3 Rounds Completed!
+## Conversation Finished - 3 Rounds With 2 Bots Completed!
 
 ## *Conversation Generated* : 2025-01-11 17:21:28
 
 ## *Configuration Author* : Brian Sentance
 
-## *Configuration Data (config.json)* :
+## *Configuration File* : config\config.json
+
 
 // ...config.json data
 ```

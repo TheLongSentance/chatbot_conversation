@@ -45,6 +45,7 @@ class ConversationManager:
             config_path (str): Path to JSON configuration file.
         """
         logger.info("Initializing conversation manager")
+        self.config_path = config_path
         try:
             self.config = ConfigurationLoader.load_config(config_path)
         except Exception as e:
@@ -261,8 +262,10 @@ class ConversationManager:
                 # Write the configuration author name
                 file.write(f"## *Configuration Author* : {self.config.author}\n\n")
 
+                # Write the configuration file name
+                file.write(f"## *Configuration File* : {self.config_path}\n\n")
+
                 # Write the configuration data
-                file.write("## *Configuration Data (config.json)* :\n\n")
                 file.write("```json\n")
                 file.write(json.dumps(self.config.model_dump(), indent=4))
                 file.write("\n```\n")
