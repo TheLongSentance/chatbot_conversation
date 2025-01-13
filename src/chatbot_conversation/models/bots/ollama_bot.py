@@ -28,32 +28,15 @@ class OllamaChatbot(ChatbotBase):
 
     Handles initialization of Ollama client, message formatting specific to Ollama's
     expected format, and response generation.
+
+    Note: Ollama doesn't need specific __init__ implementation
+    so no __init__ method is defined here, and by leaving it out
+    the base class __init__ method is called by default.
     """
 
-    def __init__(
-        self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: float = 0.7,
-    ) -> None:
-        """
-        Initialize the OllamaChatbot with model version, system prompt, and bot name.
-
-        Args:
-            bot_model_version (str): The version of the bot model
-            bot_system_prompt (str): The system prompt for the bot
-            bot_name (str): The name of the bot
-        """
-        super().__init__(
-            bot_name=bot_name,
-            bot_system_prompt=bot_system_prompt,
-            bot_model_version=bot_model_version,
-            bot_temp=bot_temp,
-        )
-
-        # Ollama doesn't need specific __init__ implementation
-        # but we can add any future specific initialization here
+    # Ollama doesn't need specific __init__ implementation
+    # so no __init__ method is defined here so by default
+    # the base class __init__ method is by default called
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -82,14 +65,13 @@ class OllamaChatbot(ChatbotBase):
         Returns:
             str: The response from the Ollama model.
         """
-
-        # todo: add temperature to the model
-
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
         response: ChatResponse = (
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
-                model=self.model_version, messages=formatted_messages,
+                model=self.model_version,
+                messages=formatted_messages,
+                options={"temperature": self.temp},
             )
         )
         response_content = response["message"]["content"]

@@ -70,7 +70,7 @@ def test_multiple_bots() -> None:
         bot_name="GeminiTestBot2",
         bot_system_prompt="You are a helpful assistant.",
         bot_model_version="gemini-1.5-flash",
-        bot_temp = 0.7,
+        bot_temp=0.7,
     )
     bot2 = GeminiChatbot(
         bot_name="GeminiTestBot3",

@@ -40,7 +40,7 @@ class DummyChatbot(ChatbotBase):
             bot_system_prompt (str): The system prompt for the bot
             bot_name (str): The name of the bot
         """
-        super().__init__(
+        super().__init__(  # pylint: disable=duplicate-code
             bot_name=bot_name,
             bot_system_prompt=bot_system_prompt,
             bot_model_version=bot_model_version,

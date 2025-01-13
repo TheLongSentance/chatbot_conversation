@@ -60,7 +60,7 @@ class GeminiChatbot(ChatbotBase):
             bot_system_prompt (str): The system prompt for the bot
             bot_name (str): The name of the bot
         """
-        super().__init__(
+        super().__init__(  # pylint: disable=duplicate-code
             bot_name=bot_name,
             bot_system_prompt=bot_system_prompt,
             bot_model_version=bot_model_version,
@@ -75,10 +75,10 @@ class GeminiChatbot(ChatbotBase):
         # the generate_content call for Gemini as either a parameter or
         # part of the message history
 
-        # todo: GenerationConfigType for temperature
-
         self.api = google.generativeai.GenerativeModel(
-            model_name=self.model_version, system_instruction=self.system_prompt
+            model_name=self.model_version,
+            system_instruction=self.system_prompt,
+            generation_config={"temperature": self.temp},
         )
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
@@ -118,11 +118,11 @@ class GeminiChatbot(ChatbotBase):
         # for Gemini, this will happen when the system prompt is first set
         # and whenever it is updated (first round, after first round, before last)
 
-        # todo: GenerationConfigType for temperature
-
         if self.system_prompt_needs_update:
             self.api = google.generativeai.GenerativeModel(
-                model_name=self.model_version, system_instruction=self.system_prompt
+                model_name=self.model_version,
+                system_instruction=self.system_prompt,
+                generation_config={"temperature": self.temp},
             )
             self.system_prompt_updated()
 
