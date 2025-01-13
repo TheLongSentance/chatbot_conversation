@@ -34,10 +34,10 @@ def main() -> None:
     except Exception as e:  # pylint: disable=broad-exception-caught
         # Global error handling
 
-        print("An unexpected error occurred. Please check the logs for details.")    
-        
+        print("An unexpected error occurred. Please check the logs for details.")
+
         logger.error("An unexpected error occurred: %s", str(e), exc_info=True)
-                
+
         sys.exit(1)
 
 
