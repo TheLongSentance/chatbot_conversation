@@ -116,7 +116,7 @@ class ConversationManager:
         # Conversation completed
         completion_message = (
             f"## Conversation Finished - {self.config.rounds} Rounds With "
-            f"{len(self.bots)} Bots Completed!\n\n"
+            f"{len(self.bots)} Bots Completed!\n\n---\n\n"
         )
         self.display_text(completion_message)
 
@@ -260,6 +260,11 @@ class ConversationManager:
                 file.write(json.dumps(self.config.model_dump(), indent=4))
                 file.write("\n```\n")
 
+            self.display_text(
+                "Conversation transcript and configuration data saved to: "
+                f"`{file_path}`\n\n---\n\n"
+            )
             logger.info("Conversation successfully written to %s", file_path)
+
         except (IOError, ValueError) as e:
             logger.error("Failed to write conversation to file: %s", str(e))
