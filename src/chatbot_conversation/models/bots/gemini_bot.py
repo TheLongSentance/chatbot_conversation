@@ -65,8 +65,8 @@ class GeminiChatbot(ChatbotBase):
             bot_name=bot_name,
         )
 
-        # no stub file from google.generativeai so ignore for pylance etc
-        google.generativeai.configure()  # type: ignore
+        # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
+        google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
 
         # initialise api here, but will be updated in _generate_response
         # when system prompt is set or updated since it is not passed in
@@ -75,7 +75,6 @@ class GeminiChatbot(ChatbotBase):
         self.api = google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
-
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -107,7 +106,7 @@ class GeminiChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
         # test if system prompt has changed and re-initialize API in order
-        # to reset the system prompt for Gemini API. This is not typical 
+        # to reset the system prompt for Gemini API. This is not typical
         # for other models as they include system prompt in either:
         # - as a parameter in the api call (e.g. Claude)
         # - or as part of the message history (e.g. OpenAI, Ollama)
@@ -119,7 +118,7 @@ class GeminiChatbot(ChatbotBase):
             )
             self.system_prompt_updated()
 
-        message = self.api.generate_content(formatted_messages)  # type: ignore
+        message = self.api.generate_content(formatted_messages)
         response: str = message.text
         return response
 

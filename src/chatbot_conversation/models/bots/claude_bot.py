@@ -86,9 +86,9 @@ class ClaudeChatbot(ChatbotBase):
         message = self.api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
-            messages=formatted_messages,  # type: ignore
+            messages=formatted_messages,
             max_tokens=500,
             timeout=self.timeout.api_timeout,
         )
-        response_content: str = message.content[0].text  # type: ignore
-        return response_content  # type: ignore
+        response_content = message.content[0].text
+        return response_content

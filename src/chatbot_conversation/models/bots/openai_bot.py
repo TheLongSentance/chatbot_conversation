@@ -81,8 +81,8 @@ class OpenAIChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_api_util(conversation)
         completion = self.api.chat.completions.create(
             model=self.model_version,
-            messages=formatted_messages,  # type: ignore
+            messages=formatted_messages,
             timeout=self.timeout.api_timeout,
         )
-        response_content = completion.choices[0].message.content  # type: ignore
+        response_content = completion.choices[0].message.content
         return response_content
