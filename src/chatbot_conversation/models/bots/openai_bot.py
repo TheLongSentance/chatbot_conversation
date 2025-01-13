@@ -35,9 +35,10 @@ class OpenAIChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_model_version: str,
-        bot_system_prompt: str,
         bot_name: str,
+        bot_system_prompt: str,
+        bot_model_version: str,
+        bot_temp: float = 0.7,
     ) -> None:
         """
         Initialize the OpenAIChatbot with model version, system prompt, and bot name.
@@ -48,9 +49,10 @@ class OpenAIChatbot(ChatbotBase):
             bot_name (str): The name of the bot
         """
         super().__init__(
-            bot_model_version=bot_model_version,
-            bot_system_prompt=bot_system_prompt,
             bot_name=bot_name,
+            bot_system_prompt=bot_system_prompt,
+            bot_model_version=bot_model_version,
+            bot_temp=bot_temp,
         )
 
         self.api = OpenAI()
@@ -83,6 +85,7 @@ class OpenAIChatbot(ChatbotBase):
             model=self.model_version,
             messages=formatted_messages,
             timeout=self.timeout.api_timeout,
+            temperature=self.temp,
         )
         response_content = completion.choices[0].message.content
         return response_content

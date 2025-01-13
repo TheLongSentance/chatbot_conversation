@@ -22,9 +22,10 @@ class BotConfigData(BaseModel):
     """Pydantic model representing the configuration for a single bot."""
 
     bot_name: str
+    bot_prompt: str
     bot_type: str
     bot_version: str
-    bot_prompt: str
+    bot_temp: float = 0.7
 
 
 class ConversationConfig(BaseModel):

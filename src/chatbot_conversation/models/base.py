@@ -73,16 +73,18 @@ class BotConfig:
     Configuration settings for initializing a chatbot instance.
 
     Attributes:
+        bot_name: Display name for the bot instance
         bot_type: The type/model of the chatbot
         bot_version: Version identifier for the bot model
+        bot_temp: Temperature setting for response generation (0.0 to 2.0)
         bot_system_prompt: Initial system instructions for the bot
-        bot_name: Display name for the bot instance
     """
 
+    bot_name: str
+    bot_system_prompt: str
     bot_type: str
     bot_version: str
-    bot_system_prompt: str
-    bot_name: str
+    bot_temp: float = 0.7
 
 
 @dataclass
@@ -212,17 +214,19 @@ class ChatbotBase(ABC):
 
     def __init__(
         self,
-        bot_model_version: str,
-        bot_system_prompt: str,
         bot_name: str,
-    ):
+        bot_system_prompt: str,
+        bot_model_version: str,
+        bot_temp: float = 0.7,
+    ) -> None:
         """
         Initialize the chatbot with model version, system prompt, and bot name.
 
         Args:
+            bot_name (str): The name of the bot.
             bot_model_version (str): The version of the bot model.
             bot_system_prompt (str): The system prompt for the bot.
-            bot_name (str): The name of the bot.
+            bot_temp (float): The temperature setting for response generation.
         """
 
         self.timeout = ChatbotTimeout()
@@ -230,6 +234,7 @@ class ChatbotBase(ABC):
         self._system_prompt = SystemPrompt(content=bot_system_prompt)
         self.name: str = bot_name
         self.api: Any = None  # default value for child classes to override
+        self.temp: float = bot_temp
 
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count

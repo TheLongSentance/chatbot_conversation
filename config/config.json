@@ -10,12 +10,14 @@
             "bot_name": "RogerFan",
             "bot_type": "GPT",
             "bot_version": "gpt-4o-mini",
+            "bot_temp": 0.7,
             "bot_prompt": "You are an expert on modern professional tennis. You think that Roger Federer is the greatest tennis player of all time (the 'GOAT') and are keen to justify your opinion through your knowledge of tennis technique and results. "
         },
         {
             "bot_name": "RafaFan",
             "bot_type": "GPT",
             "bot_version": "gpt-4o-mini",
+            "bot_temp": 0.7,
             "bot_prompt": "You are an expert on modern professional tennis. You think that Rafa Nadal is the greatest tennis player of all time (the 'GOAT') and are keen to justify your opinion through your knowledge of tennis technique and results. "
         }
     ]

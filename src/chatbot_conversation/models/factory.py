@@ -38,9 +38,10 @@ class ChatbotFactory:
         """
         bot_class = self._bot_registry.get_bot_class(config.bot_type)
         return bot_class(
-            config.bot_version,
-            config.bot_system_prompt,
-            config.bot_name,
+            bot_name = config.bot_name,
+            bot_system_prompt = config.bot_system_prompt,
+            bot_model_version = config.bot_version,
+            bot_temp = config.bot_temp,
         )
 
     def list_available_bots(self) -> List[str]:

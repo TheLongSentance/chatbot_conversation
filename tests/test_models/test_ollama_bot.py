@@ -69,14 +69,16 @@ def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
     bot1 = OllamaChatbot(
-        bot_model_version="llama3.2",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot2",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="llama3.2",
+        bot_temp=0.7,
     )
     bot2 = OllamaChatbot(
-        bot_model_version="llama3.2",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot3",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="llama3.2",
+        bot_temp=0.7,
     )
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2

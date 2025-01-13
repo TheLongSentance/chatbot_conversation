@@ -27,9 +27,10 @@ class DummyChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_model_version: str,
-        bot_system_prompt: str,
         bot_name: str,
+        bot_system_prompt: str,
+        bot_model_version: str,
+        bot_temp: float = 0.7,
     ) -> None:
         """
         Initialize the DummyChatbot with model version, system prompt, and bot name.
@@ -40,9 +41,10 @@ class DummyChatbot(ChatbotBase):
             bot_name (str): The name of the bot
         """
         super().__init__(
-            bot_model_version=bot_model_version,
-            bot_system_prompt=bot_system_prompt,
             bot_name=bot_name,
+            bot_system_prompt=bot_system_prompt,
+            bot_model_version=bot_model_version,
+            bot_temp=bot_temp,
         )
 
         # Typically bot-specific api initialization would be done here

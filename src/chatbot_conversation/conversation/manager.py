@@ -68,10 +68,11 @@ class ConversationManager:
 
             bot = factory.create_bot(
                 BotConfig(
+                    bot_name=bot_config.bot_name,
                     bot_type=bot_config.bot_type,
                     bot_version=bot_config.bot_version,
+                    bot_temp=bot_config.bot_temp,
                     bot_system_prompt=bot_system_prompt,
-                    bot_name=bot_config.bot_name,
                 )
             )
             self.add_bot(bot)

@@ -32,9 +32,10 @@ class OllamaChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_model_version: str,
-        bot_system_prompt: str,
         bot_name: str,
+        bot_system_prompt: str,
+        bot_model_version: str,
+        bot_temp: float = 0.7,
     ) -> None:
         """
         Initialize the OllamaChatbot with model version, system prompt, and bot name.
@@ -45,9 +46,10 @@ class OllamaChatbot(ChatbotBase):
             bot_name (str): The name of the bot
         """
         super().__init__(
-            bot_model_version=bot_model_version,
-            bot_system_prompt=bot_system_prompt,
             bot_name=bot_name,
+            bot_system_prompt=bot_system_prompt,
+            bot_model_version=bot_model_version,
+            bot_temp=bot_temp,
         )
 
         # Ollama doesn't need specific __init__ implementation
@@ -80,11 +82,14 @@ class OllamaChatbot(ChatbotBase):
         Returns:
             str: The response from the Ollama model.
         """
+
+        # todo: add temperature to the model
+
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
         response: ChatResponse = (
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
-                model=self.model_version, messages=formatted_messages
+                model=self.model_version, messages=formatted_messages,
             )
         )
         response_content = response["message"]["content"]

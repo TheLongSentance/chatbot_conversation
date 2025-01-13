@@ -47,9 +47,10 @@ class GeminiChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_model_version: str,
-        bot_system_prompt: str,
         bot_name: str,
+        bot_system_prompt: str,
+        bot_model_version: str,
+        bot_temp: float = 0.7,
     ) -> None:
         """
         Initialize the GeminiChatbot with model version, system prompt, and bot name.
@@ -60,9 +61,10 @@ class GeminiChatbot(ChatbotBase):
             bot_name (str): The name of the bot
         """
         super().__init__(
-            bot_model_version=bot_model_version,
-            bot_system_prompt=bot_system_prompt,
             bot_name=bot_name,
+            bot_system_prompt=bot_system_prompt,
+            bot_model_version=bot_model_version,
+            bot_temp=bot_temp,
         )
 
         # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
@@ -72,6 +74,9 @@ class GeminiChatbot(ChatbotBase):
         # when system prompt is set or updated since it is not passed in
         # the generate_content call for Gemini as either a parameter or
         # part of the message history
+
+        # todo: GenerationConfigType for temperature
+
         self.api = google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
@@ -112,6 +117,9 @@ class GeminiChatbot(ChatbotBase):
         # - or as part of the message history (e.g. OpenAI, Ollama)
         # for Gemini, this will happen when the system prompt is first set
         # and whenever it is updated (first round, after first round, before last)
+
+        # todo: GenerationConfigType for temperature
+
         if self.system_prompt_needs_update:
             self.api = google.generativeai.GenerativeModel(
                 model_name=self.model_version, system_instruction=self.system_prompt

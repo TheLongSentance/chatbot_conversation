@@ -15,10 +15,11 @@ def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
     Test the creation of an OpenAIChatbot instance.
     """
     config = BotConfig(
+        bot_name="OpenAITestBot1",
+        bot_system_prompt="You are a helpful assistant.",
         bot_type="GPT",
         bot_version="gpt-4o-mini",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_name="OpenAITestBot1",
+        bot_temp=0.7,
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, OpenAIChatbot)
@@ -30,10 +31,11 @@ def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
     Test the creation of a ClaudeChatbot instance.
     """
     config = BotConfig(
+        bot_name="ClaudeTestBot1",
+        bot_system_prompt="You are a helpful assistant.",
         bot_type="CLAUDE",
         bot_version="claude-3-haiku-20240307",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_name="ClaudeTestBot1",
+        bot_temp=0.7,
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, ClaudeChatbot)
@@ -45,10 +47,11 @@ def test_create_gemini_chatbot(chatbot_factory: ChatbotFactory) -> None:
     Test the creation of a GeminiChatbot instance.
     """
     config = BotConfig(
+        bot_name="GeminiTestBot1",
+        bot_system_prompt="You are a helpful assistant.",
         bot_type="GEMINI",
         bot_version="gemini-1.5-flash",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_name="GeminiTestBot1",
+        bot_temp=0.7,
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, GeminiChatbot)
@@ -60,10 +63,11 @@ def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
     Test the creation of an OllamaChatbot instance.
     """
     config = BotConfig(
+        bot_name="OllamaTestBot1",
+        bot_system_prompt="You are a helpful assistant.",
         bot_type="OLLAMA",
         bot_version="llama3.2",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_name="OllamaTestBot1",
+        bot_temp=0.7,
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, OllamaChatbot)

@@ -23,9 +23,10 @@ from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
 def openai_chatbot() -> OpenAIChatbot:
     """Fixture to create an instance of OpenAIChatbot."""
     return OpenAIChatbot(
-        bot_model_version="gpt-4o-mini",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="OpenAITestBot1",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="gpt-4o-mini",
+        bot_temp=0.7,
     )
 
 
@@ -33,9 +34,10 @@ def openai_chatbot() -> OpenAIChatbot:
 def claude_chatbot() -> ClaudeChatbot:
     """Fixture to create an instance of ClaudeChatbot."""
     return ClaudeChatbot(
-        bot_model_version="claude-3-haiku-20240307",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="ClaudeTestBot1",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="claude-3-haiku-20240307",
+        bot_temp=0.7,
     )
 
 
@@ -43,9 +45,10 @@ def claude_chatbot() -> ClaudeChatbot:
 def ollama_chatbot() -> OllamaChatbot:
     """Fixture to create an instance of OllamaChatbot."""
     return OllamaChatbot(
-        bot_model_version="llama3.2",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="OllamaTestBot1",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="llama3.2",
+        bot_temp=0.7,
     )
 
 
@@ -53,9 +56,10 @@ def ollama_chatbot() -> OllamaChatbot:
 def gemini_chatbot() -> GeminiChatbot:
     """Fixture to create an instance of GeminiChatbot."""
     return GeminiChatbot(
+        bot_name="GeminiTestBot1",
         bot_model_version="gemini-1.5-flash",
         bot_system_prompt="You are a helpful assistant.",
-        bot_name="GeminiTestBot1",
+        bot_temp=0.7,
     )
 
 

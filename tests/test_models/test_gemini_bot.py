@@ -67,14 +67,16 @@ def test_empty_conversation(gemini_chatbot: GeminiChatbot) -> None:
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
     bot1 = GeminiChatbot(
-        bot_model_version="gemini-1.5-flash",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot2",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="gemini-1.5-flash",
+        bot_temp = 0.7,
     )
     bot2 = GeminiChatbot(
-        bot_model_version="gemini-1.5-flash",
-        bot_system_prompt="You are a helpful assistant.",
         bot_name="GeminiTestBot3",
+        bot_system_prompt="You are a helpful assistant.",
+        bot_model_version="gemini-1.5-flash",
+        bot_temp=0.7,
     )
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
