@@ -229,7 +229,8 @@ class ChatbotBase(ABC):
         self.model_version: str = bot_model_version
         self._system_prompt = SystemPrompt(content=bot_system_prompt)
         self.name: str = bot_name
-        self.api = self._initialize_api()
+        self.api: Any = None  # default value for child classes to override
+
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
 
@@ -279,11 +280,6 @@ class ChatbotBase(ABC):
             text_to_remove (str): The text to remove.
         """
         self._system_prompt.remove_suffix(text_to_remove)
-
-    @abstractmethod
-    def _initialize_api(self) -> Any:
-        """Initialize the API for the chatbot."""
-        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:

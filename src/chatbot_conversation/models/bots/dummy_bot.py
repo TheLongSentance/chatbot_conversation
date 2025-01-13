@@ -10,7 +10,7 @@ Classes:
 """
 
 import random
-from typing import Any, List
+from typing import List
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -25,13 +25,29 @@ class DummyChatbot(ChatbotBase):
         responses: List of predefined responses.
     """
 
-    def _initialize_api(self) -> Any:
+    def __init__(
+        self,
+        bot_model_version: str,
+        bot_system_prompt: str,
+        bot_name: str,
+    ) -> None:
         """
-        Dummy initialization method.
+        Initialize the DummyChatbot with model version, system prompt, and bot name.
 
-        Returns:
-            None
+        Args:
+            bot_model_version (str): The version of the bot model
+            bot_system_prompt (str): The system prompt for the bot
+            bot_name (str): The name of the bot
         """
+        super().__init__(
+            bot_model_version=bot_model_version,
+            bot_system_prompt=bot_system_prompt,
+            bot_name=bot_name,
+        )
+
+        # Typically bot-specific api initialization would be done here
+
+        # In this case just dummy responses for the dummy bot
         self.responses = [
             "Hello! How can I assist you today?",
             "I'm here to help you with any questions.",
@@ -44,9 +60,6 @@ class DummyChatbot(ChatbotBase):
             "Ask me anything, I'm here to help.",
             "What would you like to know today?",
         ]
-        # None is returned and assigned to self.api in ChatbotBase
-        # Ordinarily, this method would return an API client instance
-        return None
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

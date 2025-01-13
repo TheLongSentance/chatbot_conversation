@@ -11,7 +11,7 @@ Classes:
     ClaudeChatbot: Concrete implementation of chatbot using Claude's API service.
 """
 
-from typing import Any, List
+from typing import List
 
 import anthropic
 from anthropic import APIConnectionError, APIError, RateLimitError
@@ -34,14 +34,28 @@ class ClaudeChatbot(ChatbotBase):
         system_prompt: System instruction for bot behavior.
     """
 
-    def _initialize_api(self) -> Any:
+    def __init__(
+        self,
+        bot_model_version: str,
+        bot_system_prompt: str,
+        bot_name: str,
+    ) -> None:
         """
-        Initialize connection to Claude API.
+        Initialize the ClaudeChatbot with model version, system prompt, and bot name.
 
-        Returns:
-            Claude: Configured Claude client instance.
+        Args:
+            bot_model_version (str): The version of the bot model
+            bot_system_prompt (str): The system prompt for the bot
+            bot_name (str): The name of the bot
         """
-        return anthropic.Anthropic()
+        super().__init__(
+            bot_model_version=bot_model_version,
+            bot_system_prompt=bot_system_prompt,
+            bot_name=bot_name,
+        )
+
+        # Initialise Claude API
+        self.api = anthropic.Anthropic()
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -72,9 +86,9 @@ class ClaudeChatbot(ChatbotBase):
         message = self.api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
-            messages=formatted_messages,
+            messages=formatted_messages,  # type: ignore
             max_tokens=500,
             timeout=self.timeout.api_timeout,
         )
-        response_content = message.content[0].text
-        return response_content
+        response_content: str = message.content[0].text  # type: ignore
+        return response_content  # type: ignore

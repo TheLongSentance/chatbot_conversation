@@ -11,7 +11,7 @@ Classes:
     OllamaChatbot: Concrete implementation of chatbot using Ollama's API service.
 """
 
-from typing import Any, List
+from typing import List
 
 import httpx
 import ollama
@@ -30,14 +30,28 @@ class OllamaChatbot(ChatbotBase):
     expected format, and response generation.
     """
 
-    def _initialize_api(self) -> Any:
+    def __init__(
+        self,
+        bot_model_version: str,
+        bot_system_prompt: str,
+        bot_name: str,
+    ) -> None:
         """
-        Initialize connection to Ollama API.
+        Initialize the OllamaChatbot with model version, system prompt, and bot name.
 
-        Returns:
-            None: Ollama doesn't need initialization.
+        Args:
+            bot_model_version (str): The version of the bot model
+            bot_system_prompt (str): The system prompt for the bot
+            bot_name (str): The name of the bot
         """
-        return None  # Ollama doesn't need initialization
+        super().__init__(
+            bot_model_version=bot_model_version,
+            bot_system_prompt=bot_system_prompt,
+            bot_name=bot_name,
+        )
+
+        # Ollama doesn't need specific __init__ implementation
+        # but we can add any future specific initialization here
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

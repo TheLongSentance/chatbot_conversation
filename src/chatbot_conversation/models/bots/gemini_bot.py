@@ -13,7 +13,7 @@ Classes:
 """
 
 import json
-from typing import Any, List, TypedDict
+from typing import List, TypedDict
 
 import google.api_core.exceptions
 
@@ -45,22 +45,37 @@ class GeminiChatbot(ChatbotBase):
     of 'content', and response generation.
     """
 
-    def _initialize_api(self) -> Any:
+    def __init__(
+        self,
+        bot_model_version: str,
+        bot_system_prompt: str,
+        bot_name: str,
+    ) -> None:
         """
-        Initialize connection to Gemini API with system prompt.
+        Initialize the GeminiChatbot with model version, system prompt, and bot name.
 
-        Returns:
-            Any: Initialized Gemini API client.
+        Args:
+            bot_model_version (str): The version of the bot model
+            bot_system_prompt (str): The system prompt for the bot
+            bot_name (str): The name of the bot
         """
+        super().__init__(
+            bot_model_version=bot_model_version,
+            bot_system_prompt=bot_system_prompt,
+            bot_name=bot_name,
+        )
+
         # no stub file from google.generativeai so ignore for pylance etc
         google.generativeai.configure()  # type: ignore
 
-        # system prompt is not part of each response unlike most other models
-        # so we set it here (for consistency with the intended purpose of the method)
-        # but reset self.api each time the _generate_response method is called below
-        return google.generativeai.GenerativeModel(
+        # initialise api here, but will be updated in _generate_response
+        # when system prompt is set or updated since it is not passed in
+        # the generate_content call for Gemini as either a parameter or
+        # part of the message history
+        self.api = google.generativeai.GenerativeModel(
             model_name=self.model_version, system_instruction=self.system_prompt
         )
+
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -92,7 +107,12 @@ class GeminiChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
         # test if system prompt has changed and re-initialize API in order
-        # to reset the system prompt for Gemini API (not typical for other models)
+        # to reset the system prompt for Gemini API. This is not typical 
+        # for other models as they include system prompt in either:
+        # - as a parameter in the api call (e.g. Claude)
+        # - or as part of the message history (e.g. OpenAI, Ollama)
+        # for Gemini, this will happen when the system prompt is first set
+        # and whenever it is updated (first round, after first round, before last)
         if self.system_prompt_needs_update:
             self.api = google.generativeai.GenerativeModel(
                 model_name=self.model_version, system_instruction=self.system_prompt
