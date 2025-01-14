@@ -1,19 +1,16 @@
 """
-This module contains the GeminiChatbot class, a concrete implementation of the ChatbotBase class,
-which uses Google's Gemini API service to generate responses.
+Chatbot implementation using Google's Gemini API service.
 
-The GeminiChatbot class handles:
-- Initialization of the Gemini client
-- Formatting messages specific to Gemini's expected format
-- Generating responses using the Gemini API
-
-Classes:
-    _GeminiMessage: Represents a Gemini-specific message with a role and parts.
-    GeminiChatbot: Concrete implementation of chatbot using Google's Gemini API service.
+Provides a chatbot interface for various Gemini model versions including:
+- gemini-1.5-flash
+- gemini-1.5-pro
+- gemini-1.0-pro-vision
+- gemini-1.0-pro-002
+- gemini-1.0-pro-001
 """
 
 import json
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 import google.api_core.exceptions
 
@@ -24,9 +21,14 @@ from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 from chatbot_conversation.utils import get_logger
 
+# Gemini 1.5 models default temperature (others may vary)
+# Inherits range from 0.0 to 2.0 from the base class
+# Other specify in the config file for a specific model
+GEMINI_DEFAULT_TEMP = 1.0
+
 
 class _GeminiMessage(TypedDict):
-    """Represents a Gemini-specific message with a role and parts."""
+    """Internal type for Gemini API message format with role and content parts."""
 
     role: str
     parts: str
@@ -38,11 +40,17 @@ logger = get_logger("models")
 @register_bot("GEMINI")
 class GeminiChatbot(ChatbotBase):
     """
-    Concrete implementation of chatbot using Google's Gemini API service.
+    Chatbot implementation using Google's Gemini API service.
 
-    Handles initialization of Gemini model with system prompt during setup,
-    message formatting specific to Gemini's expected format using 'parts' instead
-    of 'content', and response generation.
+    Handles API initialization, message history, system prompts, and temperature
+    control. Unlike other APIs, Gemini requires system prompts to be set during
+    model initialization.
+
+    Temperature ranges:
+    - gemini-1.5-flash/pro: 0.0 - 2.0 (default: 1.0)
+    - gemini-1.0-pro-vision: 0.0 - 1.0 (default: 0.4)
+    - gemini-1.0-pro-002: 0.0 - 2.0 (default: 1.0)
+    - gemini-1.0-pro-001: 0.0 - 1.0 (default: 0.9)
     """
 
     def __init__(
@@ -50,15 +58,16 @@ class GeminiChatbot(ChatbotBase):
         bot_name: str,
         bot_system_prompt: str,
         bot_model_version: str,
-        bot_temp: float = 0.7,
+        bot_temp: Optional[float] = None,
     ) -> None:
         """
-        Initialize the GeminiChatbot with model version, system prompt, and bot name.
+        Initialize a new GeminiChatbot instance.
 
         Args:
-            bot_model_version (str): The version of the bot model
-            bot_system_prompt (str): The system prompt for the bot
-            bot_name (str): The name of the bot
+            bot_name: Identifier for this chatbot instance
+            bot_system_prompt: Initial system instructions
+            bot_model_version: Specific Gemini model version
+            bot_temp: Temperature for response generation (model-specific range)
         """
         super().__init__(  # pylint: disable=duplicate-code
             bot_name=bot_name,
@@ -78,15 +87,29 @@ class GeminiChatbot(ChatbotBase):
         self.api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt,
-            generation_config={"temperature": self.temp},
+            generation_config=google.generativeai.GenerationConfig(
+                temperature=self.temp
+            ),
         )
+
+    def _get_default_temperature(self) -> float:
+        """
+        Return the default temperature setting for Gemini models.
+
+        Returns:
+            float: Default temperature value (1.0) for Gemini response generation
+        """
+        return GEMINI_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Flags whether a gemini API exception should trigger a retry.
+        Determine if an API exception warrants a retry attempt.
+
+        Args:
+            exception: The caught exception to evaluate
 
         Returns:
-            bool: True if the exception should trigger a retry, False otherwise.
+            True if the operation should be retried
         """
         return isinstance(
             exception,
@@ -98,15 +121,16 @@ class GeminiChatbot(ChatbotBase):
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Private method to generate response using Gemini model.
-        No timeout handling is available for Gemini, so handled in ChatbotBase.
-        No passing of system prompt in generate_content, so reset self.api each time.
+        Generate a response using the Gemini API based on conversation history.
+
+        Handles message formatting, system prompt updates, and response generation.
+        System prompt changes require API reinitialization.
 
         Args:
-            conversation (List[ConversationMessage]): The conversation history.
+            conversation: Complete conversation history
 
         Returns:
-            str: The response from the Gemini model.
+            Generated response text from the model
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
@@ -122,7 +146,9 @@ class GeminiChatbot(ChatbotBase):
             self.api = google.generativeai.GenerativeModel(
                 model_name=self.model_version,
                 system_instruction=self.system_prompt,
-                generation_config={"temperature": self.temp},
+                generation_config=google.generativeai.GenerationConfig(
+                    temperature=self.temp
+                ),
             )
             self.system_prompt_updated()
 
@@ -134,13 +160,13 @@ class GeminiChatbot(ChatbotBase):
         self, conversation: List[ConversationMessage]
     ) -> List[_GeminiMessage]:
         """
-        Format message history for Gemini API submission.
+        Convert conversation messages to Gemini API format.
 
         Args:
-            conversation (List[ConversationMessage]): List of conversation messages to format.
+            conversation: Generic conversation messages
 
         Returns:
-            List[_GeminiMessage]: Messages formatted for Gemini API.
+            Messages formatted for Gemini API with appropriate roles
         """
         messages: List[_GeminiMessage] = []
 

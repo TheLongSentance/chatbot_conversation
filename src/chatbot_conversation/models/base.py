@@ -1,23 +1,30 @@
 """
-This module defines the core components for AI chatbot implementations.
+Core components for implementing AI chatbot functionality.
 
-The module provides abstract base classes and supporting classes for implementing
-AI chatbot functionality across different models and APIs. It includes message 
-structures, configuration settings, and retry logic for API calls.
+This module provides the foundation for building AI chatbots with support for
+different models and APIs. It includes robust message handling, configuration
+management, and resilient API communication with retry logic.
+
+Key Features:
+- Message structures for chat and conversation management
+- Configuration handling for bot initialization and timeouts
+- System prompt management with stateful updates
+- Abstract base class with common chatbot functionality
+- Retry logic for handling API failures gracefully
 
 Classes:
-    ChatMessage: A chat message with role and content attributes
-    ConversationMessage: A message in a conversation with bot identifier
-    BotConfig: Configuration parameters for chatbot initialization
-    ChatbotTimeout: Timeout and retry settings for API calls
-    SystemPrompt: Manager for chatbot system prompts
+    ChatMessage: Standard format for API communication messages
+    ConversationMessage: Internal format for conversation tracking
+    BotConfig: Configuration settings for bot initialization
+    ChatbotTimeout: API timeout and retry settings
+    SystemPrompt: System prompt state manager
     ChatbotBase: Abstract base class for chatbot implementations
 """
 
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, TypedDict
+from typing import Any, List, Optional, TypedDict
 
 from tenacity import (
     retry,
@@ -37,17 +44,23 @@ DEFAULT_MAX_RETRIES = 5  # Maximum number of retry attempts
 DEFAULT_MIN_WAIT = 1
 DEFAULT_MAX_WAIT = 10
 DEFAULT_WAIT_MULTIPLIER = 1.5
+# Model temperature range (most seem to be adopting range of 0.0 to 2.0)
+MIN_MODEL_TEMP = 0.0
+MAX_MODEL_TEMP = 2.0
 
 logger = get_logger("models")
 
 
 class ChatMessage(TypedDict):
     """
-    A structured message format for API communication.
+    Standardized message format for API communication.
+
+    This format aligns with common chat API expectations where messages
+    have defined roles and content.
 
     Attributes:
-        role: The role of the message sender (e.g., 'system', 'user', 'assistant')
-        content: The actual message text
+        role: Message sender's role ('system', 'user', 'assistant')
+        content: The message text content
     """
 
     role: str
@@ -56,11 +69,14 @@ class ChatMessage(TypedDict):
 
 class ConversationMessage(TypedDict):
     """
-    A message format for tracking conversations between users and bots.
+    Internal message format for conversation tracking.
+
+    Used to maintain conversation state and associate messages with specific
+    bot instances in multi-bot conversations.
 
     Attributes:
-        bot_index: Unique identifier for the bot in the conversation
-        content: The message content
+        bot_index: Unique identifier for the message source bot
+        content: The message text content
     """
 
     bot_index: int
@@ -84,7 +100,7 @@ class BotConfig:
     bot_system_prompt: str
     bot_type: str
     bot_version: str
-    bot_temp: float = 0.7
+    bot_temp: Optional[float] = None
 
 
 @dataclass
@@ -111,10 +127,15 @@ class ChatbotTimeout:
 
 class SystemPrompt:
     """
-    Manages and tracks changes to a chatbot's system prompt.
+    Manages system prompt state and modifications.
 
-    Provides methods for updating, appending, and removing content from the system
-    prompt while tracking whether the prompt needs to be refreshed in the chat context.
+    Provides a stateful interface for handling system prompts with tracking
+    of changes to ensure proper synchronization with the chat context.
+
+    Features:
+    - Content management with change tracking
+    - Prefix and suffix modification support
+    - Update state monitoring
     """
 
     def __init__(self, content: str = "") -> None:
@@ -179,22 +200,31 @@ class SystemPrompt:
 
 class ChatbotBase(ABC):
     """
-    Abstract base class defining the core interface for chatbot implementations.
+    Foundation class for chatbot implementations.
 
-    This class provides common functionality for managing chat state, handling API
-    interactions, and implementing retry logic. Child classes must implement
-    specific API integration methods.
+    Provides a robust framework for building chatbot implementations with
+    common functionality for state management, API interaction, and error
+    handling. Child classes need only implement specific API integration
+    methods.
+
+    Features:
+    - Managed system prompt handling
+    - Configurable timeout and retry logic
+    - Conversation state management
+    - Unique bot instance tracking
+    - Temperature control for response generation
+    - Debug and error logging support
 
     Class Attributes:
-        _total_count: Tracks the total number of chatbot instances created
+        _total_count: Running total of chatbot instances created
 
-    Attributes:
-        timeout: ChatbotTimeout configuration for API interactions
-        model_version: Version identifier for the bot model
-        name: Display name for the bot instance
-        api: Instance of the API client for the specific bot implementation
-        _bot_index: Unique identifier for this bot instance
-        _system_prompt: SystemPrompt instance managing the bot's system instructions
+    Instance Attributes:
+        timeout: API timeout and retry configuration
+        model_version: Bot model version identifier
+        name: Bot instance display name
+        api: API client instance (set by child classes)
+        _bot_index: Unique instance identifier
+        _system_prompt: System prompt manager
     """
 
     _total_count: int = 0  # Class variable to track total instances
@@ -217,7 +247,7 @@ class ChatbotBase(ABC):
         bot_name: str,
         bot_system_prompt: str,
         bot_model_version: str,
-        bot_temp: float = 0.7,
+        bot_temp: Optional[float] = None,  # see _get_default_temperature()
     ) -> None:
         """
         Initialize the chatbot with model version, system prompt, and bot name.
@@ -226,7 +256,9 @@ class ChatbotBase(ABC):
             bot_name (str): The name of the bot.
             bot_model_version (str): The version of the bot model.
             bot_system_prompt (str): The system prompt for the bot.
-            bot_temp (float): The temperature setting for response generation.
+            bot_temp (float | None, optional): The temperature setting for
+               response generation. If None, the child class will set a
+               default value. Defaults to None.
         """
 
         self.timeout = ChatbotTimeout()
@@ -234,10 +266,37 @@ class ChatbotBase(ABC):
         self._system_prompt = SystemPrompt(content=bot_system_prompt)
         self.name: str = bot_name
         self.api: Any = None  # default value for child classes to override
-        self.temp: float = bot_temp
+        self.temp = (
+            bot_temp if bot_temp is not None else self._get_default_temperature()
+        )
 
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
+
+    @property
+    def temp(self) -> float | None:
+        """Get the temperature setting."""
+        return self._temp
+
+    @temp.setter
+    def temp(self, value: float) -> None:
+        """
+        Set temperature with validation. Child classes may override to implement
+        different temperature ranges.
+
+        Args:
+            value (float): Temperature value between MIN_MODEL_TEMP and MAX_MODEL_TEMP.
+                Child classes may enforce different ranges.
+
+        Raises:
+            ValueError: If temperature is outside valid range
+        """
+        if not MIN_MODEL_TEMP <= value <= MAX_MODEL_TEMP:
+            raise ValueError(
+                f"Temperature {value} outside valid range "
+                f"({MIN_MODEL_TEMP} to {MAX_MODEL_TEMP})"
+            )
+        self._temp = value
 
     @property
     def bot_index(self) -> int:
@@ -285,6 +344,11 @@ class ChatbotBase(ABC):
             text_to_remove (str): The text to remove.
         """
         self._system_prompt.remove_suffix(text_to_remove)
+
+    @abstractmethod
+    def _get_default_temperature(self) -> float:
+        """Get default temperature for each the child class model."""
+        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:

@@ -1,28 +1,50 @@
 """
-This module contains the DummyChatbot class, a concrete implementation of the ChatbotBase class,
-which returns random predefined responses.
+This module implements a simple DummyChatbot for testing and demonstration purposes.
 
-The DummyChatbot class handles:
-- Generating random responses from a predefined list of sentences.
+The DummyChatbot provides a basic implementation of the ChatbotBase class that:
+- Returns random responses from a predefined list
+- Demonstrates the basic structure of a chatbot implementation
+- Serves as a testing and development reference
+- Requires minimal setup with no external API dependencies
+
+This implementation is useful for:
+- Testing the chatbot framework
+- Local development without API credentials
+- Understanding the basic chatbot architecture
 
 Classes:
-    DummyChatbot: Concrete implementation of chatbot returning random responses.
+    DummyChatbot: Simple chatbot implementation returning random responses.
 """
 
 import random
-from typing import List
+from typing import List, Optional
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
+
+# Default temperature for Dummy models
+DUMMY_DEFAULT_TEMP = 1.0
 
 
 @register_bot("DUMMY")
 class DummyChatbot(ChatbotBase):
     """
-    Concrete implementation of chatbot returning random responses.
+    Simple chatbot implementation that returns random predefined responses.
+
+    This implementation provides:
+    - Zero-dependency response generation
+    - Predefined set of generic responses
+    - Demonstration of ChatbotBase interface
+    - Mock temperature parameter (not used in generation)
+
+    Note: Temperature setting has no effect on response generation as responses
+    are selected randomly from a fixed list.
 
     Attributes:
-        responses: List of predefined responses.
+        responses (List[str]): Collection of predefined response messages
+        temp (float): Unused temperature parameter (included for interface consistency)
+        model_version (str): Version identifier (for compatibility)
+        system_prompt (str): System instructions (for compatibility)
     """
 
     def __init__(
@@ -30,15 +52,16 @@ class DummyChatbot(ChatbotBase):
         bot_name: str,
         bot_system_prompt: str,
         bot_model_version: str,
-        bot_temp: float = 0.7,
+        bot_temp: Optional[float] = None,
     ) -> None:
         """
         Initialize the DummyChatbot with model version, system prompt, and bot name.
 
         Args:
-            bot_model_version (str): The version of the bot model
-            bot_system_prompt (str): The system prompt for the bot
-            bot_name (str): The name of the bot
+            bot_name: The name of the bot
+            bot_system_prompt: The system prompt for the bot
+            bot_model_version: The version of the bot model
+            bot_temp: Optional temperature parameter (defaults to None)
         """
         super().__init__(  # pylint: disable=duplicate-code
             bot_name=bot_name,
@@ -62,6 +85,15 @@ class DummyChatbot(ChatbotBase):
             "Ask me anything, I'm here to help.",
             "What would you like to know today?",
         ]
+
+    def _get_default_temperature(self) -> float:
+        """
+        Return the default temperature setting for Dummy models.
+
+        Returns:
+            float: Default temperature value (1.0) for Dummy response generation
+        """
+        return DUMMY_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

@@ -1,14 +1,10 @@
 """
-This module contains the OllamaChatbot class, a concrete implementation of the ChatbotBase class,
-which uses Ollama's API service to generate responses.
+Ollama chatbot integration module.
 
-The OllamaChatbot class handles:
-- Initialization of the Ollama client
-- Formatting messages specific to Ollama's expected format
-- Generating responses using the Ollama API
-
-Classes:
-    OllamaChatbot: Concrete implementation of chatbot using Ollama's API service.
+Provides a ChatbotBase implementation for interacting with Ollama's API service.
+Handles model interactions, conversation management, and response generation with
+configurable temperature settings. Includes automatic retry logic for network
+issues and proper message formatting for the Ollama API.
 """
 
 from typing import List
@@ -20,50 +16,87 @@ from ollama import ChatResponse
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
+# Model temperature range specifically for Ollama API
+# Overrides the base class range of 0.0-2.0
+OLLAMA_MIN_MODEL_TEMP = 0.0
+OLLAMA_MAX_MODEL_TEMP = 1.0
+OLLAMA_DEFAULT_TEMP = 0.8
+
 
 @register_bot("OLLAMA")
 class OllamaChatbot(ChatbotBase):
     """
-    Concrete implementation of chatbot using Ollama's API service.
+    Ollama API chatbot implementation.
 
-    Handles initialization of Ollama client, message formatting specific to Ollama's
-    expected format, and response generation.
+    Manages interactions with Ollama language models through their API service.
+    Provides conversation handling, response generation, and error recovery.
+    Supports temperature-based response variation within Ollama's 0.0-1.0 range.
 
-    Note: Ollama doesn't need specific __init__ implementation
-    so no __init__ method is defined here, and by leaving it out
-    the base class __init__ method is called by default.
+    Inherits from ChatbotBase to maintain consistent interface across bot implementations.
     """
 
-    # Ollama doesn't need specific __init__ implementation
-    # so no __init__ method is defined here so by default
-    # the base class __init__ method is by default called
+    # no __init__() method needed, OllamaChatbot uses the base class __init__()
+    # which is automatically called when creating an instance of this class
+
+    def _get_default_temperature(self) -> float:
+        """
+        Return the default temperature setting for Ollama models.
+
+        Returns:
+            float: Default temperature value (0.8) for Ollama response generation
+        """
+        return OLLAMA_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Check if the exception is a network error or timeout.
+        Evaluate if an operation should be retried based on the exception type.
+
+        Determines if the given exception indicates a recoverable error
+        (like network timeouts) that warrants a retry attempt.
 
         Args:
-            exception (Exception): The exception to check.
+            exception (Exception): The exception to evaluate
 
         Returns:
-            bool: True if the exception is a network error or timeout, False otherwise.
+            bool: True if the operation should be retried, False otherwise
         """
         return isinstance(
             exception,
             (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError),
         )
 
-    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
+    @ChatbotBase.temp.setter  # type: ignore
+    def temp(self, value: float) -> None:
         """
-        Private method to generate response using Ollama's chat model.
-        No timeout handling is available in the Ollama API client.
-        Timeout handling is done in ChatbotBase with @retry decorator.
+        Set the temperature value for response generation.
+
+        Validates and sets the temperature within Ollama's supported range (0.0-1.0).
+        Higher values increase response randomness, lower values make responses
+        more deterministic.
 
         Args:
-            conversation (List[ConversationMessage]): The conversation history.
+            value (float): Temperature value between 0.0 and 1.0
+
+        Raises:
+            ValueError: If temperature is outside Ollama's valid range
+        """
+        if not OLLAMA_MIN_MODEL_TEMP <= value <= OLLAMA_MAX_MODEL_TEMP:
+            raise ValueError(f"Ollama temperature {value} must be between 0.0 and 1.0")
+        self._temp = value
+
+    def _generate_response(self, conversation: List[ConversationMessage]) -> str:
+        """
+        Generate a model response for the given conversation.
+
+        Processes the conversation history through the Ollama API to generate
+        a contextually appropriate response using the configured model and
+        temperature settings.
+
+        Args:
+            conversation (List[ConversationMessage]): Conversation history to process
 
         Returns:
-            str: The response from the Ollama model.
+            str: Generated response text from the Ollama model
         """
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)

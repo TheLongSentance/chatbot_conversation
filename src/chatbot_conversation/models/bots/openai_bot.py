@@ -1,36 +1,49 @@
 """
-This module contains the OpenAIChatbot class, a concrete implementation of the ChatbotBase class,
-which uses OpenAI's API service to generate responses using the GPT model.
+A concrete implementation of the ChatbotBase class that integrates with OpenAI's GPT API service.
 
-The OpenAIChatbot class handles:
-- Initialization of the OpenAI client
-- Formatting messages specific to OpenAI's expected format
-- Generating responses using the GPT model
+This module provides the OpenAIChatbot class which handles all interactions with OpenAI's API,
+including message formatting, API calls, and error handling. It supports various GPT models
+and configurable parameters for response generation.
+
+Key Features:
+- OpenAI API client management
+- Message formatting for GPT models
+- Configurable temperature and timeout settings
+- Error handling and retry logic
+- Support for system prompts and conversation history
 
 Classes:
-    OpenAIChatbot: Concrete implementation of chatbot using OpenAI's API service.
+    OpenAIChatbot: A chatbot implementation using OpenAI's GPT models.
 """
 
-from typing import List
+from typing import List, Optional
 
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
+# OpenAI default temperature for GPT models
+# Inherits range from 0.0 to 2.0 from the base class
+# For other temps specify in the config file for a specific model
+OPENAI_DEFAULT_TEMP = 1.0
+
 
 @register_bot("GPT")
 class OpenAIChatbot(ChatbotBase):
     """
-    Concrete implementation of chatbot using OpenAI's API service.
+    A chatbot implementation that uses OpenAI's GPT models for generating responses.
 
-    Handles initialization of OpenAI client, message formatting specific to OpenAI's
-    expected format, and response generation using the GPT model.
+    This class manages the interaction with OpenAI's API, handling authentication,
+    message formatting, and response generation. It supports customizable parameters
+    like model version and temperature for fine-tuning the bot's behavior.
 
     Attributes:
-        api: OpenAI client instance.
-        model_version: Version of GPT model to use.
-        system_prompt: System instruction for bot behavior.
+        api (OpenAI): Initialized OpenAI client instance.
+        model_version (str): The GPT model version to use (e.g., "gpt-4", "gpt-3.5-turbo").
+        system_prompt (str): Initial instruction that defines the bot's behavior and role.
+        temp (float): Temperature parameter for response generation (0.0-2.0).
+        timeout (TimeoutConfig): Configuration for API timeouts.
     """
 
     def __init__(
@@ -38,15 +51,22 @@ class OpenAIChatbot(ChatbotBase):
         bot_name: str,
         bot_system_prompt: str,
         bot_model_version: str,
-        bot_temp: float = 0.7,
+        bot_temp: Optional[float] = None,
     ) -> None:
         """
-        Initialize the OpenAIChatbot with model version, system prompt, and bot name.
+        Initialize a new OpenAIChatbot instance.
 
         Args:
-            bot_model_version (str): The version of the bot model
-            bot_system_prompt (str): The system prompt for the bot
-            bot_name (str): The name of the bot
+            bot_name (str): Identifier name for the chatbot instance.
+            bot_system_prompt (str): Initial instruction defining the bot's behavior and role.
+            bot_model_version (str): GPT model version to use (e.g., "gpt-4").
+            bot_temp (float, optional): Temperature for response generation. Defaults to 1.0.
+                - 0.0: Focused, deterministic responses
+                - 1.0: Balanced creativity and coherence
+                - 2.0: Maximum creativity and variation
+
+        Note:
+            The OpenAI API key should be set in the environment variables.
         """
         super().__init__(  # pylint: disable=duplicate-code
             bot_name=bot_name,
@@ -57,27 +77,51 @@ class OpenAIChatbot(ChatbotBase):
 
         self.api = OpenAI()
 
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    def _get_default_temperature(self) -> float:
         """
-        Check if the exception is a network error or timeout.
-
-        Args:
-            exception (Exception): The exception to check.
+        Return the default temperature setting for OpenAI GPT models.
 
         Returns:
-            bool: True if the exception is a network error or timeout, False otherwise.
+            float: Default temperature value (1.0) for OpenAI GPT response generation
+        """
+        return OPENAI_DEFAULT_TEMP
+
+    def _should_retry_on_exception(self, exception: Exception) -> bool:
+        """
+        Determine if an API call should be retried based on the exception type.
+
+        Evaluates whether the encountered exception is temporary (like network issues
+        or rate limits) and thus suitable for a retry attempt.
+
+        Args:
+            exception (Exception): The caught exception to evaluate.
+
+        Returns:
+            bool: True if the operation should be retried, False otherwise.
+
+        Note:
+            Currently handles APIError, APIConnectionError, and RateLimitError as
+            retry-able exceptions.
         """
         return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Private method to generate response using OpenAI's chat completion.
+        Generate a response using OpenAI's chat completion API.
+
+        Formats the conversation history and sends it to OpenAI's API for processing.
+        Handles the API interaction and extracts the generated response.
 
         Args:
-            conversation (List[ConversationMessage]): List of conversation messages.
+            conversation (List[ConversationMessage]): The conversation history,
+                including system prompt, user messages, and assistant responses.
 
         Returns:
-            str: Generated response from the model.
+            str: The generated response text from the GPT model.
+
+        Note:
+            Uses the configured model version, temperature, and timeout settings
+            when making the API call.
         """
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)

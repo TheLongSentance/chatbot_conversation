@@ -164,7 +164,7 @@ class ConversationManager:
                 logger.error(error_message)
                 response = (
                     f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
-                    "My mind seems to be elsewhere."
+                    "My mind seems to be focussed elsewhere."
                 )
             self.conversation.append({"bot_index": bot.bot_index, "content": response})
             logger.debug(
