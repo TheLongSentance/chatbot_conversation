@@ -1,5 +1,15 @@
 """
-This module contains the BotRegistry class for managing the registration of different chatbot types.
+Singleton registry for managing chatbot type registration and instantiation.
+
+This module implements a singleton registry that maintains mappings between
+chatbot type names and their implementing classes. It provides automatic
+discovery and registration of bot implementations through file system scanning.
+
+Classes:
+    BotRegistry: Singleton registry managing chatbot class registration and lookup.
+
+Functions:
+    register_bot: Decorator for registering chatbot implementations with the registry.
 """
 
 import importlib

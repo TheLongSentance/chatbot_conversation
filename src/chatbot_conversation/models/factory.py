@@ -1,8 +1,12 @@
 """
-This module contains the ChatbotFactory class for creating different types of chatbots.
+Factory module for creating configured chatbot instances.
+
+This module provides a factory that creates chatbot instances using configuration
+and the bot registry. It handles type validation and proper initialization of
+chatbot classes with their required configuration parameters.
 
 Classes:
-    ChatbotFactory: Factory for creating different types of chatbots using dependency injection.
+    ChatbotFactory: Creates configured chatbot instances using dependency injection.
 """
 
 from typing import List
