@@ -17,16 +17,24 @@ Classes:
 """
 
 import random
-from typing import List, Optional
+from typing import List
 
-from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotBase,
+    ChatbotConfig,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bot_registry import register_bot
+
+MODEL_TYPE = "DUMMY"
 
 # Default temperature for Dummy models
 DUMMY_DEFAULT_TEMP = 1.0
+# Default max tokens for Dummy models
+DUMMY_MAX_TOKENS = 50
 
 
-@register_bot("DUMMY")
+@register_bot(MODEL_TYPE)
 class DummyChatbot(ChatbotBase):
     """
     Simple chatbot implementation that returns random predefined responses.
@@ -49,10 +57,7 @@ class DummyChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: Optional[float] = None,
+        config: ChatbotConfig,
     ) -> None:
         """
         Initialize the DummyChatbot with model version, system prompt, and bot name.
@@ -63,17 +68,12 @@ class DummyChatbot(ChatbotBase):
             bot_model_version: The version of the bot model
             bot_temp: Optional temperature parameter (defaults to None)
         """
-        super().__init__(  # pylint: disable=duplicate-code
-            bot_name=bot_name,
-            bot_system_prompt=bot_system_prompt,
-            bot_model_version=bot_model_version,
-            bot_temp=bot_temp,
-        )
+        super().__init__(config)  # pylint: disable=duplicate-code
 
         # Typically bot-specific api initialization would be done here
 
         # In this case just dummy responses for the dummy bot
-        self.responses = [
+        self._responses = [
             "Hello! How can I assist you today?",
             "I'm here to help you with any questions.",
             "What can I do for you?",
@@ -86,14 +86,32 @@ class DummyChatbot(ChatbotBase):
             "What would you like to know today?",
         ]
 
+    def _get_model_type(self) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        return MODEL_TYPE
+
     def _get_default_temperature(self) -> float:
         """
-        Return the default temperature setting for Dummy models.
+        Example implementation of abstract method to get the default temperature.
 
         Returns:
             float: Default temperature value (1.0) for Dummy response generation
         """
         return DUMMY_DEFAULT_TEMP
+
+    def _get_default_max_tokens(self) -> int:
+        """
+        Example override of ChatbotBase method to getthe default max tokens.
+
+        Returns:
+            float: Default temperature value (1.0) for Dummy response generation
+        """
+        return DUMMY_MAX_TOKENS
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -119,4 +137,4 @@ class DummyChatbot(ChatbotBase):
         """
         # Dummy bot returns a random response from the predefined list
         # instead of using an API to generate a response
-        return random.choice(self.responses)
+        return random.choice(self._responses)

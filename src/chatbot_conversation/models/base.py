@@ -1,29 +1,30 @@
 """
-Core components for implementing AI chatbot functionality.
+Core components for building AI chatbot systems.
 
-This module provides the foundation for building AI chatbots with support for
-different models and APIs. It includes robust message handling, configuration
-management, and resilient API communication with retry logic.
+This module provides a comprehensive framework for implementing AI chatbots 
+that can interface with various language models and APIs. It includes robust
+message handling, configuration management, and fault-tolerant API communication.
 
-Key Features:
-- Message structures for chat and conversation management
-- Configuration handling for bot initialization and timeouts
-- System prompt management with stateful updates
-- Abstract base class with common chatbot functionality
-- Retry logic for handling API failures gracefully
+Core Components:
+- Message Structures: Standardized formats for API and internal communication
+- Configuration: Settings for bot initialization, timeouts, and model parameters
+- System Prompt Management: Stateful handling of system instructions
+- Base Implementation: Abstract foundation with common chatbot functionality
+- Error Handling: Comprehensive retry logic for API resilience
 
-Classes:
-    ChatMessage: Standard format for API communication messages
-    ConversationMessage: Internal format for conversation tracking
-    BotConfig: Configuration settings for bot initialization
-    ChatbotTimeout: API timeout and retry settings
-    SystemPrompt: System prompt state manager
-    ChatbotBase: Abstract base class for chatbot implementations
+Major Classes:
+    ChatMessage: Standardized API message format
+    ConversationMessage: Internal message tracking format
+    ChatbotTimeout: API communication settings
+    ChatbotParamsOpt: Optional LLM runtime parameters
+    ChatbotModel: Model configuration container
+    ChatbotConfig: Bot instance configuration
+    ChatbotBase: Abstract foundation for implementations
 """
 
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, List, Optional, TypedDict
 
 from tenacity import (
@@ -47,20 +48,22 @@ DEFAULT_WAIT_MULTIPLIER = 1.5
 # Model temperature range (most seem to be adopting range of 0.0 to 2.0)
 MIN_MODEL_TEMP = 0.0
 MAX_MODEL_TEMP = 2.0
+# Default maximum tokens for response generation
+DEFAULT_MAX_TOKENS = 300
 
 logger = get_logger("models")
 
 
 class ChatMessage(TypedDict):
     """
-    Standardized message format for API communication.
+    Standard message format for API interactions.
 
-    This format aligns with common chat API expectations where messages
-    have defined roles and content.
+    Represents a single message in the chat sequence with role-based
+    attribution and content.
 
     Attributes:
-        role: Message sender's role ('system', 'user', 'assistant')
-        content: The message text content
+        role: Identifies message source ('system', 'user', 'assistant')
+        content: The actual message text
     """
 
     role: str
@@ -69,14 +72,14 @@ class ChatMessage(TypedDict):
 
 class ConversationMessage(TypedDict):
     """
-    Internal message format for conversation tracking.
+    Internal format for conversation state management.
 
-    Used to maintain conversation state and associate messages with specific
-    bot instances in multi-bot conversations.
+    Tracks messages with their source bot for multi-bot conversations
+    and maintains conversation history.
 
     Attributes:
-        bot_index: Unique identifier for the message source bot
-        content: The message text content
+        bot_index: Integer identifier of the source bot
+        content: The message content
     """
 
     bot_index: int
@@ -84,37 +87,20 @@ class ConversationMessage(TypedDict):
 
 
 @dataclass
-class BotConfig:
-    """
-    Configuration settings for initializing a chatbot instance.
-
-    Attributes:
-        bot_name: Display name for the bot instance
-        bot_type: The type/model of the chatbot
-        bot_version: Version identifier for the bot model
-        bot_temp: Temperature setting for response generation (0.0 to 2.0)
-        bot_system_prompt: Initial system instructions for the bot
-    """
-
-    bot_name: str
-    bot_system_prompt: str
-    bot_type: str
-    bot_version: str
-    bot_temp: Optional[float] = None
-
-
-@dataclass
 class ChatbotTimeout:
     """
-    Configuration for API timeout and retry behavior.
+    API communication timeout and retry configuration.
+
+    Controls the timing and retry behavior for API interactions to ensure
+    reliable operation even with unstable connections.
 
     Attributes:
-        total: Maximum total time allowed for API operations in seconds
-        api_timeout: Timeout for individual API calls in seconds
-        max_retries: Maximum number of retry attempts
-        min_wait: Minimum wait time between retries in seconds
-        max_wait: Maximum wait time between retries in seconds
-        wait_multiplier: Exponential backoff multiplier for retry delays
+        total: Overall timeout for complete API operations (seconds)
+        api_timeout: Individual API call timeout (seconds)
+        max_retries: Maximum retry attempts for failed calls
+        min_wait: Minimum delay between retries (seconds)
+        max_wait: Maximum delay between retries (seconds)
+        wait_multiplier: Factor for exponential backoff calculation
     """
 
     total: int = DEFAULT_TOTAL_TIMEOUT
@@ -125,77 +111,43 @@ class ChatbotTimeout:
     wait_multiplier: float = DEFAULT_WAIT_MULTIPLIER
 
 
-class SystemPrompt:
-    """
-    Manages system prompt state and modifications.
+@dataclass
+class ChatbotParamsOpt:
+    """Optional LLM runtime parameters for chatbot instances."""
 
-    Provides a stateful interface for handling system prompts with tracking
-    of changes to ensure proper synchronization with the chat context.
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
 
-    Features:
-    - Content management with change tracking
-    - Prefix and suffix modification support
-    - Update state monitoring
-    """
+    # Add validation
+    def __post_init__(self):
+        if (
+            self.temperature is not None
+            and not MIN_MODEL_TEMP <= self.temperature <= MAX_MODEL_TEMP
+        ):
+            raise ValueError(
+                f"Temperature must be between {MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
+            )
+        if self.max_tokens is not None and self.max_tokens <= 0:
+            raise ValueError("max_tokens must be greater than 0")
 
-    def __init__(self, content: str = "") -> None:
-        self._content: str = content
-        self._needs_update: bool = True
 
-    @property
-    def content(self) -> str:
-        """Get the current content of the system prompt."""
-        return self._content
+@dataclass
+class ChatbotModel:
+    """Model information for chatbot instances."""
 
-    @content.setter
-    def content(self, value: str) -> None:
-        """
-        Sets the content of the system prompt and marks it as needing an update.
+    type: str
+    version: str
+    params_opt: ChatbotParamsOpt = field(default_factory=ChatbotParamsOpt)
 
-        Args:
-            value (str): The new content for the system prompt
-        """
-        self._content = value
-        self._needs_update = True
 
-    @property
-    def needs_update(self) -> bool:
-        """Check if the system prompt needs to be updated in the chat context."""
-        return self._needs_update
+@dataclass
+class ChatbotConfig:
+    """Runtime configuration for chatbot instances."""
 
-    def mark_updated(self) -> None:
-        """Mark the system prompt as having been updated in the chat context."""
-        self._needs_update = False
-
-    def add_suffix(self, additional_prompt: str) -> None:
-        """
-        Append text to the end of the system prompt.
-
-        Args:
-            additional_prompt (str): Text to append to the prompt
-        """
-        if additional_prompt:
-            self.content += additional_prompt
-
-    def remove_suffix(self, text_to_remove: str) -> None:
-        """
-        Remove specified text from the end of the system prompt if present.
-
-        Args:
-            text_to_remove (str): Text to remove from the end of the prompt
-        """
-        if text_to_remove and self.content.endswith(text_to_remove):
-            self.content = self.content[: -len(text_to_remove)]
-
-    def add_prefix(self, text_to_add: str) -> None:
-        """Add text to start of prompt."""
-        if text_to_add:
-            self.content = text_to_add + self.content
-
-    def remove_prefix(self, text_to_remove: str) -> None:
-        """Remove text from start of prompt if present."""
-        if text_to_remove and self.content.startswith(text_to_remove):
-            self.content = self.content[len(text_to_remove) :]
+    name: str
+    system_prompt: str
+    model: ChatbotModel
+    timeout: ChatbotTimeout = field(default_factory=ChatbotTimeout)
 
 
 class ChatbotBase(ABC):
@@ -244,10 +196,7 @@ class ChatbotBase(ABC):
 
     def __init__(
         self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: Optional[float] = None,  # see _get_default_temperature()
+        config: ChatbotConfig,
     ) -> None:
         """
         Initialize the chatbot with model version, system prompt, and bot name.
@@ -260,53 +209,82 @@ class ChatbotBase(ABC):
                response generation. If None, the child class will set a
                default value. Defaults to None.
         """
+        # Validate model type before setting attributes
+        expected_type = self._get_model_type()
+        if config.model.type != expected_type:
+            raise ValueError(
+                f"Invalid model type for {self.__class__.__name__}: "
+                f"got '{config.model.type}', expected '{expected_type}'"
+            )
 
-        self.timeout = ChatbotTimeout()
-        self.model_version: str = bot_model_version
-        self._system_prompt = SystemPrompt(content=bot_system_prompt)
-        self.name: str = bot_name
-        self.api: Any = None  # default value for child classes to override
-        self.temp = (
-            bot_temp if bot_temp is not None else self._get_default_temperature()
+        # Read-only configuration
+        self._name: str = config.name
+        self._model_type: str = config.model.type
+        self._model_version: str = config.model.version
+        self._model_timeout = config.timeout
+        self._model_temperature: float = (
+            config.model.params_opt.temperature
+            if config.model.params_opt.temperature is not None
+            else self._get_default_temperature()
+        )
+        self._model_max_tokens: int = (
+            config.model.params_opt.max_tokens
+            if config.model.params_opt.max_tokens is not None
+            else self._get_default_max_tokens()
         )
 
+        # Mutable state
+        self._system_prompt: str = config.system_prompt
+        self._model_api: Any = None
+
+        # Internal tracking
+        self._model_system_prompt_needs_update: bool = True
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
 
+    # Read-only properties
     @property
-    def temp(self) -> float | None:
-        """Get the temperature setting."""
-        return self._temp
+    def name(self) -> str:
+        return self._name
 
-    @temp.setter
-    def temp(self, value: float) -> None:
-        """
-        Set temperature with validation. Child classes may override to implement
-        different temperature ranges.
+    # Read-only properties
+    @property
+    def model_type(self) -> str:
+        return self._model_type
 
-        Args:
-            value (float): Temperature value between MIN_MODEL_TEMP and MAX_MODEL_TEMP.
-                Child classes may enforce different ranges.
+    @property
+    def model_version(self) -> str:
+        return self._model_version
 
-        Raises:
-            ValueError: If temperature is outside valid range
-        """
-        if not MIN_MODEL_TEMP <= value <= MAX_MODEL_TEMP:
-            raise ValueError(
-                f"Temperature {value} outside valid range "
-                f"({MIN_MODEL_TEMP} to {MAX_MODEL_TEMP})"
-            )
-        self._temp = value
+    @property
+    def model_temperature(self) -> float:
+        return self._model_temperature
+
+    @property
+    def model_max_tokens(self) -> int:
+        return self._model_max_tokens
+
+    @property
+    def model_timeout(self) -> ChatbotTimeout:
+        return self._model_timeout
 
     @property
     def bot_index(self) -> int:
-        """Get the unique identifier for this bot instance."""
         return self._bot_index
+
+    # Read-write properties
+    @property
+    def model_api(self) -> Any:
+        return self._model_api
+
+    @model_api.setter
+    def model_api(self, value: Any) -> None:
+        self._model_api = value
 
     @property
     def system_prompt(self) -> str:
         """Get the current system prompt content."""
-        return self._system_prompt.content
+        return self._system_prompt
 
     @system_prompt.setter
     def system_prompt(self, value: str) -> None:
@@ -316,39 +294,36 @@ class ChatbotBase(ABC):
         Args:
             value (str): The new system prompt content
         """
-        self._system_prompt.content = value
+        self._system_prompt = value
+        self._model_system_prompt_needs_update = True
 
     @property
-    def system_prompt_needs_update(self) -> bool:
-        """Check if the system prompt needs to be refreshed in the chat context."""
-        return self._system_prompt.needs_update
+    def model_system_prompt_needs_update(self) -> bool:
+        """Check if the system prompt needs to be updated in the model."""
+        return self._model_system_prompt_needs_update
 
-    def system_prompt_updated(self) -> None:
-        """Mark the system prompt as having been updated in the chat context."""
-        self._system_prompt.mark_updated()
+    def model_system_prompt_updated(self) -> None:
+        """Mark the model system prompt as updated."""
+        self._model_system_prompt_needs_update = False
 
-    def system_prompt_add_suffix(self, additional_prompt: str) -> None:
+    @abstractmethod
+    def _get_model_type(self) -> str:
         """
-        Append additional text to the system prompt.
+        Get the model type identifier for the chatbot.
 
-        Args:
-            additional_prompt (str): The text to append.
+        Returns:
+            str: The model type identifier for the chatbot.
         """
-        self._system_prompt.add_suffix(additional_prompt)
-
-    def system_prompt_remove_suffix(self, text_to_remove: str) -> None:
-        """
-        Remove specific text from the end of the system prompt.
-
-        Args:
-            text_to_remove (str): The text to remove.
-        """
-        self._system_prompt.remove_suffix(text_to_remove)
+        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _get_default_temperature(self) -> float:
         """Get default temperature for each the child class model."""
         pass  # pylint: disable=unnecessary-pass
+
+    def _get_default_max_tokens(self) -> int:
+        """Get default max_tokens."""
+        return DEFAULT_MAX_TOKENS
 
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:
@@ -370,20 +345,20 @@ class ChatbotBase(ABC):
 
     def generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate a response based on the conversation history with retry logic.
+        Generate a response with automatic retry handling.
 
-        Implements exponential backoff and retry logic for API calls, handling
-        timeouts and transient errors based on bot-specific criteria.
+        Implements fault-tolerant API communication with exponential backoff
+        and configurable retry behavior for handling transient failures.
 
         Args:
-            conversation: List of previous messages in the conversation
+            conversation: Sequential list of prior conversation messages
 
         Returns:
-            The generated response text
+            Generated response text from the model
 
         Raises:
-            ValueError: If the model returns an empty response
-            Various exceptions: Based on specific API implementations
+            ValueError: When model produces empty response
+            Various API-specific exceptions from implementations
         """
 
         # @retry around _inner_generate_response inside generate_response because
@@ -391,13 +366,13 @@ class ChatbotBase(ABC):
         # when applied as a decorator to _generate_response directly
         @retry(
             stop=stop_any(
-                stop_after_attempt(self.timeout.max_retries),
-                stop_after_delay(self.timeout.total),
+                stop_after_attempt(self.model_timeout.max_retries),
+                stop_after_delay(self.model_timeout.total),
             ),
             wait=wait_random_exponential(
-                multiplier=self.timeout.wait_multiplier,
-                min=self.timeout.min_wait,
-                max=self.timeout.max_wait,
+                multiplier=self.model_timeout.wait_multiplier,
+                min=self.model_timeout.min_wait,
+                max=self.model_timeout.max_wait,
             ),
             retry=retry_if_exception(
                 lambda e: (

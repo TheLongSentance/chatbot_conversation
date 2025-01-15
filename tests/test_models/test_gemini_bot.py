@@ -9,7 +9,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.models import (
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 
 
@@ -38,7 +43,7 @@ def test_gemini_bot(gemini_chatbot: GeminiChatbot) -> None:
     assert gemini_chatbot.name == "GeminiTestBot1"
     assert gemini_chatbot.bot_index == 1
     assert gemini_chatbot.get_total_bots() == 1
-    assert gemini_chatbot.api is not None
+    assert gemini_chatbot.model_api is not None
 
     conversation = [
         ConversationMessage(
@@ -66,18 +71,29 @@ def test_empty_conversation(gemini_chatbot: GeminiChatbot) -> None:
 
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
-    bot1 = GeminiChatbot(
-        bot_name="GeminiTestBot2",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="gemini-1.5-flash",
-        bot_temp=0.7,
+
+    config1: ChatbotConfig = ChatbotConfig(
+        name="TestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="GEMINI",
+            version="gemini-1.5-flash",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
-    bot2 = GeminiChatbot(
-        bot_name="GeminiTestBot3",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="gemini-1.5-flash",
-        bot_temp=0.7,
+    config2: ChatbotConfig = ChatbotConfig(
+        name="TestBot2",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="GEMINI",
+            version="gemini-1.5-flash",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+
+    bot1 = GeminiChatbot(config1)
+    bot2 = GeminiChatbot(config2)
+
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
 
@@ -100,7 +116,7 @@ def test_generate_response_with_mock(gemini_chatbot: GeminiChatbot) -> None:
     # Mock the Gemini API response
     mock_response = MagicMock()
     mock_response.text = "Hello, user!"
-    gemini_chatbot.api.generate_content = MagicMock(return_value=mock_response)
+    gemini_chatbot.model_api.generate_content = MagicMock(return_value=mock_response)
     response = gemini_chatbot.generate_response(conversation)
 
     # mock_response assertion fails below because gemini_chatbot.api is now reset

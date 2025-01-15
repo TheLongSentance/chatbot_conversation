@@ -11,7 +11,12 @@ from typing import Type
 
 import pytest
 
-from chatbot_conversation.models.base import ChatbotBase
+from chatbot_conversation.models import (
+    ChatbotBase,
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+)
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
@@ -37,11 +42,34 @@ def test_default_temperatures() -> None:
         - Ollama default temp = 0.8
         - OpenAI default temp = 1.0
     """
+    bot_configs = {
+        "claude": ChatbotConfig(
+            name="test_claude",
+            system_prompt=ASSISTANT_TEST_PROMPT,
+            model=ChatbotModel(type="CLAUDE", version="claude-3-opus"),
+        ),
+        "gemini": ChatbotConfig(
+            name="test_gemini",
+            system_prompt=ASSISTANT_TEST_PROMPT,
+            model=ChatbotModel(type="GEMINI", version="gemini-1.5-pro"),
+        ),
+        "ollama": ChatbotConfig(
+            name="test_ollama",
+            system_prompt=ASSISTANT_TEST_PROMPT,
+            model=ChatbotModel(type="OLLAMA", version="llama2"),
+        ),
+        "openai": ChatbotConfig(
+            name="test_openai",
+            system_prompt=ASSISTANT_TEST_PROMPT,
+            model=ChatbotModel(type="OPENAI", version="gpt-4"),
+        ),
+    }
+
     bots = {
-        "claude": ClaudeChatbot("test_claude", ASSISTANT_TEST_PROMPT, "claude-3-opus"),
-        "gemini": GeminiChatbot("test_gemini", ASSISTANT_TEST_PROMPT, "gemini-1.5-pro"),
-        "ollama": OllamaChatbot("test_ollama", ASSISTANT_TEST_PROMPT, "llama2"),
-        "openai": OpenAIChatbot("test_openai", ASSISTANT_TEST_PROMPT, "gpt-4"),
+        "claude": ClaudeChatbot(bot_configs["claude"]),
+        "gemini": GeminiChatbot(bot_configs["gemini"]),
+        "ollama": OllamaChatbot(bot_configs["ollama"]),
+        "openai": OpenAIChatbot(bot_configs["openai"]),
     }
 
     expected_defaults = {
@@ -53,7 +81,7 @@ def test_default_temperatures() -> None:
 
     for bot_name, bot in bots.items():
         assert (
-            bot.temp == expected_defaults[bot_name]
+            bot.model_temperature == expected_defaults[bot_name]
         ), f"Default temperature mismatch for {bot_name}"
 
 
@@ -82,8 +110,19 @@ def test_valid_temperature_values(
 
     Tests that the temperature property matches the input value when within valid range.
     """
-    bot = bot_class("test_bot", ASSISTANT_TEST_PROMPT, model_version, bot_temp=temp)
-    assert bot.temp == temp, f"Temperature not set correctly for {bot_class.__name__}"
+    config = ChatbotConfig(
+        name="test_bot",
+        system_prompt=ASSISTANT_TEST_PROMPT,
+        model=ChatbotModel(
+            type=bot_class.__name__.replace("Chatbot", "").upper(),
+            version=model_version,
+            params_opt=ChatbotParamsOpt(temperature=temp),
+        ),
+    )
+    bot = bot_class(config)
+    assert (
+        bot.model_temperature == temp
+    ), f"Temperature not set correctly for {bot_class.__name__}"
 
 
 @pytest.mark.parametrize(
@@ -108,7 +147,16 @@ def test_invalid_temperature_values(
     Tests that ValueError is raised when temperature is outside the valid range.
     """
     with pytest.raises(ValueError):
-        _ = bot_class("test_bot", ASSISTANT_TEST_PROMPT, model_version, bot_temp=temp)
+        config = ChatbotConfig(
+            name="test_bot",
+            system_prompt=ASSISTANT_TEST_PROMPT,
+            model=ChatbotModel(
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version=model_version,
+                params_opt=ChatbotParamsOpt(temperature=temp),
+            ),
+        )
+        _ = bot_class(config)
 
 
 @pytest.mark.parametrize(
@@ -136,9 +184,27 @@ def test_temperature_bounds(
         - Maximum temperature value is accepted
     """
     # Test minimum temperature
-    bot = bot_class("test_bot", ASSISTANT_TEST_PROMPT, model_version, bot_temp=min_temp)
-    assert bot.temp == min_temp
+    config_min = ChatbotConfig(
+        name="test_bot",
+        system_prompt=ASSISTANT_TEST_PROMPT,
+        model=ChatbotModel(
+            type=bot_class.__name__.replace("Chatbot", "").upper(),
+            version=model_version,
+            params_opt=ChatbotParamsOpt(temperature=min_temp),
+        ),
+    )
+    bot = bot_class(config_min)
+    assert bot.model_temperature == min_temp
 
     # Test maximum temperature
-    bot = bot_class("test_bot", ASSISTANT_TEST_PROMPT, model_version, bot_temp=max_temp)
-    assert bot.temp == max_temp
+    config_max = ChatbotConfig(
+        name="test_bot",
+        system_prompt=ASSISTANT_TEST_PROMPT,
+        model=ChatbotModel(
+            type=bot_class.__name__.replace("Chatbot", "").upper(),
+            version=model_version,
+            params_opt=ChatbotParamsOpt(temperature=max_temp),
+        ),
+    )
+    bot = bot_class(config_max)
+    assert bot.model_temperature == max_temp

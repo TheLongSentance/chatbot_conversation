@@ -9,7 +9,12 @@ from unittest.mock import MagicMock
 
 from openai import OpenAI
 
-from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.models import (
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
 
 
@@ -38,8 +43,8 @@ def test_openai_bot(openai_chatbot: OpenAIChatbot) -> None:
     assert openai_chatbot.name == "OpenAITestBot1"
     assert openai_chatbot.bot_index == 1
     assert openai_chatbot.get_total_bots() == 1
-    assert openai_chatbot.api is not None
-    assert isinstance(openai_chatbot.api, OpenAI)
+    assert openai_chatbot.model_api is not None
+    assert isinstance(openai_chatbot.model_api, OpenAI)
 
     conversation = [
         ConversationMessage(
@@ -66,18 +71,29 @@ def test_empty_conversation(openai_chatbot: OpenAIChatbot) -> None:
 
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
-    bot1 = OpenAIChatbot(
-        bot_name="OpenAIBot2",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="gpt-4o-mini",
-        bot_temp=0.7,
+
+    config1: ChatbotConfig = ChatbotConfig(
+        name="TestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="OPENAI",
+            version="gpt-4o-mini",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
-    bot2 = OpenAIChatbot(
-        bot_name="OpenAIBot3",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="gpt-4o-mini",
-        bot_temp=0.7,
+    config2: ChatbotConfig = ChatbotConfig(
+        name="TestBot2",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="OPENAI",
+            version="gpt-4o-mini",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    bot1 = OpenAIChatbot(config1)
+
+    bot2 = OpenAIChatbot(config2)
+
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
 
@@ -100,7 +116,9 @@ def test_generate_response_with_mock(openai_chatbot: OpenAIChatbot) -> None:
     # Mock the OpenAI API response
     mock_response = MagicMock()
     mock_response.choices[0].message.content = "Hello, user!"
-    openai_chatbot.api.chat.completions.create = MagicMock(return_value=mock_response)
+    openai_chatbot.model_api.chat.completions.create = MagicMock(
+        return_value=mock_response
+    )
 
     response = openai_chatbot.generate_response(conversation)
     assert response == "Hello, user!"

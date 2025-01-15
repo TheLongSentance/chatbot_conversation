@@ -7,7 +7,7 @@ Classes:
 
 from typing import List
 
-from chatbot_conversation.models.base import BotConfig, ChatbotBase
+from chatbot_conversation.models.base import ChatbotBase, ChatbotConfig
 from chatbot_conversation.models.bot_registry import BotRegistry
 
 
@@ -23,7 +23,7 @@ class ChatbotFactory:
         """
         self._bot_registry = bot_registry
 
-    def create_bot(self, config: BotConfig) -> ChatbotBase:
+    def create_bot(self, config: ChatbotConfig) -> ChatbotBase:
         """
         Create a new chatbot instance based on configuration.
 
@@ -36,13 +36,8 @@ class ChatbotFactory:
         Raises:
             ValueError: If bot_type is not recognized.
         """
-        bot_class = self._bot_registry.get_bot_class(config.bot_type)
-        return bot_class(
-            bot_name=config.bot_name,
-            bot_system_prompt=config.bot_system_prompt,
-            bot_model_version=config.bot_version,
-            bot_temp=config.bot_temp,
-        )
+        bot_class = self._bot_registry.get_bot_class(config.model.type)
+        return bot_class(config)
 
     def list_available_bots(self) -> List[str]:
         """

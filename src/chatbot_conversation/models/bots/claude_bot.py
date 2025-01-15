@@ -9,12 +9,16 @@ Classes:
     ClaudeChatbot: Claude API chatbot implementation
 """
 
-from typing import List, Optional
+from typing import List
 
 import anthropic
 from anthropic import APIConnectionError, APIError, RateLimitError
 
-from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotBase,
+    ChatbotConfig,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bot_registry import register_bot
 
 # Default temperature for Claude models
@@ -22,8 +26,10 @@ from chatbot_conversation.models.bot_registry import register_bot
 # Other specify in the config file for a specific model
 CLAUDE_DEFAULT_TEMP = 1.0
 
+MODEL_TYPE = "CLAUDE"
 
-@register_bot("CLAUDE")
+
+@register_bot(MODEL_TYPE)
 class ClaudeChatbot(ChatbotBase):
     """
     Chatbot implementation using Anthropic's Claude API.
@@ -47,10 +53,7 @@ class ClaudeChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: Optional[float] = None,
+        config: ChatbotConfig,
     ) -> None:
         """
         Initialize Claude chatbot with specified configuration.
@@ -61,15 +64,19 @@ class ClaudeChatbot(ChatbotBase):
             bot_model_version: Claude model version to use
             bot_temp: Temperature parameter (0.0-2.0)
         """
-        super().__init__(  # pylint: disable=duplicate-code
-            bot_name=bot_name,
-            bot_system_prompt=bot_system_prompt,
-            bot_model_version=bot_model_version,
-            bot_temp=bot_temp,
-        )
+        super().__init__(config)
 
         # Initialise Claude API
         self.api = anthropic.Anthropic()
+
+    def _get_model_type(self) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        return MODEL_TYPE
 
     def _get_default_temperature(self) -> float:
         """
@@ -111,13 +118,13 @@ class ClaudeChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_api_util(
             conversation, add_system_prompt=False
         )
-        message = self.api.messages.create(
+        message = self.model_api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
             messages=formatted_messages,
             max_tokens=500,
-            timeout=self.timeout.api_timeout,
-            temperature=self.temp,
+            timeout=self.model_timeout.api_timeout,
+            temperature=self.model_temperature,
         )
         response_content = message.content[0].text
         return response_content

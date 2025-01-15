@@ -9,7 +9,12 @@ from unittest.mock import patch
 
 import pytest
 
-from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.models import (
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 
 
@@ -38,7 +43,7 @@ def test_ollama_bot(ollama_chatbot: OllamaChatbot) -> None:
     assert ollama_chatbot.name == "OllamaTestBot1"
     assert ollama_chatbot.bot_index == 1
     assert ollama_chatbot.get_total_bots() == 1
-    assert ollama_chatbot.api is None  # Ollama doesn't need initialization
+    assert ollama_chatbot.model_api is None  # Ollama doesn't need initialization
 
     conversation = [
         ConversationMessage(
@@ -68,18 +73,29 @@ def test_empty_conversation(ollama_chatbot: OllamaChatbot) -> None:
 
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
-    bot1 = OllamaChatbot(
-        bot_name="OllamaTestBot2",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="llama3.2",
-        bot_temp=0.7,
+
+    config1: ChatbotConfig = ChatbotConfig(
+        name="TestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="OLLAMA",
+            version="llama3.2",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
-    bot2 = OllamaChatbot(
-        bot_name="OllamaTestBot3",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="llama3.2",
-        bot_temp=0.7,
+    config2: ChatbotConfig = ChatbotConfig(
+        name="TestBot2",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="OLLAMA",
+            version="llama3.2",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    bot1 = OllamaChatbot(config1)
+
+    bot2 = OllamaChatbot(config2)
+
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
 

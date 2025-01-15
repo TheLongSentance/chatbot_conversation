@@ -22,8 +22,10 @@ OLLAMA_MIN_MODEL_TEMP = 0.0
 OLLAMA_MAX_MODEL_TEMP = 1.0
 OLLAMA_DEFAULT_TEMP = 0.8
 
+MODEL_TYPE = "OLLAMA"
 
-@register_bot("OLLAMA")
+
+@register_bot(MODEL_TYPE)
 class OllamaChatbot(ChatbotBase):
     """
     Ollama API chatbot implementation.
@@ -37,6 +39,15 @@ class OllamaChatbot(ChatbotBase):
 
     # no __init__() method needed, OllamaChatbot uses the base class __init__()
     # which is automatically called when creating an instance of this class
+
+    def _get_model_type(self) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        return MODEL_TYPE
 
     def _get_default_temperature(self) -> float:
         """

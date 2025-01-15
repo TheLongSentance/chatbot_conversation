@@ -10,14 +10,18 @@ Provides a chatbot interface for various Gemini model versions including:
 """
 
 import json
-from typing import List, Optional, TypedDict
+from typing import List, TypedDict
 
 import google.api_core.exceptions
 
 # no stub file from google.generativeai so ignore for pylance etc
 import google.generativeai  # type: ignore
 
-from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotBase,
+    ChatbotConfig,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bot_registry import register_bot
 from chatbot_conversation.utils import get_logger
 
@@ -25,6 +29,8 @@ from chatbot_conversation.utils import get_logger
 # Inherits range from 0.0 to 2.0 from the base class
 # Other specify in the config file for a specific model
 GEMINI_DEFAULT_TEMP = 1.0
+
+MODEL_TYPE = "GEMINI"
 
 
 class _GeminiMessage(TypedDict):
@@ -37,7 +43,7 @@ class _GeminiMessage(TypedDict):
 logger = get_logger("models")
 
 
-@register_bot("GEMINI")
+@register_bot(MODEL_TYPE)
 class GeminiChatbot(ChatbotBase):
     """
     Chatbot implementation using Google's Gemini API service.
@@ -55,10 +61,7 @@ class GeminiChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: Optional[float] = None,
+        config: ChatbotConfig,
     ) -> None:
         """
         Initialize a new GeminiChatbot instance.
@@ -69,12 +72,7 @@ class GeminiChatbot(ChatbotBase):
             bot_model_version: Specific Gemini model version
             bot_temp: Temperature for response generation (model-specific range)
         """
-        super().__init__(  # pylint: disable=duplicate-code
-            bot_name=bot_name,
-            bot_system_prompt=bot_system_prompt,
-            bot_model_version=bot_model_version,
-            bot_temp=bot_temp,
-        )
+        super().__init__(config)
 
         # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
         google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
@@ -84,13 +82,22 @@ class GeminiChatbot(ChatbotBase):
         # the generate_content call for Gemini as either a parameter or
         # part of the message history
 
-        self.api = google.generativeai.GenerativeModel(
+        self._model_api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt,
             generation_config=google.generativeai.GenerationConfig(
-                temperature=self.temp
+                temperature=self.model_temperature
             ),
         )
+
+    def _get_model_type(self) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        return MODEL_TYPE
 
     def _get_default_temperature(self) -> float:
         """
@@ -142,17 +149,17 @@ class GeminiChatbot(ChatbotBase):
         # for Gemini, this will happen when the system prompt is first set
         # and whenever it is updated (first round, after first round, before last)
 
-        if self.system_prompt_needs_update:
-            self.api = google.generativeai.GenerativeModel(
+        if self.model_system_prompt_needs_update:
+            self._model_api = google.generativeai.GenerativeModel(
                 model_name=self.model_version,
                 system_instruction=self.system_prompt,
                 generation_config=google.generativeai.GenerationConfig(
-                    temperature=self.temp
+                    temperature=self.model_temperature
                 ),
             )
-            self.system_prompt_updated()
+            self.model_system_prompt_updated()
 
-        message = self.api.generate_content(formatted_messages)
+        message = self.model_api.generate_content(formatted_messages)
         response: str = message.text
         return response
 

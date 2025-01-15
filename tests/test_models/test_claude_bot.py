@@ -10,7 +10,12 @@ from unittest.mock import MagicMock
 import pytest
 from anthropic import Anthropic
 
-from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.models import (
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 
 
@@ -39,8 +44,8 @@ def test_claude_bot(claude_chatbot: ClaudeChatbot) -> None:
     assert claude_chatbot.name == "ClaudeTestBot1"
     assert claude_chatbot.bot_index == 1
     assert claude_chatbot.get_total_bots() == 1
-    assert claude_chatbot.api is not None
-    assert isinstance(claude_chatbot.api, Anthropic)
+    assert claude_chatbot.model_api is not None
+    assert isinstance(claude_chatbot.model_api, Anthropic)
 
     conversation = [
         ConversationMessage(
@@ -79,18 +84,29 @@ def test_empty_conversation(claude_chatbot: ClaudeChatbot) -> None:
 
 def test_multiple_bots() -> None:
     """Test interaction of multiple bot instances."""
-    bot1 = ClaudeChatbot(
-        bot_name="ClaudeTestBot2",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="claude-3",
-        bot_temp=0.7,
+
+    config1: ChatbotConfig = ChatbotConfig(
+        name="TestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="CLAUDE",
+            version="claude-3-haiku-20240307",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
-    bot2 = ClaudeChatbot(
-        bot_name="ClaudeTestBot3",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="claude-3",
-        bot_temp=0.7,
+    config2: ChatbotConfig = ChatbotConfig(
+        name="TestBot2",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="CLAUDE",
+            version="claude-3-haiku-20240307",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    bot1 = ClaudeChatbot(config1)
+
+    bot2 = ClaudeChatbot(config2)
+
     assert bot1.bot_index != bot2.bot_index
     assert bot1.get_total_bots() == 2
 
@@ -113,7 +129,7 @@ def test_generate_response_with_mock(claude_chatbot: ClaudeChatbot) -> None:
     # Mock the Claude API response
     mock_response = MagicMock()
     mock_response.content[0].text = "Hello, user!"
-    claude_chatbot.api.messages.create = MagicMock(return_value=mock_response)
+    claude_chatbot.model_api.messages.create = MagicMock(return_value=mock_response)
 
     response = claude_chatbot.generate_response(conversation)
     assert response == "Hello, user!"

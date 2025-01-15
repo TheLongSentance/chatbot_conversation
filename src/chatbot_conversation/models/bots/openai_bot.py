@@ -16,17 +16,23 @@ Classes:
     OpenAIChatbot: A chatbot implementation using OpenAI's GPT models.
 """
 
-from typing import List, Optional
+from typing import List
 
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
-from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotBase,
+    ChatbotConfig,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bot_registry import register_bot
 
 # OpenAI default temperature for GPT models
 # Inherits range from 0.0 to 2.0 from the base class
 # For other temps specify in the config file for a specific model
 OPENAI_DEFAULT_TEMP = 1.0
+
+MODEL_TYPE = "GPT"
 
 
 @register_bot("GPT")
@@ -48,10 +54,7 @@ class OpenAIChatbot(ChatbotBase):
 
     def __init__(
         self,
-        bot_name: str,
-        bot_system_prompt: str,
-        bot_model_version: str,
-        bot_temp: Optional[float] = None,
+        config: ChatbotConfig,
     ) -> None:
         """
         Initialize a new OpenAIChatbot instance.
@@ -68,14 +71,18 @@ class OpenAIChatbot(ChatbotBase):
         Note:
             The OpenAI API key should be set in the environment variables.
         """
-        super().__init__(  # pylint: disable=duplicate-code
-            bot_name=bot_name,
-            bot_system_prompt=bot_system_prompt,
-            bot_model_version=bot_model_version,
-            bot_temp=bot_temp,
-        )
+        super().__init__(config)
 
         self.api = OpenAI()
+
+    def _get_model_type(self) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        return MODEL_TYPE
 
     def _get_default_temperature(self) -> float:
         """
@@ -125,11 +132,11 @@ class OpenAIChatbot(ChatbotBase):
         """
         response_content: str = ""
         formatted_messages = self._format_conv_for_api_util(conversation)
-        completion = self.api.chat.completions.create(
+        completion = self.model_api.chat.completions.create(
             model=self.model_version,
             messages=formatted_messages,
-            timeout=self.timeout.api_timeout,
-            temperature=self.temp,
+            timeout=self.model_timeout.api_timeout,
+            temperature=self.model_temperature,
         )
         response_content = completion.choices[0].message.content
         return response_content
