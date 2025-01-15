@@ -62,8 +62,8 @@ class ChatMessage(TypedDict):
     attribution and content.
 
     Attributes:
-        role: Identifies message source ('system', 'user', 'assistant')
-        content: The actual message text
+        role (str): Identifies message source ('system', 'user', 'assistant')
+        content (str): The actual message text
     """
 
     role: str
@@ -78,8 +78,8 @@ class ConversationMessage(TypedDict):
     and maintains conversation history.
 
     Attributes:
-        bot_index: Integer identifier of the source bot
-        content: The message content
+        bot_index (int): Integer identifier of the source bot
+        content (str): The message content
     """
 
     bot_index: int
@@ -95,12 +95,12 @@ class ChatbotTimeout:
     reliable operation even with unstable connections.
 
     Attributes:
-        total: Overall timeout for complete API operations (seconds)
-        api_timeout: Individual API call timeout (seconds)
-        max_retries: Maximum retry attempts for failed calls
-        min_wait: Minimum delay between retries (seconds)
-        max_wait: Maximum delay between retries (seconds)
-        wait_multiplier: Factor for exponential backoff calculation
+        total (int): Overall timeout for complete API operations (seconds)
+        api_timeout (int): Individual API call timeout (seconds)
+        max_retries (int): Maximum retry attempts for failed calls
+        min_wait (int): Minimum delay between retries (seconds)
+        max_wait (int): Maximum delay between retries (seconds)
+        wait_multiplier (float): Factor for exponential backoff calculation
     """
 
     total: int = DEFAULT_TOTAL_TIMEOUT
@@ -113,7 +113,13 @@ class ChatbotTimeout:
 
 @dataclass
 class ChatbotParamsOpt:
-    """Optional LLM runtime parameters for chatbot instances."""
+    """
+    Optional LLM runtime parameters for chatbot instances.
+
+    Attributes:
+        temperature (Optional[float]): Temperature setting for response generation
+        max_tokens (Optional[int]): Maximum tokens for response generation
+    """
 
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
@@ -133,7 +139,14 @@ class ChatbotParamsOpt:
 
 @dataclass
 class ChatbotModel:
-    """Model information for chatbot instances."""
+    """
+    Model information for chatbot instances.
+
+    Attributes:
+        type (str): The type of the model
+        version (str): The version of the model
+        params_opt (ChatbotParamsOpt): Optional runtime parameters for the model
+    """
 
     type: str
     version: str
@@ -142,7 +155,15 @@ class ChatbotModel:
 
 @dataclass
 class ChatbotConfig:
-    """Runtime configuration for chatbot instances."""
+    """
+    Runtime configuration for chatbot instances.
+
+    Attributes:
+        name (str): The name of the bot
+        system_prompt (str): The system prompt for the bot
+        model (ChatbotModel): The model configuration for the bot
+        timeout (ChatbotTimeout): The timeout and retry configuration
+    """
 
     name: str
     system_prompt: str
@@ -168,15 +189,19 @@ class ChatbotBase(ABC):
     - Debug and error logging support
 
     Class Attributes:
-        _total_count: Running total of chatbot instances created
+        _total_count (int): Running total of chatbot instances created
 
     Instance Attributes:
-        timeout: API timeout and retry configuration
-        model_version: Bot model version identifier
-        name: Bot instance display name
-        api: API client instance (set by child classes)
-        _bot_index: Unique instance identifier
-        _system_prompt: System prompt manager
+        _name (str): Bot instance display name
+        _model_type (str): Bot model type identifier
+        _model_version (str): Bot model version identifier
+        _model_timeout (ChatbotTimeout): API timeout and retry configuration
+        _model_temperature (float): Temperature setting for response generation
+        _model_max_tokens (int): Maximum tokens for response generation
+        _system_prompt (str): System prompt manager
+        _model_api (Any): API client instance (set by child classes)
+        _bot_index (int): Unique instance identifier
+        _model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
     """
 
     _total_count: int = 0  # Class variable to track total instances
@@ -185,13 +210,19 @@ class ChatbotBase(ABC):
     def reset_total_count(cls) -> None:
         """
         Reset the total count of chatbot instances.
+
         Typically only used in tests to ensure a clean state.
         """
         cls._total_count = 0
 
     @classmethod
     def get_total_bots(cls) -> int:
-        """Get the total number of bot instances."""
+        """
+        Get the total number of bot instances.
+
+        Returns:
+            int: The total number of bot instances created.
+        """
         return cls._total_count
 
     def __init__(
@@ -202,12 +233,7 @@ class ChatbotBase(ABC):
         Initialize the chatbot with model version, system prompt, and bot name.
 
         Args:
-            bot_name (str): The name of the bot.
-            bot_model_version (str): The version of the bot model.
-            bot_system_prompt (str): The system prompt for the bot.
-            bot_temp (float | None, optional): The temperature setting for
-               response generation. If None, the child class will set a
-               default value. Defaults to None.
+            config (ChatbotConfig): The configuration for the chatbot instance.
         """
         # Validate model type before setting attributes
         expected_type = self._get_model_type()
@@ -247,7 +273,6 @@ class ChatbotBase(ABC):
     def name(self) -> str:
         return self._name
 
-    # Read-only properties
     @property
     def model_type(self) -> str:
         return self._model_type
@@ -283,7 +308,12 @@ class ChatbotBase(ABC):
 
     @property
     def system_prompt(self) -> str:
-        """Get the current system prompt content."""
+        """
+        Get the current system prompt content.
+
+        Returns:
+            str: The current system prompt content.
+        """
         return self._system_prompt
 
     @system_prompt.setter
@@ -292,18 +322,25 @@ class ChatbotBase(ABC):
         Set the system prompt content.
 
         Args:
-            value (str): The new system prompt content
+            value (str): The new system prompt content.
         """
         self._system_prompt = value
         self._model_system_prompt_needs_update = True
 
     @property
     def model_system_prompt_needs_update(self) -> bool:
-        """Check if the system prompt needs to be updated in the model."""
+        """
+        Check if the system prompt needs to be updated in the model.
+
+        Returns:
+            bool: True if the system prompt needs to be updated, False otherwise.
+        """
         return self._model_system_prompt_needs_update
 
     def model_system_prompt_updated(self) -> None:
-        """Mark the model system prompt as updated."""
+        """
+        Mark the model system prompt as updated.
+        """
         self._model_system_prompt_needs_update = False
 
     @abstractmethod
@@ -318,16 +355,34 @@ class ChatbotBase(ABC):
 
     @abstractmethod
     def _get_default_temperature(self) -> float:
-        """Get default temperature for each the child class model."""
+        """
+        Get default temperature for each the child class model.
+
+        Returns:
+            float: The default temperature for the model.
+        """
         pass  # pylint: disable=unnecessary-pass
 
     def _get_default_max_tokens(self) -> int:
-        """Get default max_tokens."""
+        """
+        Get default max_tokens.
+
+        Returns:
+            int: The default maximum tokens for response generation.
+        """
         return DEFAULT_MAX_TOKENS
 
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:
-        """Bot-specific logic for which exceptions warrant retry."""
+        """
+        Bot-specific logic for which exceptions warrant retry.
+
+        Args:
+            exception (Exception): The exception to evaluate.
+
+        Returns:
+            bool: True if the exception warrants a retry, False otherwise.
+        """
         pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
@@ -351,14 +406,14 @@ class ChatbotBase(ABC):
         and configurable retry behavior for handling transient failures.
 
         Args:
-            conversation: Sequential list of prior conversation messages
+            conversation (List[ConversationMessage]): Sequential list of prior conversation messages.
 
         Returns:
-            Generated response text from the model
+            str: Generated response text from the model.
 
         Raises:
-            ValueError: When model produces empty response
-            Various API-specific exceptions from implementations
+            ValueError: When model produces empty response.
+            Various API-specific exceptions from implementations.
         """
 
         # @retry around _inner_generate_response inside generate_response because
@@ -403,11 +458,11 @@ class ChatbotBase(ABC):
         of the message list.
 
         Args:
-            conversation: List of conversation messages to format
-            add_system_prompt: Whether to include system prompt at the start
+            conversation (List[ConversationMessage]): List of conversation messages to format.
+            add_system_prompt (bool): Whether to include system prompt at the start.
 
         Returns:
-            List of formatted messages ready for API submission
+            List[ChatMessage]: List of formatted messages ready for API submission.
         """
 
         messages: List[ChatMessage] = []
@@ -444,7 +499,7 @@ class ChatbotBase(ABC):
         Logging for model debug with the specified format.
 
         Args:
-            error_text (str): The content of the response to log.
+            debug_text (str): The content of the response to log.
         """
         logger.debug(
             "Bot Class: %s, Bot Name: %s, Bot Index: %s, %s",

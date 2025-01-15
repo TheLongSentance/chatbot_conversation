@@ -1,12 +1,12 @@
 """
 Anthropic Claude API integration for chatbot functionality.
 
-This module provides the ClaudeChatbot class, implementing ChatbotBase for Claude AI.
-It handles API communication, message formatting, and conversation management with
-configurable parameters for temperature and system prompts.
+Provides a concrete implementation of ChatbotBase for Claude AI models,
+handling API communication, message formatting, and conversation management
+with configurable parameters.
 
-Classes:
-    ClaudeChatbot: Claude API chatbot implementation
+Major Classes:
+    ClaudeChatbot: Claude-specific chatbot implementation
 """
 
 from typing import List
@@ -34,53 +34,54 @@ class ClaudeChatbot(ChatbotBase):
     """
     Chatbot implementation using Anthropic's Claude API.
 
-    Provides conversation capabilities through Claude's language models with
-    configurable temperature and system prompts. Handles API communication,
-    retries, and message formatting.
+    Provides a concrete implementation of ChatbotBase for Claude AI models,
+    extending core functionality with Claude-specific API integration.
+
+    Features:
+    - Claude API authentication and communication
+    - Message formatting for Claude's API requirements
+    - Temperature-controlled response generation
+    - Automatic retry handling for API failures
+    - Configurable system prompts and timeouts
 
     Args:
-        bot_name: Identifier for the bot instance
-        bot_system_prompt: Instructions controlling bot behavior
-        bot_model_version: Claude model version to use
-        bot_temp: Temperature setting (0.0-2.0, default: 1.0)
+        config (ChatbotConfig): Configuration object containing:
+            - name: Bot instance identifier
+            - system_prompt: Initial system behavior instructions
+            - model: Model type, version and parameters
+            - timeout: API communication settings
 
     Attributes:
-        api: Authenticated Claude API client
-        model_version: Active model identifier
-        system_prompt: System behavior instructions
-        temp: Response randomness parameter
+        Inherits all attributes from ChatbotBase plus:
+        model_api (anthropic.Anthropic): Authenticated Claude API client
     """
 
-    def __init__(
-        self,
-        config: ChatbotConfig,
-    ) -> None:
+    def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize Claude chatbot with specified configuration.
 
+        Validates configuration and sets up Claude API client.
+
         Args:
-            bot_name: Identifier for this bot instance
-            bot_system_prompt: Instructions for bot behavior
-            bot_model_version: Claude model version to use
-            bot_temp: Temperature parameter (0.0-2.0)
+            config (ChatbotConfig): Complete bot configuration
         """
         super().__init__(config)
 
         # Initialise Claude API
-        self.api = anthropic.Anthropic()
+        self.model_api = anthropic.Anthropic()
 
     def _get_model_type(self) -> str:
         """
-        Get the model type identifier for the chatbot.
+        Get the model type identifier for Claude models.
 
         Returns:
-            str: The model type identifier for the chatbot.
+            str: "CLAUDE" as the model type identifier
         """
         return MODEL_TYPE
 
     def _get_default_temperature(self) -> float:
         """
-        Return the default temperature setting for Claude models.
+        Get the default temperature setting for Claude models.
 
         Returns:
             float: Default temperature value (1.0) for Claude response generation
@@ -89,13 +90,18 @@ class ClaudeChatbot(ChatbotBase):
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Determine if an API call should be retried based on the exception type.
+        Determine if an API call should be retried based on Claude-specific exceptions.
+
+        Handles common Claude API errors that warrant retry attempts:
+        - APIError: General API communication failures
+        - APIConnectionError: Network connectivity issues
+        - RateLimitError: API quota/throughput limits
 
         Args:
             exception: The caught exception
 
         Returns:
-            True if retry is recommended, False otherwise
+            bool: True if retry is recommended, False otherwise
         """
         return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
 
@@ -103,11 +109,14 @@ class ClaudeChatbot(ChatbotBase):
         """
         Generate a response using the Claude API.
 
+        Formats conversation history and makes API call with configured parameters.
+        Handles message structure requirements specific to Claude's API.
+
         Args:
-            conversation: List of previous messages in the conversation
+            conversation: Sequential list of prior conversation messages
 
         Returns:
-            Generated response text from Claude
+            str: Generated response text from Claude
 
         Raises:
             APIError: On API communication errors
