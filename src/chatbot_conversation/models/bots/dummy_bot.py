@@ -90,14 +90,9 @@ class DummyChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def _get_default_temperature(self) -> float:
-        """
-        Get the default temperature setting for dummy models.
-        Temperature has no effect on response generation.
-
-        Returns:
-            float: Unused temperature value (1.0)
-        """
+    @property
+    def _default_temperature(self) -> float:
+        """Default temperature override"""
         return DUMMY_DEFAULT_TEMP
 
     def _get_default_max_tokens(self) -> int:

@@ -79,13 +79,9 @@ class ClaudeChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def _get_default_temperature(self) -> float:
-        """
-        Get the default temperature setting for Claude models.
-
-        Returns:
-            float: Default temperature value (1.0) for Claude response generation
-        """
+    @property
+    def _default_temperature(self) -> float:
+        """Default temperature override"""
         return CLAUDE_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:

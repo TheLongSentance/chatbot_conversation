@@ -2,18 +2,39 @@
 This module contains classes for loading and validating conversation configurations from JSON files.
 
 Classes:
-    BotConfigData: Configuration model for a single bot participant.
+    ChatbotParamsOptData: Optional parameters for bot configuration.
+    ChatbotConfigData: Configuration model for a single bot participant.
     ConversationConfig: Configuration model for the entire conversation.
     ConfigurationLoader: Loads and validates conversation configurations.
 """
 
 import json
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, ValidationError
 
 
-class BotConfigData(BaseModel):
+class ChatbotParamsOptData(BaseModel):
+    """Optional parameters for bot configuration.
+
+    Attributes:
+        temperature (float | None): Temperature parameter for response randomness
+        max_tokens (int | None): Maximum tokens for response generation
+    """
+    temperature: Optional[float] = Field(
+        default=None,
+        description="Temperature parameter for response randomness",
+        ge=0.0,
+        le=2.0,
+    )
+    max_tokens: Optional[int] = Field(
+        default=None,
+        description="Maximum tokens for response generation",
+        gt=0,
+    )
+
+
+class ChatbotConfigData(BaseModel):
     """Configuration model for a single bot participant in the conversation.
 
     Attributes:
@@ -21,7 +42,7 @@ class BotConfigData(BaseModel):
         bot_prompt (str): Initial system prompt for the bot
         bot_type (str): Type/model of the bot (e.g., 'gpt-4', 'claude')
         bot_version (str): Version identifier for the bot
-        bot_temp (float | None): Temperature parameter for response randomness
+        bot_params_opt (ChatbotParamsOptData): Optional parameters for the bot
     """
 
     bot_name: str = Field(..., min_length=1, description="Bot name cannot be empty")
@@ -30,9 +51,9 @@ class BotConfigData(BaseModel):
     bot_version: str = Field(
         ..., min_length=1, description="Bot version cannot be empty"
     )
-    bot_temp: float | None = Field(
-        default=None,
-        description="Temperature parameter, if provided",
+    bot_params_opt: ChatbotParamsOptData = Field(
+        default_factory=ChatbotParamsOptData,
+        description="Optional parameters for the bot",
     )
 
 
@@ -46,7 +67,7 @@ class ConversationConfig(BaseModel):
         shared_prefix (str): Common prefix added to all bot prompts
         first_round_postfix (str): Text appended to the first round's prompt
         last_round_postfix (str): Text appended to the final round's prompt
-        bots (List[BotConfigData]): List of bot configurations for participants
+        bots (List[ChatbotConfigData]): List of bot configurations for participants
     """
 
     author: str = Field(..., min_length=1, description="Author of the conversation")
@@ -57,7 +78,7 @@ class ConversationConfig(BaseModel):
     shared_prefix: str  # Can be empty string
     first_round_postfix: str  # Can be empty string
     last_round_postfix: str  # Can be empty string
-    bots: List[BotConfigData] = Field(
+    bots: List[ChatbotConfigData] = Field(
         ..., min_length=1, description="Bots list cannot be empty"
     )
 

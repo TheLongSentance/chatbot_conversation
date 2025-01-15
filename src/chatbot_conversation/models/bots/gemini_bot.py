@@ -126,13 +126,9 @@ class GeminiChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def _get_default_temperature(self) -> float:
-        """
-        Get the default temperature setting for Gemini models.
-
-        Returns:
-            float: Default temperature value (1.0) for Gemini response generation
-        """
+    @property
+    def _default_temperature(self) -> float:
+        """Default temperature override"""
         return GEMINI_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:

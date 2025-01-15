@@ -20,7 +20,7 @@ from chatbot_conversation.models import (
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.bots.gpt_bot import GPTChatbot
 
 ASSISTANT_TEST_PROMPT = "You are a helpful assistant."
 
@@ -61,7 +61,7 @@ def test_default_temperatures() -> None:
         "openai": ChatbotConfig(
             name="test_openai",
             system_prompt=ASSISTANT_TEST_PROMPT,
-            model=ChatbotModel(type="OPENAI", version="gpt-4"),
+            model=ChatbotModel(type="GPT", version="gpt-4"),
         ),
     }
 
@@ -69,7 +69,7 @@ def test_default_temperatures() -> None:
         "claude": ClaudeChatbot(bot_configs["claude"]),
         "gemini": GeminiChatbot(bot_configs["gemini"]),
         "ollama": OllamaChatbot(bot_configs["ollama"]),
-        "openai": OpenAIChatbot(bot_configs["openai"]),
+        "openai": GPTChatbot(bot_configs["openai"]),
     }
 
     expected_defaults = {
@@ -94,8 +94,8 @@ def test_default_temperatures() -> None:
         (GeminiChatbot, 1.5, "gemini-1.5-pro"),
         (OllamaChatbot, 0.25, "llama2"),
         (OllamaChatbot, 0.75, "llama2"),
-        (OpenAIChatbot, 0.5, "gpt-4"),
-        (OpenAIChatbot, 1.5, "gpt-4"),
+        (GPTChatbot, 0.5, "gpt-4"),
+        (GPTChatbot, 1.5, "gpt-4"),
     ],
 )
 def test_valid_temperature_values(
@@ -131,7 +131,7 @@ def test_valid_temperature_values(
         (ClaudeChatbot, -0.1, "claude-3-opus"),
         (GeminiChatbot, 2.1, "gemini-1.5-pro"),
         (OllamaChatbot, 1.1, "llama2"),
-        (OpenAIChatbot, -1.0, "gpt-4"),
+        (GPTChatbot, -1.0, "gpt-4"),
     ],
 )
 def test_invalid_temperature_values(
@@ -165,7 +165,7 @@ def test_invalid_temperature_values(
         (ClaudeChatbot, "claude-3-opus", 0.0, 2.0),
         (GeminiChatbot, "gemini-1.5-pro", 0.0, 2.0),
         (OllamaChatbot, "llama2", 0.0, 1.0),
-        (OpenAIChatbot, "gpt-4", 0.0, 2.0),
+        (GPTChatbot, "gpt-4", 0.0, 2.0),
     ],
 )
 def test_temperature_bounds(

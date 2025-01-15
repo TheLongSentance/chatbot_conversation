@@ -12,13 +12,13 @@ from chatbot_conversation.models import (
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.bots.gpt_bot import GPTChatbot
 
 
-def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
-    """Test the creation of an OpenAIChatbot instance."""
+def test_create_gpt_chatbot(chatbot_factory: ChatbotFactory) -> None:
+    """Test the creation of an GPTChatbot instance."""
     config: ChatbotConfig = ChatbotConfig(
-        name="OpenAITestBot1",
+        name="GPTTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="GPT",
@@ -27,8 +27,8 @@ def test_create_openai_chatbot(chatbot_factory: ChatbotFactory) -> None:
         ),
     )
     bot = chatbot_factory.create_bot(config)
-    assert isinstance(bot, OpenAIChatbot)
-    assert bot.name == "OpenAITestBot1"
+    assert isinstance(bot, GPTChatbot)
+    assert bot.name == "GPTTestBot1"
 
 
 def test_create_claude_chatbot(chatbot_factory: ChatbotFactory) -> None:
@@ -60,7 +60,7 @@ def test_create_gemini_chatbot(chatbot_factory: ChatbotFactory) -> None:
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, GeminiChatbot)
-    assert bot.name == "ClaudeTestBot1"
+    assert bot.name == "GeminiTestBot1"
 
 
 def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
@@ -76,4 +76,4 @@ def test_create_ollama_chatbot(chatbot_factory: ChatbotFactory) -> None:
     )
     bot = chatbot_factory.create_bot(config)
     assert isinstance(bot, OllamaChatbot)
-    assert bot.name == "ClaudeTestBot1"
+    assert bot.name == "OllamaTestBot1"

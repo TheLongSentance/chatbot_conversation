@@ -6,7 +6,7 @@ handling API communication, message formatting, and conversation management
 with configurable parameters.
 
 Major Classes:
-    OpenAIChatbot: GPT-specific chatbot implementation
+    GPTChatbot: GPT-specific chatbot implementation
 
 Supported Models:
     - gpt-4: Latest GPT-4 model
@@ -35,7 +35,7 @@ MODEL_TYPE = "GPT"
 
 
 @register_bot("GPT")
-class OpenAIChatbot(ChatbotBase):
+class GPTChatbot(ChatbotBase):
     """
     Chatbot implementation using OpenAI's GPT API service.
 
@@ -77,7 +77,7 @@ class OpenAIChatbot(ChatbotBase):
         """
         super().__init__(config)
 
-        self.api = OpenAI()
+        self.model_api = OpenAI()
 
     def _get_model_type(self) -> str:
         """
@@ -88,13 +88,9 @@ class OpenAIChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def _get_default_temperature(self) -> float:
-        """
-        Get the default temperature setting for GPT models.
-
-        Returns:
-            float: Default temperature value (1.0) for GPT response generation
-        """
+    @property
+    def _default_temperature(self) -> float:
+        """Default temperature override"""
         return OPENAI_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:

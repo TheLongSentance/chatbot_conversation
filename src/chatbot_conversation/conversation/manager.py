@@ -20,10 +20,12 @@ from rich.markdown import Markdown
 
 from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.models import (
-    BotConfig,
-    BotRegistry,
     ChatbotBase,
+    ChatbotConfig,
     ChatbotFactory,
+    ChatbotModel,
+    ChatbotParamsOpt,
+    BotRegistry,
     ConversationMessage,
 )
 from chatbot_conversation.utils import get_logger
@@ -56,25 +58,30 @@ class ConversationManager:
         ]
 
         bot_registry = BotRegistry()  # get the singleton instance
-
         factory = ChatbotFactory(bot_registry)
-        for bot_config in self.config.bots:
 
+        for bot_config in self.config.bots:
             # Format bot_name into shared prefix and add bot-specific prompt
             bot_system_prompt = self.config.shared_prefix + bot_config.bot_prompt
             bot_system_prompt = self.insert_bot_name(
                 bot_system_prompt, bot_config.bot_name
             )
 
-            bot = factory.create_bot(
-                BotConfig(
-                    bot_name=bot_config.bot_name,
-                    bot_type=bot_config.bot_type,
-                    bot_version=bot_config.bot_version,
-                    bot_temp=bot_config.bot_temp,
-                    bot_system_prompt=bot_system_prompt,
+            # Create ChatbotConfig using new structure
+            chatbot_config = ChatbotConfig(
+                name=bot_config.bot_name,
+                system_prompt=bot_system_prompt,
+                model=ChatbotModel(
+                    type=bot_config.bot_type,
+                    version=bot_config.bot_version,
+                    params_opt=ChatbotParamsOpt(
+                        temperature=bot_config.bot_params_opt.temperature,
+                        max_tokens=bot_config.bot_params_opt.max_tokens
+                    )
                 )
             )
+
+            bot = factory.create_bot(chatbot_config)
             self.add_bot(bot)
 
         self.console = Console()  # Initialize the console for rich text output
@@ -183,7 +190,7 @@ class ConversationManager:
         """
         for bot in self.bots:
             suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
-            bot.system_prompt_add_suffix(suffix)
+            self.system_prompt_add_suffix(bot, suffix)
 
     def tell_bots_not_first_round(self) -> None:
         """
@@ -191,7 +198,7 @@ class ConversationManager:
         """
         for bot in self.bots:
             suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
-            bot.system_prompt_remove_suffix(suffix)
+            self.system_prompt_remove_suffix(bot, suffix)
 
     def tell_bots_last_round(self) -> None:
         """
@@ -199,7 +206,7 @@ class ConversationManager:
         """
         for bot in self.bots:
             suffix = self.insert_bot_name(self.config.last_round_postfix, bot.name)
-            bot.system_prompt_add_suffix(suffix)
+            self.system_prompt_add_suffix(bot, suffix)
 
     def insert_bot_name(self, text: str, bot_name: str) -> str:
         """
@@ -269,3 +276,30 @@ class ConversationManager:
 
         except (IOError, ValueError) as e:
             logger.error("Failed to write conversation to file: %s", str(e))
+
+    def system_prompt_add_suffix(
+            self, 
+            bot: ChatbotBase, 
+            additional_prompt: str) -> None:
+        """
+        Append additional text to the system prompt.
+
+        Args:
+            additional_prompt (str): The text to append.
+        """
+        if additional_prompt:
+            bot.system_prompt += additional_prompt
+
+    def system_prompt_remove_suffix(
+        self, 
+        bot: ChatbotBase, 
+        text_to_remove: str
+    ) -> None:
+        """
+        Remove specific text from the end of the system prompt.
+
+        Args:
+            text_to_remove (str): The text to remove.
+        """
+        if text_to_remove and bot.system_prompt.endswith(text_to_remove):
+            bot.system_prompt = bot.system_prompt[: -len(text_to_remove)]

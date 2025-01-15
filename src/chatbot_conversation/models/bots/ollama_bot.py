@@ -86,6 +86,19 @@ class OllamaChatbot(ChatbotBase):
         """
         return OLLAMA_DEFAULT_TEMP
 
+    @property
+    def _min_temperature(self) -> float:
+        return OLLAMA_MIN_MODEL_TEMP
+
+    @property
+    def _max_temperature(self) -> float:
+        return OLLAMA_MAX_MODEL_TEMP
+
+    @property
+    def _default_temperature(self) -> float:
+        """Default temperature override"""
+        return OLLAMA_DEFAULT_TEMP
+
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
         Determine if an API call should be retried based on Ollama-specific exceptions.
@@ -106,8 +119,8 @@ class OllamaChatbot(ChatbotBase):
             (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError),
         )
 
-    @ChatbotBase.temp.setter  # type: ignore
-    def temp(self, value: float) -> None:
+    @ChatbotBase.model_temperature.setter  # type: ignore
+    def model_temperature(self, value: float) -> None:
         """
         Set the temperature value for response generation.
 
@@ -123,7 +136,7 @@ class OllamaChatbot(ChatbotBase):
         """
         if not OLLAMA_MIN_MODEL_TEMP <= value <= OLLAMA_MAX_MODEL_TEMP:
             raise ValueError(f"Ollama temperature {value} must be between 0.0 and 1.0")
-        self._temp = value
+        self._model_temperature = value
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -149,7 +162,7 @@ class OllamaChatbot(ChatbotBase):
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
                 model=self.model_version,
                 messages=formatted_messages,
-                options={"temperature": self.temp},
+                options={"temperature": self.model_temperature},
             )
         )
         response_content = response["message"]["content"]

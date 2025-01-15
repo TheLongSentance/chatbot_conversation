@@ -126,13 +126,6 @@ class ChatbotParamsOpt:
 
     # Add validation
     def __post_init__(self):
-        if (
-            self.temperature is not None
-            and not MIN_MODEL_TEMP <= self.temperature <= MAX_MODEL_TEMP
-        ):
-            raise ValueError(
-                f"Temperature must be between {MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
-            )
         if self.max_tokens is not None and self.max_tokens <= 0:
             raise ValueError("max_tokens must be greater than 0")
 
@@ -248,11 +241,7 @@ class ChatbotBase(ABC):
         self._model_type: str = config.model.type
         self._model_version: str = config.model.version
         self._model_timeout = config.timeout
-        self._model_temperature: float = (
-            config.model.params_opt.temperature
-            if config.model.params_opt.temperature is not None
-            else self._get_default_temperature()
-        )
+        self._update_temperature(config.model.params_opt.temperature)
         self._model_max_tokens: int = (
             config.model.params_opt.max_tokens
             if config.model.params_opt.max_tokens is not None
@@ -268,7 +257,6 @@ class ChatbotBase(ABC):
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
 
-    # Read-only properties
     @property
     def name(self) -> str:
         return self._name
@@ -284,6 +272,33 @@ class ChatbotBase(ABC):
     @property
     def model_temperature(self) -> float:
         return self._model_temperature
+
+    @property
+    def _min_temperature(self) -> float:
+        """Protected minimum temperature, can be overridden"""
+        return MIN_MODEL_TEMP
+
+    @property
+    def _max_temperature(self) -> float:
+        """Protected maximum temperature, can be overridden"""
+        return MAX_MODEL_TEMP
+
+    @property
+    @abstractmethod
+    def _default_temperature(self) -> float:
+        """Protected default temperature, must be overridden"""
+        pass # pylint: disable=unnecessary-pass
+
+    def _update_temperature(self, value: float|None) -> None:
+        """Protected method to update temperature with validation"""
+        if value is None:
+            value = self._default_temperature
+        if not self._min_temperature <= value <= self._max_temperature:
+            raise ValueError(
+                f"Temperature for {self.__class__.__name__} must be between "
+                f"{self._min_temperature} and {self._max_temperature}"
+            )
+        self._model_temperature = value
 
     @property
     def model_max_tokens(self) -> int:
@@ -350,16 +365,6 @@ class ChatbotBase(ABC):
 
         Returns:
             str: The model type identifier for the chatbot.
-        """
-        pass  # pylint: disable=unnecessary-pass
-
-    @abstractmethod
-    def _get_default_temperature(self) -> float:
-        """
-        Get default temperature for each the child class model.
-
-        Returns:
-            float: The default temperature for the model.
         """
         pass  # pylint: disable=unnecessary-pass
 

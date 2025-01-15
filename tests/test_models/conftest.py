@@ -2,7 +2,7 @@
 This module contains pytest fixtures for creating instances of various chatbot models.
 
 Fixtures:
-    openai_chatbot: Creates an instance of OpenAIChatbot.
+    gpt_chatbot: Creates an instance of GPTChatbot.
     claude_chatbot: Creates an instance of ClaudeChatbot.
     ollama_chatbot: Creates an instance of OllamaChatbot.
     gemini_chatbot: Creates an instance of GeminiChatbot.
@@ -12,55 +12,77 @@ Fixtures:
 
 import pytest
 
-from chatbot_conversation.models import BotRegistry, ChatbotFactory
+from chatbot_conversation.models import (
+    BotRegistry,
+    ChatbotFactory,
+    ChatbotConfig,
+    ChatbotModel,
+    ChatbotParamsOpt,
+)
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
-from chatbot_conversation.models.bots.openai_bot import OpenAIChatbot
+from chatbot_conversation.models.bots.gpt_bot import GPTChatbot
 
 
 @pytest.fixture
-def openai_chatbot() -> OpenAIChatbot:
-    """Fixture to create an instance of OpenAIChatbot."""
-    return OpenAIChatbot(
-        bot_name="OpenAITestBot1",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="gpt-4o-mini",
-        bot_temp=0.7,
+def gpt_chatbot() -> GPTChatbot:
+    """Fixture to create an instance of GPTChatbot."""
+    config = ChatbotConfig(
+        name="GPTTestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="GPT",
+            version="gpt-4o-mini",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    return GPTChatbot(config)
 
 
 @pytest.fixture
 def claude_chatbot() -> ClaudeChatbot:
     """Fixture to create an instance of ClaudeChatbot."""
-    return ClaudeChatbot(
-        bot_name="ClaudeTestBot1",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="claude-3-haiku-20240307",
-        bot_temp=0.7,
+    config = ChatbotConfig(
+        name="ClaudeTestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="CLAUDE",
+            version="claude-3-haiku-20240307",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    return ClaudeChatbot(config)
 
 
 @pytest.fixture
 def ollama_chatbot() -> OllamaChatbot:
     """Fixture to create an instance of OllamaChatbot."""
-    return OllamaChatbot(
-        bot_name="OllamaTestBot1",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_model_version="llama3.2",
-        bot_temp=0.7,
+    config = ChatbotConfig(
+        name="OllamaTestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="OLLAMA",
+            version="llama3.2",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    return OllamaChatbot(config)
 
 
 @pytest.fixture
 def gemini_chatbot() -> GeminiChatbot:
     """Fixture to create an instance of GeminiChatbot."""
-    return GeminiChatbot(
-        bot_name="GeminiTestBot1",
-        bot_model_version="gemini-1.5-flash",
-        bot_system_prompt="You are a helpful assistant.",
-        bot_temp=0.7,
+    config = ChatbotConfig(
+        name="GeminiTestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="GEMINI",
+            version="gemini-1.5-flash",
+            params_opt=ChatbotParamsOpt(temperature=0.7),
+        ),
     )
+    return GeminiChatbot(config)
 
 
 @pytest.fixture

@@ -46,7 +46,7 @@ def test_conversation_manager_initialization(test_config_path: str) -> None:
     assert manager.bots[1].system_prompt.endswith("You are another test bot.")
 
     # Verify bot types
-    assert str(manager.bots[0].__class__.__name__).startswith("OpenAI")
+    assert str(manager.bots[0].__class__.__name__).startswith("GPT")
     assert str(manager.bots[1].__class__.__name__).startswith("Claude")
 
 
