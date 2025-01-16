@@ -3,12 +3,14 @@ Core components for building AI chatbot systems.
 
 This module provides a comprehensive framework for implementing AI chatbots 
 that can interface with various language models and APIs. It includes robust
-message handling, configuration management, and fault-tolerant API communication.
+message handling, configuration management, unique bot name validation, and 
+fault-tolerant API communication.
 
 Core Components:
 - Message Structures: Standardized formats for API and internal communication
 - Configuration: Settings for bot initialization, timeouts, and model parameters
 - System Prompt Management: Stateful handling of system instructions
+- Name Management: Unique bot name validation across instances
 - Base Implementation: Abstract foundation with common chatbot functionality
 - Error Handling: Comprehensive retry logic for API resilience
 
@@ -25,7 +27,7 @@ Major Classes:
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, TypedDict
+from typing import Any, List, Optional, TypedDict, ClassVar, Set
 
 from tenacity import (
     retry,
@@ -186,22 +188,27 @@ class ChatbotBase(ABC):
     - Managed system prompt handling
     - Configurable timeout and retry logic
     - Conversation state management
-    - Unique bot instance tracking
+    - Unique bot instance tracking and name validation
     - Temperature control for response generation
     - Debug and error logging support
 
     Class Attributes:
         _total_count (int): Running total of chatbot instances created
+        _used_names (Set[str]): Set of names already assigned to bot instances
 
     Instance Attributes:
-        _name (str): Bot instance display name
+        _name (str): Bot instance display name (must be unique)
         _model (_Model): Container for all model-related attributes
         _system_prompt (str): System prompt manager
         _bot_index (int): Unique instance identifier
         _model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
+    
+    Raises:
+        ValueError: If attempting to create a bot with a name that's already in use
     """
 
     _total_count: int = 0  # Class variable to track total instances
+    _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
 
     @classmethod
     def reset_total_count(cls) -> None:
@@ -227,11 +234,24 @@ class ChatbotBase(ABC):
         config: ChatbotConfig,
     ) -> None:
         """
-        Initialize the chatbot with model version, system prompt, and bot name.
+        Initialize the chatbot with model version, system prompt, and unique bot name.
 
         Args:
             config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Raises:
+            ValueError: If the bot name is already in use by another instance,
+                      if model type doesn't match implementation,
+                      if temperature is outside valid range,
+                      or if max tokens is less than 1
         """
+        # Validate bot name uniqueness
+        if config.name in self._used_names:
+            raise ValueError(
+                f"Bot name '{config.name}' is already in use by another bot instance"
+            )
+        self._used_names.add(config.name)
+
         # Validate config model type against model implementation
         expected_type = self._get_model_type()
         if config.model.type != expected_type:
