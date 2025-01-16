@@ -11,8 +11,8 @@ from chatbot_conversation.models import (
 )
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
-from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 from chatbot_conversation.models.bots.gpt_bot import GPTChatbot
+from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 
 
 def test_create_gpt_chatbot(chatbot_factory: ChatbotFactory) -> None:
