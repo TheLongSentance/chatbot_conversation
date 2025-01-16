@@ -128,7 +128,7 @@ class ChatbotParamsOpt:
 @dataclass
 class ChatbotModel:
     """
-    Model information for chatbot instances.
+    Runtime configuration for model information in chatbot instances.
 
     Attributes:
         type (str): The type of the model
