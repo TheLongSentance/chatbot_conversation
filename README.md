@@ -365,6 +365,13 @@ Configuration parameters:
       - Defaults to 300 if not specified
       - Higher values allow longer responses but may use more API tokens
 
+Important validation rules:
+
+- Bot names must be unique within a configuration
+- Bot names are alphanumeric and cannot contain special/punctuation charactors
+- Bot names can however use underscore within their name e.g. "Fredbot_42"
+- But names cannot start or end with an underscore
+
 ### Template Variables
 
 The following strings support the `{bot_name}` template variable:

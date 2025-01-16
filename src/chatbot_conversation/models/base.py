@@ -25,6 +25,7 @@ Major Classes:
 """
 
 import json
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, ClassVar, List, Optional, Set, TypedDict
@@ -174,6 +175,13 @@ class _Model:
     max_tokens: int
     api: Any = None
 
+    def __post_init__(self) -> None:
+        """Validate model type and version after initialization."""
+        if not self.type or not self.type.strip():
+            raise ValueError("Model type cannot be empty")
+        if not self.version or not self.version.strip():
+            raise ValueError("Model version cannot be empty")
+
 
 class ChatbotBase(ABC):
     """
@@ -231,17 +239,37 @@ class ChatbotBase(ABC):
             config (ChatbotConfig): The configuration for the chatbot instance.
 
         Raises:
-            ValueError: If the bot name is already in use by another instance,
+            ValueError: If the bot name is empty or whitespace-only,
+                      contains invalid characters,
+                      already in use by another instance,
                       if model type doesn't match implementation,
                       if temperature is outside valid range,
                       or if max tokens is less than 1
         """
-        # Validate bot name uniqueness
-        if config.name in self._used_names:
+        # Validate bot name
+        bot_name: str = config.name.strip()
+        if not bot_name:  # Empty or whitespace-only
             raise ValueError(
-                f"Bot name '{config.name}' is already in use by another bot instance"
+                "Bot name must be a non-empty string without only whitespace"
             )
-        self._used_names.add(config.name)
+        # Regex to match to reject special characters
+        # and invalid underscore usage at start and end of the name
+        if (
+            re.search(r"[^a-zA-Z0-9_]", bot_name)
+            or bot_name.startswith("_")
+            or bot_name.endswith("_")
+        ):
+            raise ValueError(
+                f"Bot name '{bot_name}' contains "
+                "invalid characters or invalid underscore usage"
+            )
+
+        # Validate bot name uniqueness
+        if bot_name in self._used_names:
+            raise ValueError(
+                f"Bot name '{bot_name}' is already in use by another bot instance"
+            )
+        self._used_names.add(bot_name)
 
         # Validate config model type against model implementation
         expected_type = self._get_model_type()
@@ -284,9 +312,12 @@ class ChatbotBase(ABC):
         )
 
         # Other attributes
-        self._name: str = config.name
-        self._system_prompt: str = config.system_prompt
-        self._model_system_prompt_needs_update: bool = True
+        self._name: str = bot_name  # No public setter, and validated above
+        # Use the public setter for system prompt
+        # - will also validate and set update flag
+        self.system_prompt = config.system_prompt
+
+        # Initialize bot index and update class count
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
 
@@ -387,7 +418,12 @@ class ChatbotBase(ABC):
 
         Args:
             value (str): The new system prompt content.
+
+        Raises:
+            ValueError: If the system prompt is empty or contains only whitespace
         """
+        if not value or not value.strip():
+            raise ValueError("System prompt cannot be empty")
         self._system_prompt = value
         self._model_system_prompt_needs_update = True
 
