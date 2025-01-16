@@ -21,6 +21,7 @@ class ChatbotParamsOptData(BaseModel):
         temperature (float | None): Temperature parameter for response randomness
         max_tokens (int | None): Maximum tokens for response generation
     """
+
     temperature: Optional[float] = Field(
         default=None,
         description="Temperature parameter for response randomness",
