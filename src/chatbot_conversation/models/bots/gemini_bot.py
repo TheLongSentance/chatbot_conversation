@@ -193,7 +193,11 @@ class GeminiChatbot(ChatbotBase):
             )
             self.model_system_prompt_updated()
 
-        message = self.model_api.generate_content(formatted_messages) # pyright: ignore[reportUnknownMemberType]
+        message = (
+            self.model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
+                formatted_messages
+            )
+        )
         response: str = message.text
         return response
 
