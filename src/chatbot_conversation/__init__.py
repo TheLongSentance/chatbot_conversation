@@ -2,36 +2,20 @@
 This package contains the modules for the chatbot conversation.
 """
 
-__version__ = "0.1.0"
+import importlib
 
-from chatbot_conversation.conversation import (
-    ChatbotConfigData,
-    ChatbotParamsOptData,
-    ConfigurationLoader,
-    ConversationConfig,
-    ConversationManager,
-)
-from chatbot_conversation.models import (
-    ChatbotBase,
-    ChatbotConfig,
-    ChatbotModel,
-    ChatbotParamsOpt,
-    ConversationMessage,
-)
-from chatbot_conversation.utils import APIConfig, get_logger
+# Define the version
+__version__ = "1.0.0"
 
-__all__ = [
-    "ChatbotParamsOptData",
-    "ChatbotConfigData",
-    "ConversationConfig",
-    "ConfigurationLoader",
-    "ConversationManager",
-    "ChatbotBase",
-    "ChatbotConfig",
-    "ChatbotModel",
-    "ChatbotParamsOpt",
-    "ConversationMessage",
-    "APIConfig",
-    "get_logger",
-    "__version__",
+# List of sub-packages to import
+sub_packages = [
+    "chatbot_conversation.conversation",
+    "chatbot_conversation.models",
+    "chatbot_conversation.utils",
 ]
+
+# Dynamically import sub-packages and update __all__
+__all__ = ["__version__"]
+for package in sub_packages:
+    module = importlib.import_module(package)
+    __all__.extend(module.__all__)
