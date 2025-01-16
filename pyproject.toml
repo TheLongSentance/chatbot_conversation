@@ -5,6 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "chatbot_conversation"
 description = "A chatbot conversation system"
+# note need to update version number in __init__.py of src/chatbot_conversation
 version = "0.1.0"
 authors = [{name = "Brian Sentance", email = "brian@sentance.tech"}]
 readme = "README.md"
