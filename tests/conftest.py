@@ -9,7 +9,7 @@ The fixtures handle:
 """
 
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict
 
 import pytest
 
@@ -68,7 +68,13 @@ def mock_env(monkeypatch: pytest.MonkeyPatch) -> Dict[str, str]:
 
 
 @pytest.fixture(autouse=True)
-def reset_bot_count() -> Generator[None, None, None]:
-    """Fixture to reset the bot count before each test."""
-    ChatbotBase.reset_total_count()
-    yield
+def reset_chatbot_base() -> None:
+    """Reset ChatbotBase class variables before each test.
+
+    This ensures each test starts with a clean state for:
+    - _total_count: Number of bot instances
+    - _used_names: Set of used bot names
+    """
+    # Intentionally accessing protected members for testing purposes
+    ChatbotBase._total_count = 0  # pyright: ignore[reportPrivateUsage]
+    ChatbotBase._used_names.clear()  # pyright: ignore[reportPrivateUsage]

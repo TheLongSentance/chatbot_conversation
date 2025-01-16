@@ -25,14 +25,6 @@ from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 ASSISTANT_TEST_PROMPT = "You are a helpful assistant."
 
 
-@pytest.fixture(autouse=True)
-def reset_bot_count() -> None:
-    """Reset the bot counter before each test."""
-    from chatbot_conversation.models.base import ChatbotBase
-
-    ChatbotBase.reset_total_count()
-
-
 def test_default_temperatures() -> None:
     """Verify default temperature values for each chatbot implementation.
 
@@ -185,7 +177,7 @@ def test_temperature_bounds(
     """
     # Test minimum temperature
     config_min = ChatbotConfig(
-        name="test_bot",
+        name="test_bot1",
         system_prompt=ASSISTANT_TEST_PROMPT,
         model=ChatbotModel(
             type=bot_class.__name__.replace("Chatbot", "").upper(),
@@ -198,7 +190,7 @@ def test_temperature_bounds(
 
     # Test maximum temperature
     config_max = ChatbotConfig(
-        name="test_bot",
+        name="test_bot2",
         system_prompt=ASSISTANT_TEST_PROMPT,
         model=ChatbotModel(
             type=bot_class.__name__.replace("Chatbot", "").upper(),
