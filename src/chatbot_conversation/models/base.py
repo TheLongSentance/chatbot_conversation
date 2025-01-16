@@ -124,11 +124,6 @@ class ChatbotParamsOpt:
     temperature: Optional[float] = None
     max_tokens: Optional[int] = None
 
-    # Add validation
-    def __post_init__(self):
-        if self.max_tokens is not None and self.max_tokens <= 0:
-            raise ValueError("max_tokens must be greater than 0")
-
 
 @dataclass
 class ChatbotModel:
@@ -228,25 +223,17 @@ class ChatbotBase(ABC):
         Args:
             config (ChatbotConfig): The configuration for the chatbot instance.
         """
-        # Validate model type before setting attributes
-        expected_type = self._get_model_type()
-        if config.model.type != expected_type:
-            raise ValueError(
-                f"Invalid model type for {self.__class__.__name__}: "
-                f"got '{config.model.type}', expected '{expected_type}'"
-            )
+        # Set model type with validation
+        self._update_model_type(config.model.type)
+
+        # Optional parameters with validation
+        self._update_temperature(config.model.params_opt.temperature)
+        self._update_max_tokens(config.model.params_opt.max_tokens)
 
         # Read-only configuration
         self._name: str = config.name
-        self._model_type: str = config.model.type
         self._model_version: str = config.model.version
         self._model_timeout = config.timeout
-        self._update_temperature(config.model.params_opt.temperature)
-        self._model_max_tokens: int = (
-            config.model.params_opt.max_tokens
-            if config.model.params_opt.max_tokens is not None
-            else self._get_default_max_tokens()
-        )
 
         # Mutable state
         self._system_prompt: str = config.system_prompt
@@ -259,28 +246,42 @@ class ChatbotBase(ABC):
 
     @property
     def name(self) -> str:
+        """Get the name of the chatbot instance."""
         return self._name
 
     @property
     def model_type(self) -> str:
+        """Get the model type identifier."""
         return self._model_type
+
+    def _update_model_type(self, value: str) -> None:
+        """Protected method to update model type with validation."""
+        expected_type: str = self._get_model_type()
+        if value != expected_type:
+            raise ValueError(
+                f"Invalid model type for {self.__class__.__name__}: "
+                f"got '{value}', expected '{expected_type}'"
+            )
+        self._model_type = value
 
     @property
     def model_version(self) -> str:
+        """Get the model version identifier."""
         return self._model_version
 
     @property
     def model_temperature(self) -> float:
+        """Get the current temperature setting for response generation."""
         return self._model_temperature
 
     @property
     def _min_temperature(self) -> float:
-        """Protected minimum temperature, can be overridden"""
+        """Get the minimum allowed temperature value."""
         return MIN_MODEL_TEMP
 
     @property
     def _max_temperature(self) -> float:
-        """Protected maximum temperature, can be overridden"""
+        """Get the maximum allowed temperature value."""
         return MAX_MODEL_TEMP
 
     @property
@@ -302,23 +303,46 @@ class ChatbotBase(ABC):
 
     @property
     def model_max_tokens(self) -> int:
+        """Get the maximum tokens setting for response generation."""
         return self._model_max_tokens
+
+    def _update_max_tokens(self, value: int | None) -> None:
+        """Protected method to update max tokens with validation"""
+        if value is None:
+            value = self._get_default_max_tokens()
+        if value < 1:
+            raise ValueError(
+                f"Max tokens for {self.__class__.__name__} must be greater than 0"
+            )
+        self._model_max_tokens = value
+
+    def _get_default_max_tokens(self) -> int:
+        """
+        Get default max_tokens.
+
+        Returns:
+            int: The default maximum tokens for response generation.
+        """
+        return DEFAULT_MAX_TOKENS
 
     @property
     def model_timeout(self) -> ChatbotTimeout:
+        """Get the timeout and retry configuration."""
         return self._model_timeout
 
     @property
     def bot_index(self) -> int:
+        """Get the unique instance identifier."""
         return self._bot_index
 
-    # Read-write properties
     @property
     def model_api(self) -> Any:
+        """Get the API client instance."""
         return self._model_api
 
     @model_api.setter
     def model_api(self, value: Any) -> None:
+        """Set the API client instance."""
         self._model_api = value
 
     @property
@@ -368,15 +392,6 @@ class ChatbotBase(ABC):
         """
         pass  # pylint: disable=unnecessary-pass
 
-    def _get_default_max_tokens(self) -> int:
-        """
-        Get default max_tokens.
-
-        Returns:
-            int: The default maximum tokens for response generation.
-        """
-        return DEFAULT_MAX_TOKENS
-
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -411,7 +426,8 @@ class ChatbotBase(ABC):
         and configurable retry behavior for handling transient failures.
 
         Args:
-            conversation (List[ConversationMessage]): Sequential list of prior conversation messages.
+            conversation (List[ConversationMessage]): Sequential list of prior
+                                                      conversation messages.
 
         Returns:
             str: Generated response text from the model.
