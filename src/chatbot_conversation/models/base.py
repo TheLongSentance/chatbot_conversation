@@ -287,9 +287,9 @@ class ChatbotBase(ABC):
     @abstractmethod
     def _default_temperature(self) -> float:
         """Protected default temperature, must be overridden"""
-        pass # pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
-    def _update_temperature(self, value: float|None) -> None:
+    def _update_temperature(self, value: float | None) -> None:
         """Protected method to update temperature with validation"""
         if value is None:
             value = self._default_temperature
