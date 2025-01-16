@@ -109,7 +109,7 @@ class GeminiChatbot(ChatbotBase):
         # the generate_content call for Gemini as either a parameter or
         # part of the message history
 
-        self._model_api = google.generativeai.GenerativeModel(
+        self.model_api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt,
             generation_config=google.generativeai.GenerationConfig(
@@ -183,7 +183,7 @@ class GeminiChatbot(ChatbotBase):
         # and whenever it is updated (first round, after first round, before last)
 
         if self.model_system_prompt_needs_update:
-            self._model_api = google.generativeai.GenerativeModel(
+            self.model_api = google.generativeai.GenerativeModel(
                 model_name=self.model_version,
                 system_instruction=self.system_prompt,
                 generation_config=google.generativeai.GenerationConfig(
@@ -193,7 +193,7 @@ class GeminiChatbot(ChatbotBase):
             )
             self.model_system_prompt_updated()
 
-        message = self.model_api.generate_content(formatted_messages)
+        message = self.model_api.generate_content(formatted_messages) # pyright: ignore[reportUnknownMemberType]
         response: str = message.text
         return response
 
