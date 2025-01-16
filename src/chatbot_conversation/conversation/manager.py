@@ -20,12 +20,12 @@ from rich.markdown import Markdown
 
 from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.models import (
+    BotRegistry,
     ChatbotBase,
     ChatbotConfig,
     ChatbotFactory,
     ChatbotModel,
     ChatbotParamsOpt,
-    BotRegistry,
     ConversationMessage,
 )
 from chatbot_conversation.utils import get_logger
@@ -76,9 +76,9 @@ class ConversationManager:
                     version=bot_config.bot_version,
                     params_opt=ChatbotParamsOpt(
                         temperature=bot_config.bot_params_opt.temperature,
-                        max_tokens=bot_config.bot_params_opt.max_tokens
-                    )
-                )
+                        max_tokens=bot_config.bot_params_opt.max_tokens,
+                    ),
+                ),
             )
 
             bot = factory.create_bot(chatbot_config)
@@ -278,9 +278,8 @@ class ConversationManager:
             logger.error("Failed to write conversation to file: %s", str(e))
 
     def system_prompt_add_suffix(
-            self, 
-            bot: ChatbotBase, 
-            additional_prompt: str) -> None:
+        self, bot: ChatbotBase, additional_prompt: str
+    ) -> None:
         """
         Append additional text to the system prompt.
 
@@ -291,9 +290,7 @@ class ConversationManager:
             bot.system_prompt += additional_prompt
 
     def system_prompt_remove_suffix(
-        self, 
-        bot: ChatbotBase, 
-        text_to_remove: str
+        self, bot: ChatbotBase, text_to_remove: str
     ) -> None:
         """
         Remove specific text from the end of the system prompt.
