@@ -34,8 +34,8 @@ chatbot_conversation/
 │   │   ├── test_claude_bot.py
 │   │   ├── test_factory.py
 │   │   ├── test_gemini_bot.py
-│   │   ├── test_ollama_bot.py
-│   │   └── test_openai_bot.py
+│   │   ├── test_gpt_bot.py
+│   │   └── test_ollama_bot.py
 │   ├── __init__.py
 │   └── conftest.py
 ├── src/
@@ -50,8 +50,8 @@ chatbot_conversation/
 │       │   │   ├── claude_bot.py
 │       │   │   ├── dummy_bot.py
 │       │   │   ├── gemini_bot.py
-│       │   │   ├── ollama_bot.py
-│       │   │   └── openai_bot.py
+│       │   │   ├── gpt_bot.py
+│       │   │   └── ollama_bot.py
 │       │   ├── __init__.py
 │       │   ├── base.py
 │       │   ├── bot_registry.py
@@ -64,7 +64,6 @@ chatbot_conversation/
 │       └── main.py
 ├── config/
 │   ├── examples/
-│   │   ├── brexit.config.json
 │   │   ├── churchill.config.json
 │   │   ├── dummy.config.json
 │   │   └── tennis.config.json
@@ -73,7 +72,6 @@ chatbot_conversation/
 │   └── logging.conf
 ├── output/
 │   ├── examples/
-│   │   ├── brexit.transcript_250112_111207.md
 │   │   ├── churchill.transcript_250112_110658.md
 │   │   ├── dummy.transcript_250112_111856.md
 │   │   └── tennis.transcript_250112_111705.md
@@ -314,13 +312,26 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
             "bot_name": "RogerFan",
             "bot_type": "GPT",
             "bot_version": "gpt-4-mini",
-            "bot_prompt": "You are a fan of tennis and Roger Federer..."
+            "bot_prompt": "You are a fan of tennis and Roger Federer...",
+            "bot_params_opt": {
+                "temperature": 0.7,
+                "max_tokens": 500
+            }
         },
         {
             "bot_name": "RafaFan",
             "bot_type": "CLAUDE",
             "bot_version": "claude-3-haiku-20240307",
-            "bot_prompt": "You are a fan of tennis and Rafael Nadal..."
+            "bot_prompt": "You are a fan of tennis and Rafael Nadal...",
+            "bot_params_opt": {
+                "temperature": 0.5
+            }
+        },
+        {
+            "bot_name": "NovakFan",
+            "bot_type": "GEMINI",
+            "bot_version": "gemini-1.5-flash",
+            "bot_prompt": "You are a fan of tennis and Novak Djokovic..."
         }
     ]
 }
@@ -328,27 +339,40 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 
 Configuration parameters:
 
-- `author`: The author of the conversation configuration. Not used in the running of the conversation but listed in transcript.md for record keeping purposes.
+- `author`: The author of the conversation configuration. Used in transcript.md for record keeping.
 - `conversation_seed`: The initial prompt to start the discussion.
 - `rounds`: Number of conversation rounds.
-- `shared_prefix`: Common instructions provided to all bots about conversation structure which forms part of the system prompt for each bot.
-  - Supports template variable `{bot_name}` which gets replaced with each bot's name from their configuration
+- `shared_prefix`: Common instructions provided to all bots about conversation structure.
+  - Supports template variable `{bot_name}` which gets replaced with each bot's name
   - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
-- `first_round_postfix`: Instructions for the first round of the conversation which get appended to each bot's system prompt only for the first round of the conversation. This could be used to ask each bot to introduce themselves for example. This will be removed from each bot's system prompt at the end of the first round and the system prompt re-applied.
-- `last_round_postfix`: Instructions for the last round of the conversation which get appended to each bot's system prompt only for the last round of the conversation. This could be used to ask each bot to draw conclusions from the conversation for example.
+- `first_round_postfix`: Instructions for first round only (e.g., bot introductions).
+- `last_round_postfix`: Instructions for last round only (e.g., concluding thoughts).
 - `bots`: Array of bot configurations:
-  - `bot_name`: Display name for the bot (also used in shared system prompt templating)
+  - `bot_name`: Display name for the bot
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
   - `bot_version`: Specific model version to use
   - `bot_prompt`: Role-specific instructions for each bot
+  - `bot_params_opt`: Optional model parameters (may vary by model type):
+    - `temperature`: Controls randomness in responses
+      - Range of values typically 0.0 to 2.0
+      - Some models override this range (e.g. Ollama 0.0 to 1.0)
+      - Lower values: More focused, deterministic responses
+      - Higher values: More creative, varied responses
+      - Defaults to model-specific values if not specified
+    - `max_tokens`: Maximum length of generated responses
+      - Defaults to 300 if not specified
+      - Higher values allow longer responses but may use more API tokens
 
 ### Template Variables
 
-The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_prompt` all support the following template variable:
+The following strings support the `{bot_name}` template variable:
 
-- `{bot_name}`: Replaced with the bot's name from its configuration
-  - Used for example to suggest in `first_round_postfix` that each bot should introduce itself by name in their first contribution to the conversation.
-  - Used for making the system prompt more personalized to each bot at all stages of the conversation.
+- `shared_prefix`
+- `first_round_postfix`
+- `last_round_postfix`
+- `bot_prompt`
+
+This variable is replaced with the bot's name from its configuration, allowing for personalized prompts and instructions.
 
 ## Usage
 
@@ -358,6 +382,7 @@ The `shared_prefix`, `first_round_postfix`, `last_round_postfix` and each `bot_p
    - Editing the default `/config/config.json`, or
    - Creating a custom configuration file (see examples in `/config/examples/`)
 4. Run the conversation using either:
+
    ```bash
    # Using default config.json
    python /src/chatbot_conversation/main.py
