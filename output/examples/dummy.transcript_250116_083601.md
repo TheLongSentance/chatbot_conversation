@@ -2,35 +2,7 @@
 
 ## Round 1 of 3
 
-I'm here to help you with any questions.
-
----
-
-What can I do for you?
-
----
-
 Let's chat! What do you want to talk about?
-
----
-
-## Round 2 of 3
-
-Feel free to ask me anything.
-
----
-
-I'm a dummy bot, but I'll try my best to help.
-
----
-
-I'm a dummy bot, but I'll try my best to help.
-
----
-
-## Round 3 of 3
-
-What can I do for you?
 
 ---
 
@@ -38,13 +10,41 @@ I'm here to assist you with your queries.
 
 ---
 
-Hello! How can I assist you today?
+I'm here to assist you with your queries.
+
+---
+
+## Round 2 of 3
+
+I'm here to help you with any questions.
+
+---
+
+Ask me anything, I'm here to help.
+
+---
+
+Feel free to ask me anything.
+
+---
+
+## Round 3 of 3
+
+I'm here to help you with any questions.
+
+---
+
+Ask me anything, I'm here to help.
+
+---
+
+What would you like to know today?
 
 ---
 
 ## Conversation Finished - 3 Rounds With 3 Bots Completed!
 
-## *Conversation Generated* : 2025-01-12 11:18:56
+## *Conversation Generated* : 2025-01-16 08:36:01
 
 ## *Configuration Author* : Brian Sentance
 
@@ -61,21 +61,33 @@ Hello! How can I assist you today?
     "bots": [
         {
             "bot_name": "Dummy1",
+            "bot_prompt": "You are a dummy bot. ",
             "bot_type": "DUMMY",
             "bot_version": "None",
-            "bot_prompt": "You are a dummy bot. "
+            "bot_params_opt": {
+                "temperature": null,
+                "max_tokens": null
+            }
         },
         {
             "bot_name": "Dummy2",
+            "bot_prompt": "You are a dummy bot. ",
             "bot_type": "DUMMY",
             "bot_version": "None",
-            "bot_prompt": "You are a dummy bot. "
+            "bot_params_opt": {
+                "temperature": null,
+                "max_tokens": null
+            }
         },
         {
             "bot_name": "Dummy3",
+            "bot_prompt": "You are a dummy bot. ",
             "bot_type": "DUMMY",
             "bot_version": "None",
-            "bot_prompt": "You are a dummy bot. "
+            "bot_params_opt": {
+                "temperature": null,
+                "max_tokens": null
+            }
         }
     ]
 }
