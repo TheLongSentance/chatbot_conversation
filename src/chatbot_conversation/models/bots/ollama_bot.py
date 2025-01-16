@@ -162,7 +162,10 @@ class OllamaChatbot(ChatbotBase):
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
                 model=self.model_version,
                 messages=formatted_messages,
-                options={"temperature": self.model_temperature},
+                options={
+                    "temperature": self.model_temperature,
+                    "num_predict": self.model_max_tokens,
+                },
             )
         )
         response_content = response["message"]["content"]

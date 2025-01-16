@@ -127,7 +127,7 @@ class ClaudeChatbot(ChatbotBase):
             model=self.model_version,
             system=self.system_prompt,
             messages=formatted_messages,
-            max_tokens=500,
+            max_tokens=self.model_max_tokens,
             timeout=self.model_timeout.api_timeout,
             temperature=self.model_temperature,
         )

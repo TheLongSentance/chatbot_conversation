@@ -113,7 +113,8 @@ class GeminiChatbot(ChatbotBase):
             model_name=self.model_version,
             system_instruction=self.system_prompt,
             generation_config=google.generativeai.GenerationConfig(
-                temperature=self.model_temperature
+                temperature=self.model_temperature,
+                max_output_tokens=self.model_max_tokens,
             ),
         )
 
@@ -186,7 +187,8 @@ class GeminiChatbot(ChatbotBase):
                 model_name=self.model_version,
                 system_instruction=self.system_prompt,
                 generation_config=google.generativeai.GenerationConfig(
-                    temperature=self.model_temperature
+                    temperature=self.model_temperature,
+                    max_output_tokens=self.model_max_tokens,
                 ),
             )
             self.model_system_prompt_updated()

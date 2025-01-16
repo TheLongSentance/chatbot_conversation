@@ -135,6 +135,7 @@ class GPTChatbot(ChatbotBase):
             messages=formatted_messages,
             timeout=self.model_timeout.api_timeout,
             temperature=self.model_temperature,
+            max_tokens=self.model_max_tokens,
         )
         response_content = completion.choices[0].message.content
         return response_content
