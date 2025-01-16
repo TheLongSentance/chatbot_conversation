@@ -61,7 +61,8 @@ chatbot_conversation/
 │       │   ├── env.py
 │       │   └── logging_util.py
 │       ├── __init__.py
-│       └── main.py
+│       ├── main.py
+│       └── version.py
 ├── config/
 │   ├── examples/
 │   │   ├── churchill.config.json
@@ -92,6 +93,7 @@ The project is organized into the following components:
 - `src/chatbot_conversation/models/bots`: Drop-in directory containing specific AI model integrations
 - `src/chatbot_conversation/utils/`: Utility functions and environment configuration
 - `src/chatbot_conversation/main.py`: Application entry point
+- `src/chatbot_conversation/version.py`: Package software version number
 - `config/`: Contains runtime configuration files
 - `config/config.json`: Configuration file for conversation settings
 - `config/examples/`: Example configuration files for use in the config directory
@@ -433,6 +435,8 @@ Here is an excerpt from the start of a sample `transcript_250111_172128.md`:
 ## Conversation Finished - 3 Rounds With 2 Bots Completed!
 
 ## *Conversation Generated* : 2025-01-11 17:21:28
+
+## *Software Version* : 1.0.0
 
 ## *Configuration Author* : Brian Sentance
 

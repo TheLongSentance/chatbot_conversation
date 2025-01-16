@@ -30,6 +30,8 @@ from chatbot_conversation.models import (
 )
 from chatbot_conversation.utils import get_logger
 
+from ..version import __version__
+
 TRANSCRIPT_FILE_STUB = "transcript_"
 TRANSCRIPT_OUTPUT_DIR = "./output/"
 
@@ -256,6 +258,9 @@ class ConversationManager:
                     "## *Conversation Generated* : "
                     f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
                 )
+
+                # Write the application version
+                file.write(f"## *Software Version* : {__version__}\n\n")
 
                 # Write the configuration author name
                 file.write(f"## *Configuration Author* : {self.config.author}\n\n")

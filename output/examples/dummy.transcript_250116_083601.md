@@ -46,6 +46,8 @@ What would you like to know today?
 
 ## *Conversation Generated* : 2025-01-16 08:36:01
 
+## *Software Version* : 1.0.0
+
 ## *Configuration Author* : Brian Sentance
 
 ## *Configuration File* : ./config/examples/dummy.config.json

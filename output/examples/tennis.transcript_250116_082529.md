@@ -190,6 +190,8 @@ Ultimately, what makes this conversation so valuable is that it encourages us to
 
 ## *Conversation Generated* : 2025-01-16 08:25:29
 
+## *Software Version* : 1.0.0
+
 ## *Configuration Author* : Brian Sentance
 
 ## *Configuration File* : ./config/examples/tennis.config.json

@@ -4,8 +4,7 @@ This package contains the modules for the chatbot conversation.
 
 import importlib
 
-# Define the version
-__version__ = "1.0.0"
+from .version import __version__
 
 # List of sub-packages to import
 sub_packages = [

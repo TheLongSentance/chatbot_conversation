@@ -167,6 +167,8 @@ As we move forward in our historical examination, I firmly believe that ongoing 
 
 ## *Conversation Generated* : 2025-01-16 08:29:03
 
+## *Software Version* : 1.0.0
+
 ## *Configuration Author* : Brian Sentance
 
 ## *Configuration File* : ./config/examples/churchill.config.json
