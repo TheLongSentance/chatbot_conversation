@@ -215,7 +215,7 @@ class ChatbotBase(ABC):
         ValueError: If attempting to create a bot with a name that's already in use
     """
 
-    _total_count: int = 0  # Class variable to track total instances
+    _total_count: ClassVar[int] = 0  # Class variable to track total instances
     _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
 
     @classmethod
@@ -246,61 +246,26 @@ class ChatbotBase(ABC):
                       if temperature is outside valid range,
                       or if max tokens is less than 1
         """
-        # Validate bot name
-        bot_name: str = config.name.strip()
-        if not bot_name:  # Empty or whitespace-only
-            raise ValueError(
-                "Bot name must be a non-empty string without only whitespace"
-            )
-        # Regex to match to reject special characters
-        # and invalid underscore usage at start and end of the name
-        if (
-            re.search(r"[^a-zA-Z0-9_]", bot_name)
-            or bot_name.startswith("_")
-            or bot_name.endswith("_")
-        ):
-            raise ValueError(
-                f"Bot name '{bot_name}' contains "
-                "invalid characters or invalid underscore usage"
-            )
+        # Validate then set bot name
+        name = config.name.strip()
+        self._validate_name(name)
+        self._name: str = name
+        self._used_names.add(self._name)
 
-        # Validate bot name uniqueness
-        if bot_name in self._used_names:
-            raise ValueError(
-                f"Bot name '{bot_name}' is already in use by another bot instance"
-            )
-        self._used_names.add(bot_name)
+        # Use the public setter for system prompt
+        # - will also validate and set update flag
+        self.system_prompt = config.system_prompt
 
         # Validate config model type against model implementation
-        expected_type = self._get_model_type()
-        if config.model.type != expected_type:
-            raise ValueError(
-                f"Invalid model type for {self.__class__.__name__}: "
-                f"got '{config.model.type}', expected '{expected_type}'"
-            )
+        self._validate_model_type(config)
 
         # Validate temperature and set to default if not provided
-        temperature = (
-            config.model.params_opt.temperature
-            if config.model.params_opt.temperature is not None
-            else self._default_temperature
-        )
-        if not self._min_temperature <= temperature <= self._max_temperature:
-            raise ValueError(
-                f"Temperature for {self.__class__.__name__} must be between "
-                f"{MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
-            )
+        temperature = self._initialise_temperature(config)
+        self._validate_temperature(temperature)
 
-        # Validate max tokens
-        max_tokens = (
-            config.model.params_opt.max_tokens
-            if config.model.params_opt.max_tokens is not None
-            else self._get_default_max_tokens()
-        )
-        if max_tokens < 1:
-            raise ValueError(
-                f"Max tokens for {self.__class__.__name__} must be greater than 0"
-            )
+        # Validate max tokens and set to default if not provided
+        max_tokens = self._initialise_max_tokens(config)
+        self._validate_max_tokens(max_tokens)
 
         # Initialize model container
         self._model = _Model(
@@ -311,12 +276,6 @@ class ChatbotBase(ABC):
             max_tokens=max_tokens,
         )
 
-        # Other attributes
-        self._name: str = bot_name  # No public setter, and validated above
-        # Use the public setter for system prompt
-        # - will also validate and set update flag
-        self.system_prompt = config.system_prompt
-
         # Initialize bot index and update class count
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
@@ -325,6 +284,42 @@ class ChatbotBase(ABC):
     def name(self) -> str:
         """Get the name of the chatbot instance."""
         return self._name
+
+    def _validate_name(self, name: str) -> None:
+        """
+        Validate the bot name.
+
+        Args:
+            name (str): The name to validate.
+
+        Returns:
+            None
+
+        Raises:
+            ValueError: If the name is empty, contains invalid characters,
+                      or is already in use by another instance
+        """
+        if not name:  # Empty or whitespace-only
+            raise ValueError(
+                "Bot name must be a non-empty string without only whitespace"
+            )
+        # Regex to match to reject special characters
+        # and invalid underscore usage at start and end of the name
+        if (
+            re.search(r"[^a-zA-Z0-9_]", name)
+            or name.startswith("_")
+            or name.endswith("_")
+        ):
+            raise ValueError(
+                f"Bot name '{name}' contains "
+                "invalid characters or invalid underscore usage"
+            )
+
+        # Validate bot name uniqueness
+        if name in self._used_names:
+            raise ValueError(
+                f"Bot name '{name}' is already in use by another bot instance"
+            )
 
     @property
     def model_type(self) -> str:
@@ -340,6 +335,38 @@ class ChatbotBase(ABC):
     def model_temperature(self) -> float:
         """Get the current temperature setting for response generation."""
         return self._model.temperature
+
+    def _initialise_temperature(self, config: ChatbotConfig) -> float:
+        """
+        Get the initial temperature value from config or default.
+
+        Args:
+            config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Returns:
+            float: The initial temperature value to use.
+        """
+        return (
+            config.model.params_opt.temperature
+            if config.model.params_opt.temperature is not None
+            else self._default_temperature
+        )
+
+    def _validate_temperature(self, temperature: float) -> None:
+        """
+        Validate the temperature setting.
+
+        Args:
+            temperature (float): The temperature value to validate.
+
+        Raises:
+            ValueError: If temperature is outside valid range
+        """
+        if not self._min_temperature <= temperature <= self._max_temperature:
+            raise ValueError(
+                f"Temperature for {self.__class__.__name__} must be between "
+                f"{MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
+            )
 
     @property
     def _min_temperature(self) -> float:
@@ -380,6 +407,37 @@ class ChatbotBase(ABC):
             int: The default maximum tokens for response generation (300)
         """
         return DEFAULT_MAX_TOKENS
+
+    def _validate_max_tokens(self, max_tokens: int) -> None:
+        """
+        Validate the max tokens setting.
+
+        Args:
+            max_tokens (int): The max tokens value to validate.
+
+        Raises:
+            ValueError: If max tokens is less than 1
+        """
+        if max_tokens < 1:
+            raise ValueError(
+                f"Max tokens for {self.__class__.__name__} must be greater than 0"
+            )
+
+    def _initialise_max_tokens(self, config: ChatbotConfig) -> int:
+        """
+        Get the initial max tokens value from config or default.
+
+        Args:
+            config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Returns:
+            int: The initial max tokens value to use.
+        """
+        return (
+            config.model.params_opt.max_tokens
+            if config.model.params_opt.max_tokens is not None
+            else self._get_default_max_tokens()
+        )
 
     @property
     def model_timeout(self) -> ChatbotTimeout:
@@ -442,6 +500,23 @@ class ChatbotBase(ABC):
         Mark the model system prompt as updated.
         """
         self._model_system_prompt_needs_update = False
+
+    def _validate_model_type(self, config: ChatbotConfig) -> None:
+        """
+        Validate the model type against implementation.
+
+        Args:
+            config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Raises:
+            ValueError: If model type doesn't match implementation
+        """
+        expected_type = self._get_model_type()
+        if config.model.type != expected_type:
+            raise ValueError(
+                f"Invalid model type for {self.__class__.__name__}: "
+                f"got '{config.model.type}', expected '{expected_type}'"
+            )
 
     @abstractmethod
     def _get_model_type(self) -> str:
