@@ -15,8 +15,8 @@ Validation:
 """
 
 import json
-from typing import List, Optional
 from collections import Counter
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
@@ -104,7 +104,7 @@ class ConversationConfig(BaseModel):
         cls, v: List[ChatbotConfigData]
     ) -> List[ChatbotConfigData]:
         """Validate that bot names are unique within the configuration.
-        
+
         Args:
             v (List[ChatbotConfigData]): List of bot configurations to validate
 
