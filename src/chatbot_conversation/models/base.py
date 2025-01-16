@@ -27,7 +27,7 @@ Major Classes:
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, TypedDict, ClassVar, Set
+from typing import Any, ClassVar, List, Optional, Set, TypedDict
 
 from tenacity import (
     retry,
@@ -202,22 +202,13 @@ class ChatbotBase(ABC):
         _system_prompt (str): System prompt manager
         _bot_index (int): Unique instance identifier
         _model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
-    
+
     Raises:
         ValueError: If attempting to create a bot with a name that's already in use
     """
 
     _total_count: int = 0  # Class variable to track total instances
     _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
-
-    @classmethod
-    def reset_total_count(cls) -> None:
-        """
-        Reset the total count of chatbot instances.
-
-        Typically only used in tests to ensure a clean state.
-        """
-        cls._total_count = 0
 
     @classmethod
     def get_total_bots(cls) -> int:
