@@ -114,7 +114,7 @@ class ChatbotTimeout:
 @dataclass
 class ChatbotParamsOpt:
     """
-    Optional LLM runtime parameters for chatbot instances.
+    Runtime optional parameters for chatbot instances.
 
     Attributes:
         temperature (Optional[float]): Temperature setting for response generation
@@ -159,6 +159,20 @@ class ChatbotConfig:
     timeout: ChatbotTimeout = field(default_factory=ChatbotTimeout)
 
 
+@dataclass
+class _Model:
+    """
+    Internal container for model-related attributes.
+    """
+
+    type: str
+    version: str
+    timeout: ChatbotTimeout
+    temperature: float
+    max_tokens: int
+    api: Any = None
+
+
 class ChatbotBase(ABC):
     """
     Foundation class for chatbot implementations.
@@ -181,13 +195,8 @@ class ChatbotBase(ABC):
 
     Instance Attributes:
         _name (str): Bot instance display name
-        _model_type (str): Bot model type identifier
-        _model_version (str): Bot model version identifier
-        _model_timeout (ChatbotTimeout): API timeout and retry configuration
-        _model_temperature (float): Temperature setting for response generation
-        _model_max_tokens (int): Maximum tokens for response generation
+        _model (_Model): Container for all model-related attributes
         _system_prompt (str): System prompt manager
-        _model_api (Any): API client instance (set by child classes)
         _bot_index (int): Unique instance identifier
         _model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
     """
@@ -223,23 +232,49 @@ class ChatbotBase(ABC):
         Args:
             config (ChatbotConfig): The configuration for the chatbot instance.
         """
-        # Set model type with validation
-        self._update_model_type(config.model.type)
+        # Validate config model type against model implementation
+        expected_type = self._get_model_type()
+        if config.model.type != expected_type:
+            raise ValueError(
+                f"Invalid model type for {self.__class__.__name__}: "
+                f"got '{config.model.type}', expected '{expected_type}'"
+            )
 
-        # Optional parameters with validation
-        self._update_temperature(config.model.params_opt.temperature)
-        self._update_max_tokens(config.model.params_opt.max_tokens)
+        # Validate temperature and set to default if not provided
+        temperature = (
+            config.model.params_opt.temperature
+            if config.model.params_opt.temperature is not None
+            else self._default_temperature
+        )
+        if not self._min_temperature <= temperature <= self._max_temperature:
+            raise ValueError(
+                f"Temperature for {self.__class__.__name__} must be between "
+                f"{MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
+            )
 
-        # Read-only configuration
+        # Validate max tokens
+        max_tokens = (
+            config.model.params_opt.max_tokens 
+            if config.model.params_opt.max_tokens is not None
+            else self._get_default_max_tokens()
+        )
+        if max_tokens < 1:
+            raise ValueError(
+                f"Max tokens for {self.__class__.__name__} must be greater than 0"
+            )
+
+        # Initialize model container
+        self._model = _Model(
+            type=config.model.type,
+            version=config.model.version,
+            timeout=config.timeout,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+        # Other attributes
         self._name: str = config.name
-        self._model_version: str = config.model.version
-        self._model_timeout = config.timeout
-
-        # Mutable state
         self._system_prompt: str = config.system_prompt
-        self._model_api: Any = None
-
-        # Internal tracking
         self._model_system_prompt_needs_update: bool = True
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
@@ -252,36 +287,36 @@ class ChatbotBase(ABC):
     @property
     def model_type(self) -> str:
         """Get the model type identifier."""
-        return self._model_type
-
-    def _update_model_type(self, value: str) -> None:
-        """Protected method to update model type with validation."""
-        expected_type: str = self._get_model_type()
-        if value != expected_type:
-            raise ValueError(
-                f"Invalid model type for {self.__class__.__name__}: "
-                f"got '{value}', expected '{expected_type}'"
-            )
-        self._model_type = value
+        return self._model.type
 
     @property
     def model_version(self) -> str:
         """Get the model version identifier."""
-        return self._model_version
+        return self._model.version
 
     @property
     def model_temperature(self) -> float:
         """Get the current temperature setting for response generation."""
-        return self._model_temperature
+        return self._model.temperature
 
     @property
     def _min_temperature(self) -> float:
-        """Get the minimum allowed temperature value."""
+        """
+        Get the minimum allowed temperature value.
+
+        Returns:
+            float: Minimum temperature setting allowed by the model (0.0)
+        """
         return MIN_MODEL_TEMP
 
     @property
     def _max_temperature(self) -> float:
-        """Get the maximum allowed temperature value."""
+        """
+        Get the maximum allowed temperature value.
+
+        Returns:
+            float: Maximum temperature setting allowed by the model (2.0)
+        """
         return MAX_MODEL_TEMP
 
     @property
@@ -290,45 +325,24 @@ class ChatbotBase(ABC):
         """Protected default temperature, must be overridden"""
         pass  # pylint: disable=unnecessary-pass
 
-    def _update_temperature(self, value: float | None) -> None:
-        """Protected method to update temperature with validation"""
-        if value is None:
-            value = self._default_temperature
-        if not self._min_temperature <= value <= self._max_temperature:
-            raise ValueError(
-                f"Temperature for {self.__class__.__name__} must be between "
-                f"{self._min_temperature} and {self._max_temperature}"
-            )
-        self._model_temperature = value
-
     @property
     def model_max_tokens(self) -> int:
         """Get the maximum tokens setting for response generation."""
-        return self._model_max_tokens
-
-    def _update_max_tokens(self, value: int | None) -> None:
-        """Protected method to update max tokens with validation"""
-        if value is None:
-            value = self._get_default_max_tokens()
-        if value < 1:
-            raise ValueError(
-                f"Max tokens for {self.__class__.__name__} must be greater than 0"
-            )
-        self._model_max_tokens = value
+        return self._model.max_tokens
 
     def _get_default_max_tokens(self) -> int:
         """
-        Get default max_tokens.
+        Get default maximum tokens setting.
 
         Returns:
-            int: The default maximum tokens for response generation.
+            int: The default maximum tokens for response generation (300)
         """
         return DEFAULT_MAX_TOKENS
 
     @property
     def model_timeout(self) -> ChatbotTimeout:
         """Get the timeout and retry configuration."""
-        return self._model_timeout
+        return self._model.timeout
 
     @property
     def bot_index(self) -> int:
@@ -338,12 +352,12 @@ class ChatbotBase(ABC):
     @property
     def model_api(self) -> Any:
         """Get the API client instance."""
-        return self._model_api
+        return self._model.api
 
     @model_api.setter
     def model_api(self, value: Any) -> None:
         """Set the API client instance."""
-        self._model_api = value
+        self._model.api = value
 
     @property
     def system_prompt(self) -> str:
