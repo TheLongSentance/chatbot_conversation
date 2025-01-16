@@ -254,7 +254,7 @@ class ChatbotBase(ABC):
 
         # Validate max tokens
         max_tokens = (
-            config.model.params_opt.max_tokens 
+            config.model.params_opt.max_tokens
             if config.model.params_opt.max_tokens is not None
             else self._get_default_max_tokens()
         )
