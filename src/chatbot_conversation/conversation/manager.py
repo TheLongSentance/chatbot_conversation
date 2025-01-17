@@ -130,7 +130,7 @@ class ConversationManager:
         )
         self.display_text(completion_message)
 
-        self.write_conversation_to_file()
+        self.write_conversation_to_file(TRANSCRIPT_OUTPUT_DIR)
 
     def manage_round(self, round_num: int) -> None:
         """
@@ -223,14 +223,17 @@ class ConversationManager:
         """
         return text.replace("{bot_name}", bot_name)
 
-    def write_conversation_to_file(self) -> None:
+    def write_conversation_to_file(self, output_directory: str) -> None:
         """
         Write the entire conversation to a markdown file.
+
+        Args:
+            output_directory (str): Directory to save the transcript file.
         """
         try:
             timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             file_path = os.path.join(
-                TRANSCRIPT_OUTPUT_DIR, f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"
+                output_directory, f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"
             )
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as file:
