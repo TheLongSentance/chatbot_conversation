@@ -22,6 +22,7 @@ Major Classes:
     ChatbotModel: Model configuration container
     ChatbotConfig: Bot instance configuration
     ChatbotBase: Abstract foundation for implementations
+
 """
 
 import json
@@ -213,6 +214,18 @@ class ChatbotBase(ABC):
 
     Raises:
         ValueError: If attempting to create a bot with a name that's already in use
+
+    Public Attributes:
+        name (str): The unique display name of this bot instance
+        system_prompt (str): Current system instructions for the bot
+        model_type (str): The type identifier for this bot's model
+        model_version (str): The version identifier for this bot's model
+        model_temperature (float): Current temperature setting for response generation
+        model_max_tokens (int): Maximum token limit for response generation
+        model_timeout (ChatbotTimeout): Current timeout and retry settings
+        bot_index (int): Unique numerical identifier for this bot instance
+        model_api (Any): Reference to the API client instance
+        model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
     """
 
     _total_count: ClassVar[int] = 0  # Class variable to track total instances
