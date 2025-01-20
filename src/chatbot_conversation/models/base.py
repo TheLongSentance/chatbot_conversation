@@ -43,8 +43,8 @@ from tenacity import (
 from chatbot_conversation.utils import get_logger
 
 # Timeout constants (in seconds)
-DEFAULT_TOTAL_TIMEOUT = 45  # Maximum time for total trip through API
-DEFAULT_API_TIMEOUT = 10  # For per try of API call if child classes api parameter
+DEFAULT_TOTAL_TIMEOUT = 90  # Maximum time for total trip through API
+DEFAULT_API_TIMEOUT = 30  # For per try of API call if child classes api parameter
 DEFAULT_MAX_RETRIES = 5  # Maximum number of retry attempts
 DEFAULT_MIN_WAIT = 1
 DEFAULT_MAX_WAIT = 10
