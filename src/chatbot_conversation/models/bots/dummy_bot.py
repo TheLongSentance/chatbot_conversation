@@ -108,15 +108,16 @@ class DummyChatbot(ChatbotBase):
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
         Determine if an operation should be retried.
-        Always returns False as dummy bot operations cannot fail.
+        Arbitrarily to retry on ConnectionError for
+        testing and demonstration purposes.
 
         Args:
             exception: Unused exception parameter
 
         Returns:
-            bool: Always False as retries are not needed
+            bool: True if ConnectionError - False otherwise
         """
-        return False
+        return isinstance(exception, (ConnectionError))
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
