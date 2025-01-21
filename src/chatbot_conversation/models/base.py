@@ -241,6 +241,17 @@ class ChatbotBase(ABC):
         """
         return cls._total_count
 
+    @classmethod
+    @abstractmethod
+    def _get_class_model_type(cls) -> str:
+        """
+        Get the model type identifier for the chatbot.
+
+        Returns:
+            str: The model type identifier for the chatbot.
+        """
+        pass  # pylint: disable=unnecessary-pass
+
     def __init__(
         self,
         config: ChatbotConfig,
@@ -524,22 +535,12 @@ class ChatbotBase(ABC):
         Raises:
             ValueError: If model type doesn't match implementation
         """
-        expected_type = self._get_model_type()
+        expected_type = self._get_class_model_type()
         if config.model.type != expected_type:
             raise ValueError(
                 f"Invalid model type for {self.__class__.__name__}: "
                 f"got '{config.model.type}', expected '{expected_type}'"
             )
-
-    @abstractmethod
-    def _get_model_type(self) -> str:
-        """
-        Get the model type identifier for the chatbot.
-
-        Returns:
-            str: The model type identifier for the chatbot.
-        """
-        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _should_retry_on_exception(self, exception: Exception) -> bool:

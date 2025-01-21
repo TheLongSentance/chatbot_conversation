@@ -56,6 +56,16 @@ class ClaudeChatbot(ChatbotBase):
         model_api (anthropic.Anthropic): Authenticated Claude API client
     """
 
+    @classmethod
+    def _get_class_model_type(cls) -> str:
+        """
+        Get the model type identifier for GPT models.
+
+        Returns:
+            str: "GPT" as the model type identifier
+        """
+        return MODEL_TYPE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize Claude chatbot with specified configuration.
@@ -69,15 +79,6 @@ class ClaudeChatbot(ChatbotBase):
 
         # Initialise Claude API
         self.model_api = anthropic.Anthropic()
-
-    def _get_model_type(self) -> str:
-        """
-        Get the model type identifier for Claude models.
-
-        Returns:
-            str: "CLAUDE" as the model type identifier
-        """
-        return MODEL_TYPE
 
     @property
     def _default_temperature(self) -> float:

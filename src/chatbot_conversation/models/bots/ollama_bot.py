@@ -65,7 +65,8 @@ class OllamaChatbot(ChatbotBase):
     # no __init__() method needed, OllamaChatbot uses the base class __init__()
     # which is automatically called when creating an instance of this class
 
-    def _get_model_type(self) -> str:
+    @classmethod
+    def _get_class_model_type(cls) -> str:
         """
         Get the model type identifier for Ollama models.
 

@@ -65,6 +65,16 @@ class GPTChatbot(ChatbotBase):
         Requires OpenAI API key to be set in environment variables
     """
 
+    @classmethod
+    def _get_class_model_type(cls) -> str:
+        """
+        Get the model type identifier for GPT models.
+
+        Returns:
+            str: "GPT" as the model type identifier
+        """
+        return MODEL_TYPE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize OpenAI chatbot with specified configuration.
@@ -78,15 +88,6 @@ class GPTChatbot(ChatbotBase):
         super().__init__(config)
 
         self.model_api = OpenAI()
-
-    def _get_model_type(self) -> str:
-        """
-        Get the model type identifier for GPT models.
-
-        Returns:
-            str: "GPT" as the model type identifier
-        """
-        return MODEL_TYPE
 
     @property
     def _default_temperature(self) -> float:

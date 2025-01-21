@@ -54,6 +54,16 @@ class DummyChatbot(ChatbotBase):
         _responses (List[str]): Collection of predefined responses
     """
 
+    @classmethod
+    def _get_class_model_type(cls) -> str:
+        """
+        Get the model type identifier for GPT models.
+
+        Returns:
+            str: "GPT" as the model type identifier
+        """
+        return MODEL_TYPE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize dummy chatbot with basic configuration.
@@ -80,15 +90,6 @@ class DummyChatbot(ChatbotBase):
             "Ask me anything, I'm here to help.",
             "What would you like to know today?",
         ]
-
-    def _get_model_type(self) -> str:
-        """
-        Get the model type identifier for dummy models.
-
-        Returns:
-            str: "DUMMY" as the model type identifier
-        """
-        return MODEL_TYPE
 
     @property
     def _default_temperature(self) -> float:

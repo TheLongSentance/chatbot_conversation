@@ -89,6 +89,16 @@ class GeminiChatbot(ChatbotBase):
         prompts change.
     """
 
+    @classmethod
+    def _get_class_model_type(cls) -> str:
+        """
+        Get the model type identifier for GPT models.
+
+        Returns:
+            str: "GPT" as the model type identifier
+        """
+        return MODEL_TYPE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize Gemini chatbot with specified configuration.
@@ -117,15 +127,6 @@ class GeminiChatbot(ChatbotBase):
                 max_output_tokens=self.model_max_tokens,
             ),
         )
-
-    def _get_model_type(self) -> str:
-        """
-        Get the model type identifier for Gemini models.
-
-        Returns:
-            str: "GEMINI" as the model type identifier
-        """
-        return MODEL_TYPE
 
     @property
     def _default_temperature(self) -> float:
