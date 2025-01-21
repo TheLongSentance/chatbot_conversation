@@ -1,0 +1,98 @@
+"""Tests specific to ClaudeChatbot implementation"""
+
+from unittest.mock import MagicMock, patch
+
+import pytest
+from anthropic import APIConnectionError, APIError, RateLimitError
+
+from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
+from chatbot_conversation.models.bots.claude_bot import MODEL_TYPE, ClaudeChatbot
+
+
+class TestClaudeChatbot:
+    """Test Claude-specific chatbot functionality"""
+
+    def test_model_type(self, claude_config_for_tests: ChatbotConfig) -> None:
+        """Test that Claude model type constant is correctly used"""
+        bot = ClaudeChatbot(claude_config_for_tests)
+        assert (
+            bot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
+            == MODEL_TYPE
+        )
+        assert bot.model_type == MODEL_TYPE
+
+    @pytest.mark.parametrize(
+        "exception,should_retry",
+        [
+            (APIError("test", request=MagicMock(), body=None), True),
+            (APIConnectionError(request=MagicMock()), True),
+            (RateLimitError("test", response=MagicMock(), body=None), True),
+            (ValueError("test"), False),
+            (Exception("test"), False),
+        ],
+    )
+    def test_should_retry_on_exception(
+        self,
+        claude_config_for_tests: ChatbotConfig,
+        exception: Exception,
+        should_retry: bool,
+    ) -> None:
+        """Test retry logic for Claude-specific exceptions"""
+        bot = ClaudeChatbot(claude_config_for_tests)
+        assert (
+            bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
+                exception
+            )
+            == should_retry
+        )
+
+    @patch("chatbot_conversation.models.bots.claude_bot.anthropic.Anthropic")
+    def test_api_call_parameters(
+        self, mock_anthropic: MagicMock, claude_config_for_tests: ChatbotConfig
+    ) -> None:
+        """Test Claude API call parameter formatting"""
+        # Create a mock response
+        mock_message = MagicMock()
+        mock_message.content[0].text = "Test response"
+        mock_anthropic.return_value.messages.create.return_value = mock_message
+
+        # Create bot and test conversation
+        bot = ClaudeChatbot(claude_config_for_tests)
+        conversation: list[ConversationMessage] = [
+            {"bot_index": 0, "content": "Explain quantum computing"}
+        ]
+
+        # Call the method that will use the mock chain to generate a response
+        response = bot._generate_response(  # pyright: ignore[reportPrivateUsage]
+            conversation
+        )
+
+        # Verify the response
+        assert response == "Test response"
+
+        # Verify create was called with correct parameters
+        create_call = mock_anthropic.return_value.messages.create.call_args
+        assert create_call is not None, "Create method was not called"
+
+        call_kwargs = create_call[1]
+        assert call_kwargs["model"] == claude_config_for_tests.model.version
+        assert call_kwargs["temperature"] == bot.model_temperature
+        assert call_kwargs["timeout"] == bot.model_timeout.api_timeout
+        assert isinstance(call_kwargs["messages"], list)
+        assert "system" in call_kwargs
+        assert call_kwargs["system"] == bot.system_prompt
+
+    @patch("chatbot_conversation.models.bots.claude_bot.anthropic.Anthropic")
+    def test_empty_response_handling(
+        self, mock_anthropic: MagicMock, claude_config_for_tests: ChatbotConfig
+    ) -> None:
+        """Test handling of empty responses from Claude API"""
+        mock_message = MagicMock()
+        mock_message.content[0].text = ""
+        mock_anthropic.return_value.messages.create.return_value = mock_message
+
+        bot = ClaudeChatbot(claude_config_for_tests)
+        conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
+
+        with pytest.raises(ValueError, match="Model returned an empty response"):
+            bot.generate_response(conversation)
