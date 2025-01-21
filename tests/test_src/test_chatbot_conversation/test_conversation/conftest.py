@@ -1,9 +1,12 @@
 import os
-
-import pytest
 from unittest.mock import Mock
 
-from chatbot_conversation.models import ChatbotBase
+import pytest
+
+from chatbot_conversation.models import (
+    ChatbotBase,
+    ConversationMessage,
+)
 
 
 @pytest.fixture
@@ -32,11 +35,12 @@ def mock_bot() -> ChatbotBase:
     mock.system_prompt = "Initial prompt"
     return mock
 
+
 @pytest.fixture
-def sample_conversation_data() -> list[dict[str, str | int]]:
+def sample_conversation_data() -> list[ConversationMessage]:
     """Return sample conversation data for testing."""
     return [
         {"bot_index": 0, "content": "Test seed message"},
         {"bot_index": 1, "content": "Bot 1 response"},
-        {"bot_index": 2, "content": "Bot 2 response"}
+        {"bot_index": 2, "content": "Bot 2 response"},
     ]
