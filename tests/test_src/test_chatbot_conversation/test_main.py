@@ -22,10 +22,9 @@ from chatbot_conversation.main import main
 # Remove fixture definitions for mock_conversation_manager and mock_api_config
 # as they are now in conftest.py
 
+
 def test_main_with_default_config(
-    mock_conversation_manager: Mock,
-    mock_api_config: Mock,
-    monkeypatch: MonkeyPatch
+    mock_conversation_manager: Mock, mock_api_config: Mock, monkeypatch: MonkeyPatch
 ) -> None:
     """Test the main function using the default configuration path.
 
@@ -51,14 +50,14 @@ def test_main_with_default_config(
 
     # Verify
     mock_api_config.setup_env.assert_called_once()
-    mock_conversation_manager.assert_called_once_with(os.path.join("config", "config.json"))
+    mock_conversation_manager.assert_called_once_with(
+        os.path.join("config", "config.json")
+    )
     manager_instance.run_conversation.assert_called_once()
 
 
 def test_main_with_custom_config(
-    mock_conversation_manager: Mock,
-    mock_api_config: Mock,
-    monkeypatch: MonkeyPatch
+    mock_conversation_manager: Mock, mock_api_config: Mock, monkeypatch: MonkeyPatch
 ) -> None:
     """Test the main function using a custom configuration path from command line.
 
@@ -78,7 +77,7 @@ def test_main_with_custom_config(
     """
     # Setup
     test_config: str = "custom_config.json"
-    monkeypatch.setattr(sys, 'argv', ["script", test_config])
+    monkeypatch.setattr(sys, "argv", ["script", test_config])
     manager_instance: Mock = mock_conversation_manager.return_value
 
     # Execute
@@ -91,9 +90,7 @@ def test_main_with_custom_config(
 
 
 def test_main_handles_exceptions(
-    mock_conversation_manager: Mock,
-    mock_api_config: Mock,
-    caplog: LogCaptureFixture
+    mock_conversation_manager: Mock, mock_api_config: Mock, caplog: LogCaptureFixture
 ) -> None:
     """Test the main function's exception handling capabilities.
 

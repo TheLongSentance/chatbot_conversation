@@ -7,6 +7,7 @@ import pytest
 
 # ...existing code...
 
+
 @pytest.fixture
 def mock_conversation_manager() -> Generator[Mock, None, None]:
     """Create a mock for the ConversationManager class.
@@ -22,7 +23,7 @@ def mock_conversation_manager() -> Generator[Mock, None, None]:
             manager_instance = mock_conversation_manager.return_value
             # Use manager_instance in tests
     """
-    with patch('chatbot_conversation.main.ConversationManager') as mock:
+    with patch("chatbot_conversation.main.ConversationManager") as mock:
         yield mock
 
 
@@ -40,5 +41,5 @@ def mock_api_config() -> Generator[Mock, None, None]:
         def test_example(mock_api_config):
             mock_api_config.setup_env.assert_called_once()
     """
-    with patch('chatbot_conversation.main.APIConfig') as mock:
+    with patch("chatbot_conversation.main.APIConfig") as mock:
         yield mock
