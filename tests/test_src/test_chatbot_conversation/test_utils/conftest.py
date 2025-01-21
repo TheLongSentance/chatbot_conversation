@@ -1,11 +1,12 @@
 """Fixtures for testing environment configuration."""
 
-from typing import Generator, Dict
+import logging.config
+import os
 from pathlib import Path
+from typing import Dict, Generator
+
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
-import os
-import logging.config
 
 
 @pytest.fixture
@@ -21,7 +22,7 @@ def mock_env_keys(monkeypatch: MonkeyPatch) -> Dict[str, str]:
     mock_keys = {
         "OPENAI_API_KEY": "mock-openai-key-12345678",
         "ANTHROPIC_API_KEY": "mock-anthropic-key-12345678",
-        "GOOGLE_API_KEY": "mock-google-key-12345678"
+        "GOOGLE_API_KEY": "mock-google-key-12345678",
     }
     for key, value in mock_keys.items():
         monkeypatch.setenv(key, value)
@@ -41,7 +42,7 @@ def temp_env_file(tmp_path: Path) -> Generator[str, None, None]:
     config_dir: Path = tmp_path / "config"
     config_dir.mkdir(exist_ok=True)
     env_file: Path = config_dir / ".env"
-    
+
     env_content = """
 OPENAI_API_KEY=mock-openai-key-12345678
 ANTHROPIC_API_KEY=mock-anthropic-key-12345678
@@ -68,7 +69,7 @@ def temp_logging_conf(tmp_path: Path) -> Generator[str, None, None]:
     config_dir: Path = tmp_path / "config"
     config_dir.mkdir(exist_ok=True)
     log_conf: Path = config_dir / "logging.conf"
-    
+
     conf_content = """
 [loggers]
 keys=root,testLogger
@@ -107,7 +108,9 @@ format=%(levelname)s - %(message)s
 
 
 @pytest.fixture
-def mock_logging_config(temp_logging_conf: str, monkeypatch: MonkeyPatch) -> Generator[None, None, None]:
+def mock_logging_config(
+    temp_logging_conf: str, monkeypatch: MonkeyPatch
+) -> Generator[None, None, None]:
     """Setup mock logging configuration.
 
     Args:
@@ -118,19 +121,19 @@ def mock_logging_config(temp_logging_conf: str, monkeypatch: MonkeyPatch) -> Gen
         None
     """
     # Store original config path
-    original_path = os.environ.get('LOGGING_CONFIG_PATH')
-    
+    original_path = os.environ.get("LOGGING_CONFIG_PATH")
+
     # Set up mock config path
-    monkeypatch.setenv('LOGGING_CONFIG_PATH', temp_logging_conf)
-    
+    monkeypatch.setenv("LOGGING_CONFIG_PATH", temp_logging_conf)
+
     # Reset logging config
     logging.shutdown()
     logging.config.fileConfig(temp_logging_conf)
-    
+
     yield
-    
+
     # Restore original config path
     if original_path:
-        monkeypatch.setenv('LOGGING_CONFIG_PATH', original_path)
+        monkeypatch.setenv("LOGGING_CONFIG_PATH", original_path)
     else:
-        monkeypatch.delenv('LOGGING_CONFIG_PATH', raising=False)
+        monkeypatch.delenv("LOGGING_CONFIG_PATH", raising=False)

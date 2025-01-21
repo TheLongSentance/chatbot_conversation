@@ -1,25 +1,32 @@
 """Unit tests for the APIConfig class."""
 
+import logging
 import os
 from typing import Dict
-import logging
+
 import pytest
 from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
+
 from chatbot_conversation.utils.env import APIConfig
 
 
 def test_setup_env_missing_file(monkeypatch: MonkeyPatch) -> None:
     """Test setup_env raises FileNotFoundError when .env file is missing."""
     # Mock the path to the .env file to a non-existent location
-    monkeypatch.setattr(os.path, "join", lambda *args: "non_existent_path/.env")  # type: ignore
+    monkeypatch.setattr(
+        os.path,
+        "join",
+        lambda *args: "non_existent_path/.env",  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+    )
 
     with pytest.raises(FileNotFoundError):
         APIConfig.setup_env()
 
 
-def test_validate_keys_all_present(mock_env_keys: Dict[str, str],
-                                 caplog: LogCaptureFixture) -> None:
+def test_validate_keys_all_present(
+    mock_env_keys: Dict[str, str], caplog: LogCaptureFixture
+) -> None:
     """Test key validation when all keys are present.
 
     Args:
@@ -32,7 +39,7 @@ def test_validate_keys_all_present(mock_env_keys: Dict[str, str],
             ("Anthropic", os.getenv("ANTHROPIC_API_KEY")),
             ("Google", os.getenv("GOOGLE_API_KEY")),
         ]
-        APIConfig._validate_keys(keys) # type: ignore
+        APIConfig._validate_keys(keys)  # pyright: ignore[reportPrivateUsage]
 
     assert "OpenAI API Key exists" in caplog.text
     assert "Anthropic API Key exists" in caplog.text
@@ -79,7 +86,7 @@ def test_load_config_with_env_file(
         monkeypatch.delenv(key, raising=False)
 
     # Call the actual load_config method
-    APIConfig._load_config()  # type: ignore
+    APIConfig._load_config()  # pyright: ignore[reportPrivateUsage]
 
     # Verify the environment variables were loaded from our mock file
     openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -99,10 +106,12 @@ def test_log_key_status(caplog: LogCaptureFixture) -> None:
         caplog: Fixture for capturing log output
     """
     with caplog.at_level(logging.INFO):
-        APIConfig._log_key_status("Test", "test-key-12345678")  # type: ignore
+        APIConfig._log_key_status(  # pyright: ignore[reportPrivateUsage]
+            "Test", "test-key-12345678"
+        )
         assert "Test API Key exists and begins test-key" in caplog.text
 
     caplog.clear()
     with caplog.at_level(logging.WARNING):
-        APIConfig._log_key_status("Test", None)  # type: ignore
+        APIConfig._log_key_status("Test", None)  # pyright: ignore[reportPrivateUsage]
         assert "Test API Key not set" in caplog.text
