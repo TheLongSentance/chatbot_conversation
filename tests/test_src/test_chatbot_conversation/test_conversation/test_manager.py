@@ -120,7 +120,9 @@ def test_insert_bot_name(
 
 @patch("chatbot_conversation.conversation.manager.os")
 def test_write_conversation_to_file(
-    mock_os: Mock, test_config_path: str, sample_conversation_data: list[ConversationMessage]
+    mock_os: Mock,
+    test_config_path: str,
+    sample_conversation_data: list[ConversationMessage],
 ) -> None:
     """
     Test conversation transcript writing functionality.

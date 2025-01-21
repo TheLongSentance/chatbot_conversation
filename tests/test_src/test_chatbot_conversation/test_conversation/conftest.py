@@ -3,10 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from chatbot_conversation.models import (
-    ChatbotBase,
-    ConversationMessage,
-)
+from chatbot_conversation.models import ChatbotBase, ConversationMessage
 
 
 @pytest.fixture
