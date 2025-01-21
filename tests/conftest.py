@@ -11,13 +11,13 @@ TEST_ROOT = "./newtests"
 
 
 @pytest.fixture
-def config_dir():
+def config_dir() -> Path:
     """returns the path to the test config data directory"""
     return Path(__file__) / "config"
 
 
 @pytest.fixture
-def output_dir():
+def output_dir() -> Path:
     """returns the path to the test data directory"""
     return Path(__file__) / "output"
 
