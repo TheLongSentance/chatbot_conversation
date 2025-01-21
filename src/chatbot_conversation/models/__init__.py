@@ -7,6 +7,7 @@ from chatbot_conversation.models.base import (
     ChatbotConfig,
     ChatbotModel,
     ChatbotParamsOpt,
+    ChatbotTimeout,
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import BotRegistry
@@ -17,6 +18,7 @@ __all__ = [
     "ChatbotConfig",
     "ChatbotModel",
     "ChatbotParamsOpt",
+    "ChatbotTimeout",
     "ConversationMessage",
     "BotRegistry",
     "ChatbotFactory",
