@@ -10,12 +10,9 @@ Major Classes:
 """
 
 import random
-from typing import List, ClassVar
+from typing import ClassVar, List
 
-from chatbot_conversation.models.base import (
-    ChatbotBase,
-    ConversationMessage,
-)
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
 MODEL_TYPE = "DUMMY"
