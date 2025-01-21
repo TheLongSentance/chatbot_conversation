@@ -22,7 +22,7 @@
             "bot_version": "gpt-4o-mini",
             "bot_params_opt": {
                 "temperature": 1.0,
-                "max_tokens": 100
+                "max_tokens": 400
             }
         },
         {
