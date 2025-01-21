@@ -10,11 +10,10 @@ Major Classes:
 """
 
 import random
-from typing import List
+from typing import List, ClassVar
 
 from chatbot_conversation.models.base import (
     ChatbotBase,
-    ChatbotConfig,
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
@@ -54,6 +53,20 @@ class DummyChatbot(ChatbotBase):
         _responses (List[str]): Collection of predefined responses
     """
 
+    # Not a standard thing to do for a model, but for demonstration purposes
+    _responses: ClassVar[List[str]] = [
+        "Hello! How can I assist you today?",
+        "I'm here to help you with any questions.",
+        "What can I do for you?",
+        "Feel free to ask me anything.",
+        "I'm a dummy bot, but I'll try my best to help.",
+        "How can I make your day better?",
+        "Let's chat! What do you want to talk about?",
+        "I'm here to assist you with your queries.",
+        "Ask me anything, I'm here to help.",
+        "What would you like to know today?",
+    ]
+
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
@@ -64,32 +77,9 @@ class DummyChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def __init__(self, config: ChatbotConfig) -> None:
-        """
-        Initialize dummy chatbot with basic configuration.
-
-        Sets up predefined responses and validates configuration.
-
-        Args:
-            config (ChatbotConfig): Basic configuration (mostly unused)
-        """
-        super().__init__(config)  # pylint: disable=duplicate-code
-
-        # Typically bot-specific api initialization would be done here
-
-        # In this case just dummy responses for the dummy bot
-        self._responses = [
-            "Hello! How can I assist you today?",
-            "I'm here to help you with any questions.",
-            "What can I do for you?",
-            "Feel free to ask me anything.",
-            "I'm a dummy bot, but I'll try my best to help.",
-            "How can I make your day better?",
-            "Let's chat! What do you want to talk about?",
-            "I'm here to assist you with your queries.",
-            "Ask me anything, I'm here to help.",
-            "What would you like to know today?",
-        ]
+    # typically __init__ would be defined here with call to
+    # super().__init__(config) to initialize the base class
+    # and then specifics for the bot implementation
 
     @property
     def _default_temperature(self) -> float:
