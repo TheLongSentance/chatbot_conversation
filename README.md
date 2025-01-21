@@ -26,31 +26,31 @@ chatbot_conversation/
 │   │   └── test_config_empty.json
 │   ├── output/
 │   ├── test_src/
-│   |   └── test_chatbot_conversation/
-│   |       ├── test_conversation/
-│   │       |   ├── conftest.py
-│   │       |   ├── test_loader.py
-│   |       |   └── test_manager.py
-│   |       ├── test_models/
-│   │       |   ├── testbots/
-│   │       |   |   ├── conftest.py
-│   │       |   |   ├── test_bots_shared.py
-│   │       |   |   ├── test_claude_bot.py
-│   │       |   |   ├── test_dummy_bot.py
-│   │       |   |   ├── test_gemini_bot.py
-│   │       |   |   ├── test_gpt_bot.py
-│   |       |   |   └── test_ollama_bot.py
-│   │       |   ├── conftest.py
-│   │       |   ├── test_base.py
-│   │       |   ├── test_bot_registry.py
-│   |       |   └── test_factory.py
-│   |       ├── test_utils/
-│   │       |   ├── conftest.py
-│   │       |   ├── test_env.py
-│   |       |   └── test_logging_util.py
+│   │   └── test_chatbot_conversation/
+│   │       ├── test_conversation/
+│   │       │   ├── conftest.py
+│   │       │   ├── test_loader.py
+│   │       │   └── test_manager.py
+│   │       ├── test_models/
+│   │       │   ├── testbots/
+│   │       │   │   ├── conftest.py
+│   │       │   │   ├── test_bots_shared.py
+│   │       │   │   ├── test_claude_bot.py
+│   │       │   │   ├── test_dummy_bot.py
+│   │       │   │   ├── test_gemini_bot.py
+│   │       │   │   ├── test_gpt_bot.py
+│   │       │   │   └── test_ollama_bot.py
+│   │       │   ├── conftest.py
+│   │       │   ├── test_base.py
+│   │       │   ├── test_bot_registry.py
+│   │       │   └── test_factory.py
+│   │       ├── test_utils/
+│   │       │   ├── conftest.py
+│   │       │   ├── test_env.py
+│   │       │   └── test_logging_util.py
 │   │       ├── conftest.py
 │   │       ├── test_main.py
-│   |       └── test_version.py
+│   │       └── test_version.py
 │   └── conftest.py
 ├── src/
 │   └── chatbot_conversation/
