@@ -1,11 +1,16 @@
 """Tests for ChatbotBase class"""
 
-from typing import cast, Any
-import pytest
-from pytest_mock import MockFixture
+import json
+from typing import Any, List, cast
 from unittest.mock import MagicMock
-import tenacity
 
+import pytest
+import tenacity
+from pytest_mock import MockFixture
+
+from chatbot_conversation.models.base import (
+    ChatMessage,  # Add this line to import ChatMessage
+)
 from chatbot_conversation.models.base import (
     _Model,  # pyright: ignore[reportPrivateUsage]
 )
@@ -28,7 +33,7 @@ bot_classes = [DummyChatbot]
 class TestChatbotConfig:
     """Test basic configuration of chatbot fixtures"""
 
-    def test_chatbot_config(self, bot_class: type[ChatbotBase]):
+    def test_chatbot_config(self, bot_class: type[ChatbotBase]) -> None:
         """Test that chatbot fixture has correct configuration"""
         config = ChatbotConfig(
             name="TestBot",
@@ -46,13 +51,17 @@ class TestChatbotConfig:
         assert bot.model_version == "None"
         assert bot.model_temperature == 0.7
         assert bot.model_max_tokens == 100
+        assert bot.model_timeout == config.timeout
+        assert bot.bot_index == ChatbotBase.get_total_bots()
+        assert bot.model_api is None
+        assert bot.model_system_prompt_needs_update is True
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseValidation:
     """Test validation logic in ChatbotBase"""
 
-    def test_valid_name(self, bot_class: type[ChatbotBase]):
+    def test_valid_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that valid names are accepted"""
         config = ChatbotConfig(
             name="ValidNameBot",
@@ -64,7 +73,7 @@ class TestChatbotBaseValidation:
         bot = bot_class(config)
         assert bot.name == "ValidNameBot"
 
-    def test_empty_name(self, bot_class: type[ChatbotBase]):
+    def test_empty_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty names are rejected"""
         with pytest.raises(ValueError, match="Bot name must be"):
             config = ChatbotConfig(
@@ -77,7 +86,7 @@ class TestChatbotBaseValidation:
             )
             bot_class(config)
 
-    def test_whitespace_name(self, bot_class: type[ChatbotBase]):
+    def test_whitespace_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only names are rejected"""
         with pytest.raises(ValueError, match="Bot name must be"):
             config = ChatbotConfig(
@@ -90,7 +99,7 @@ class TestChatbotBaseValidation:
             )
             bot_class(config)
 
-    def test_invalid_chars_name(self, bot_class: type[ChatbotBase]):
+    def test_invalid_chars_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that names with invalid characters are rejected"""
         invalid_names = ["test!", "test@bot", "test#", "test$", "test%"]
         for name in invalid_names:
@@ -105,7 +114,7 @@ class TestChatbotBaseValidation:
                 )
                 bot_class(config)
 
-    def test_invalid_underscore_usage(self, bot_class: type[ChatbotBase]):
+    def test_invalid_underscore_usage(self, bot_class: type[ChatbotBase]) -> None:
         """Test that names with invalid underscore placement are rejected"""
         invalid_names = ["_test", "test_", "_test_"]
         for name in invalid_names:
@@ -120,7 +129,7 @@ class TestChatbotBaseValidation:
                 )
                 bot_class(config)
 
-    def test_valid_underscore_usage(self, bot_class: type[ChatbotBase]):
+    def test_valid_underscore_usage(self, bot_class: type[ChatbotBase]) -> None:
         """Test that names with valid underscore placement are accepted"""
         valid_names = ["test_underscore", "test_more_underscore"]
         for name in valid_names:
@@ -135,7 +144,7 @@ class TestChatbotBaseValidation:
             bot = bot_class(config)
             assert bot.name == name
 
-    def test_duplicate_name(self, bot_class: type[ChatbotBase]):
+    def test_duplicate_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that duplicate names are rejected"""
         config = ChatbotConfig(
             name="DuplicateNameBot",
@@ -150,10 +159,50 @@ class TestChatbotBaseValidation:
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
+class TestChatbotBaseMessageFormatting:
+    """Test message formatting in ChatbotBase"""
+
+    def test_api_message_formatting(
+        self,
+        bot_class: type[ChatbotBase],
+        basic_conversation: List[ConversationMessage],
+        request: pytest.FixtureRequest,
+    ) -> None:
+        """Test that the bot formats messages correctly for its API"""
+        config = ChatbotConfig(
+            name="TestBot",
+            system_prompt="You are a helpful assistant.",
+            model=ChatbotModel(
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="None",
+                params_opt=ChatbotParamsOpt(temperature=0.7, max_tokens=100),
+            ),
+        )
+        bot: ChatbotBase = bot_class(config)
+
+        messages: list[ChatMessage] = (
+            bot._format_conv_for_api_util(  # pyright: ignore[reportPrivateUsage]
+                basic_conversation
+            )
+        )
+
+        # Common format validation
+        assert isinstance(messages, list)
+        assert len(messages) > 0
+        assert all("role" in msg and "content" in msg for msg in messages)
+
+        # Log formatted messages for debugging
+        formatted = json.dumps(messages, indent=2)
+        bot._log_debug(  # pyright: ignore[reportPrivateUsage]
+            f"Formatted messages:\n{formatted}"
+        )
+
+
+@pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseTemperature:
     """Test temperature handling in ChatbotBase"""
 
-    def test_valid_temperature(self, bot_class: type[ChatbotBase]):
+    def test_valid_temperature(self, bot_class: type[ChatbotBase]) -> None:
         """Test valid temperature values"""
         # Use appropriate temperature range based on bot type
         if bot_class.__name__ == "OllamaChatbot":
@@ -174,7 +223,7 @@ class TestChatbotBaseTemperature:
             bot = bot_class(config)
             assert bot.model_temperature == temp
 
-    def test_invalid_temperature(self, bot_class: type[ChatbotBase]):
+    def test_invalid_temperature(self, bot_class: type[ChatbotBase]) -> None:
         """Test that invalid temperatures are rejected"""
         # Use appropriate invalid temperatures based on bot type
         if bot_class.__name__ == "OllamaChatbot":
@@ -202,7 +251,7 @@ class TestChatbotBaseTemperature:
 class TestChatbotBaseMaxTokens:
     """Test max tokens handling in ChatbotBase"""
 
-    def test_valid_max_tokens(self, bot_class: type[ChatbotBase]):
+    def test_valid_max_tokens(self, bot_class: type[ChatbotBase]) -> None:
         """Test valid max token values"""
         valid_tokens = [1, 50, 100, 1000]
         for tokens in valid_tokens:
@@ -218,7 +267,7 @@ class TestChatbotBaseMaxTokens:
             bot = bot_class(config)
             assert bot.model_max_tokens == tokens
 
-    def test_invalid_max_tokens(self, bot_class: type[ChatbotBase]):
+    def test_invalid_max_tokens(self, bot_class: type[ChatbotBase]) -> None:
         """Test that invalid max token values are rejected"""
         invalid_tokens = [0, -1, -100]
         for tokens in invalid_tokens:
@@ -239,7 +288,7 @@ class TestChatbotBaseMaxTokens:
 class TestChatbotBaseSystemPrompt:
     """Test system prompt handling in ChatbotBase"""
 
-    def test_empty_system_prompt(self, bot_class: type[ChatbotBase]):
+    def test_empty_system_prompt(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty system prompts are rejected"""
         with pytest.raises(ValueError, match="System prompt cannot be empty"):
             config = ChatbotConfig(
@@ -252,7 +301,7 @@ class TestChatbotBaseSystemPrompt:
             )
             bot_class(config)
 
-    def test_update_system_prompt(self, bot_class: type[ChatbotBase]):
+    def test_update_system_prompt(self, bot_class: type[ChatbotBase]) -> None:
         """Test system prompt update functionality"""
         config = ChatbotConfig(
             name="TestBot",
@@ -274,7 +323,7 @@ class TestChatbotBaseSystemPrompt:
 class TestChatbotBaseCounter:
     """Test bot instance counting functionality"""
 
-    def test_bot_counter(self, bot_class: type[ChatbotBase]):
+    def test_bot_counter(self, bot_class: type[ChatbotBase]) -> None:
         """Test that bot counter increments correctly"""
         initial_count = 0
         bots: list[ChatbotBase] = []
@@ -298,7 +347,7 @@ class TestChatbotBaseCounter:
 class TestChatbotBaseModelType:
     """Test model type validation"""
 
-    def test_invalid_model_type(self, bot_class: type[ChatbotBase]):
+    def test_invalid_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that invalid model types are rejected"""
         with pytest.raises(ValueError, match="Invalid model type"):
             config = ChatbotConfig(
@@ -313,7 +362,7 @@ class TestChatbotBaseModelType:
 class TestModelValidation:
     """Test validation logic in _Model"""
 
-    def test_empty_model_type(self, bot_class: type[ChatbotBase]):
+    def test_empty_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty model types are rejected"""
         with pytest.raises(ValueError, match="Model type cannot be empty"):
             _Model(
@@ -331,7 +380,7 @@ class TestModelValidation:
                 max_tokens=100,
             )
 
-    def test_whitespace_model_type(self, bot_class: type[ChatbotBase]):
+    def test_whitespace_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only model types are rejected"""
         with pytest.raises(ValueError, match="Model type cannot be empty"):
             _Model(
@@ -349,7 +398,7 @@ class TestModelValidation:
                 max_tokens=100,
             )
 
-    def test_empty_model_version(self, bot_class: type[ChatbotBase]):
+    def test_empty_model_version(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty model versions are rejected"""
         with pytest.raises(ValueError, match="Model version cannot be empty"):
             _Model(
@@ -367,7 +416,7 @@ class TestModelValidation:
                 max_tokens=100,
             )
 
-    def test_whitespace_model_version(self, bot_class: type[ChatbotBase]):
+    def test_whitespace_model_version(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only model versions are rejected"""
         with pytest.raises(ValueError, match="Model version cannot be empty"):
             _Model(
@@ -392,7 +441,7 @@ class TestRetryBehavior:
 
     def test_retry_on_transient_error(
         self, bot_class: type[ChatbotBase], mocker: MockFixture
-    ):
+    ) -> None:
         """Test that transient errors trigger retries"""
         config = ChatbotConfig(
             name="RetryBot",
@@ -424,7 +473,7 @@ class TestRetryBehavior:
 
     def test_no_retry_on_permanent_error(
         self, bot_class: type[ChatbotBase], mocker: MockFixture
-    ):
+    ) -> None:
         """Test that permanent errors don't trigger retries"""
         config = ChatbotConfig(
             name="NoRetryBot",
@@ -449,7 +498,9 @@ class TestRetryBehavior:
         with pytest.raises(ValueError):
             bot.generate_response(conversation)
 
-    def test_max_retries_exceeded(self, bot_class: type[ChatbotBase], mocker: MockFixture):
+    def test_max_retries_exceeded(
+        self, bot_class: type[ChatbotBase], mocker: MockFixture
+    ) -> None:
         """Test that max retries limit is enforced"""
         config = ChatbotConfig(
             name="MaxRetryBot",
@@ -484,7 +535,7 @@ class TestRetryBehavior:
 
     def test_total_timeout_enforced(
         self, bot_class: type[ChatbotBase], mocker: MockFixture
-    ):
+    ) -> None:
         """Test that total timeout is enforced"""
         config = ChatbotConfig(
             name="TimeoutBot",
