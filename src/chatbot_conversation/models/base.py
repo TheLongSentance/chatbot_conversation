@@ -1,28 +1,30 @@
 """
-Core components for building AI chatbot systems.
+Core framework for building AI chatbot systems.
 
-This module provides a comprehensive framework for implementing AI chatbots 
-that can interface with various language models and APIs. It includes robust
-message handling, configuration management, unique bot name validation, and 
-fault-tolerant API communication.
+Provides a comprehensive architecture for implementing AI chatbots with support for:
+- Multiple language model backends and APIs
+- Message format standardization and history management
+- Configurable system prompts and runtime parameters
+- Fault-tolerant API communication with retry logic
+- Bot instance uniqueness and validation
+- Streaming response capabilities
 
-Core Components:
-- Message Structures: Standardized formats for API and internal communication
-- Configuration: Settings for bot initialization, timeouts, and model parameters
-- System Prompt Management: Stateful handling of system instructions
-- Name Management: Unique bot name validation across instances
-- Base Implementation: Abstract foundation with common chatbot functionality
-- Error Handling: Comprehensive retry logic for API resilience
+Key Components:
+- Message Classes: ChatMessage (API format) and ConversationMessage (internal format)
+- Configuration Classes: ChatbotTimeout, ChatbotParamsOpt, ChatbotModel, ChatbotConfig
+- Base Implementation: ChatbotBase abstract class with core functionality
 
-Major Classes:
-    ChatMessage: Standardized API message format
-    ConversationMessage: Internal message tracking format
-    ChatbotTimeout: API communication settings
-    ChatbotParamsOpt: Optional LLM runtime parameters
-    ChatbotModel: Model configuration container
-    ChatbotConfig: Bot instance configuration
-    ChatbotBase: Abstract foundation for implementations
-
+Usage:
+    Extend ChatbotBase to implement specific model backends:
+    ```python
+    class MyModelBot(ChatbotBase):
+        @classmethod
+        def _get_class_model_type(cls) -> str:
+            return "my_model"
+        
+        def _generate_response(self, conversation: List[ConversationMessage]) -> str:
+            # Implement model-specific response generation
+    ```
 """
 
 import json
@@ -60,14 +62,14 @@ logger = get_logger("models")
 
 class ChatMessage(TypedDict):
     """
-    Standard message format for API interactions.
+    Standardized message format for API communication.
 
-    Represents a single message in the chat sequence with role-based
-    attribution and content.
+    Used to structure messages in a format compatible with common LLM APIs,
+    maintaining consistent role attribution and content formatting.
 
     Attributes:
-        role (str): Identifies message source ('system', 'user', 'assistant')
-        content (str): The actual message text
+        role (str): Message source identifier ('system', 'user', 'assistant')
+        content (str): Actual message text content
     """
 
     role: str
@@ -76,14 +78,14 @@ class ChatMessage(TypedDict):
 
 class ConversationMessage(TypedDict):
     """
-    Internal format for conversation state management.
+    Internal message format for conversation tracking.
 
-    Tracks messages with their source bot for multi-bot conversations
-    and maintains conversation history.
+    Manages message history with bot attribution for multi-bot conversations.
+    Used for state management before converting to API-specific formats.
 
     Attributes:
-        bot_index (int): Integer identifier of the source bot
-        content (str): The message content
+        bot_index (int): Unique identifier of the source bot
+        content (str): Message text content
     """
 
     bot_index: int
@@ -93,18 +95,18 @@ class ConversationMessage(TypedDict):
 @dataclass
 class ChatbotTimeout:
     """
-    API communication timeout and retry configuration.
+    Configuration for API communication timeouts and retry behavior.
 
-    Controls the timing and retry behavior for API interactions to ensure
-    reliable operation even with unstable connections.
+    Manages timing parameters for reliable API operations with exponential
+    backoff retry logic for handling transient failures.
 
     Attributes:
-        total (int): Overall timeout for complete API operations (seconds)
-        api_timeout (int): Individual API call timeout (seconds)
-        max_retries (int): Maximum retry attempts for failed calls
-        min_wait (int): Minimum delay between retries (seconds)
-        max_wait (int): Maximum delay between retries (seconds)
-        wait_multiplier (float): Factor for exponential backoff calculation
+        total (int): Maximum total time for API operation completion
+        api_timeout (int): Timeout for individual API calls
+        max_retries (int): Maximum number of retry attempts
+        min_wait (int): Minimum delay between retries
+        max_wait (int): Maximum delay between retries
+        wait_multiplier (float): Exponential backoff multiplier
     """
 
     total: int = DEFAULT_TOTAL_TIMEOUT
@@ -186,46 +188,40 @@ class _Model:
 
 class ChatbotBase(ABC):
     """
-    Foundation class for chatbot implementations.
+    Abstract base class for chatbot implementations.
 
-    Provides a robust framework for building chatbot implementations with
-    common functionality for state management, API interaction, and error
-    handling. Child classes need only implement specific API integration
-    methods.
+    Provides core functionality and structure for building model-specific chatbots:
+    - Unique bot instance management
+    - System prompt handling
+    - Conversation state tracking
+    - API communication with retry logic
+    - Response streaming capabilities
+    - Comprehensive error handling
 
-    Features:
-    - Managed system prompt handling
-    - Configurable timeout and retry logic
-    - Conversation state management
-    - Unique bot instance tracking and name validation
-    - Temperature control for response generation
-    - Debug and error logging support
+    Implementation Requirements:
+        Subclasses must implement:
+        - _get_class_model_type(): Define the model type identifier
+        - _generate_response(): Implement model-specific response generation
+        - _should_retry_on_exception(): Define retry logic for specific errors
+        - _get_text_from_chunk(): Extract text from streaming response chunks
+        - _generate_stream(): Implement model-specific response streaming
 
     Class Attributes:
-        _total_count (int): Running total of chatbot instances created
-        _used_names (Set[str]): Set of names already assigned to bot instances
+        _total_count (int): Total number of bot instances created
+        _used_names (Set[str]): Tracking of assigned bot names
 
     Instance Attributes:
-        _name (str): Bot instance display name (must be unique)
-        _model (_Model): Container for all model-related attributes
-        _system_prompt (str): System prompt manager
-        _bot_index (int): Unique instance identifier
-        _model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
+        name (str): Unique bot identifier
+        system_prompt (str): Current system instructions
+        model_type (str): Model backend identifier
+        model_version (str): Model version identifier
+        model_temperature (float): Response randomness setting
+        model_max_tokens (int): Response length limit
+        bot_index (int): Unique numerical identifier
+        model_api (Any): API client instance reference
 
     Raises:
-        ValueError: If attempting to create a bot with a name that's already in use
-
-    Public Attributes:
-        name (str): The unique display name of this bot instance
-        system_prompt (str): Current system instructions for the bot
-        model_type (str): The type identifier for this bot's model
-        model_version (str): The version identifier for this bot's model
-        model_temperature (float): Current temperature setting for response generation
-        model_max_tokens (int): Maximum token limit for response generation
-        model_timeout (ChatbotTimeout): Current timeout and retry settings
-        bot_index (int): Unique numerical identifier for this bot instance
-        model_api (Any): Reference to the API client instance
-        model_system_prompt_needs_update (bool): Flag indicating if system prompt needs update
+        ValueError: On invalid configuration (name conflicts, invalid parameters)
     """
 
     _total_count: ClassVar[int] = 0  # Class variable to track total instances
@@ -570,21 +566,20 @@ class ChatbotBase(ABC):
 
     def generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate a response with automatic retry handling.
+        Generate a model response with automatic retry handling.
 
-        Implements fault-tolerant API communication with exponential backoff
-        and configurable retry behavior for handling transient failures.
+        Implements fault-tolerant API communication using configured retry
+        parameters and exponential backoff for transient failures.
 
         Args:
-            conversation (List[ConversationMessage]): Sequential list of prior
-                                                      conversation messages.
+            conversation: Sequential list of prior messages as ConversationMessage
 
         Returns:
-            str: Generated response text from the model.
+            Generated response text from the model
 
         Raises:
-            ValueError: When model produces empty response.
-            Various API-specific exceptions from implementations.
+            ValueError: If model produces empty response
+            Exception: Model-specific API exceptions from implementations
         """
 
         # @retry around _inner_generate_response inside generate_response because
@@ -653,17 +648,28 @@ class ChatbotBase(ABC):
     @abstractmethod
     def _get_text_from_chunk(self, chunk: Any) -> str:
         """Extract text from a chunk in model-specific format"""
-        pass
+        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _generate_stream(
         self, conversation: list[ConversationMessage]
     ) -> Iterator[Any]:
         """Generate stream of chunks in model-specific format"""
-        pass
+        pass  # pylint: disable=unnecessary-pass
 
     def stream_response(self, conversation: list[ConversationMessage]) -> Iterator[str]:
-        """Stream response with chunks converted to text"""
+        """
+        Stream model responses as they are generated.
+
+        Provides incremental response chunks for real-time output handling.
+        Converts model-specific chunk formats to plain text.
+
+        Args:
+            conversation: Sequential list of prior messages as ConversationMessage
+
+        Yields:
+            Text segments of the generated response as they become available
+        """
         stream = self._generate_stream(conversation)
         for chunk in stream:
             yield self._get_text_from_chunk(chunk)

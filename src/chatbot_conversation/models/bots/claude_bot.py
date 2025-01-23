@@ -172,5 +172,4 @@ class ClaudeChatbot(ChatbotBase):
         )
         with stream_manager as stream:
             # Consume stream inside context manager
-            for chunk in stream.text_stream:
-                yield chunk
+            yield from stream.text_stream

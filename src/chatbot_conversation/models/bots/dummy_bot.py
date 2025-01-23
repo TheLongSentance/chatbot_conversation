@@ -163,5 +163,4 @@ class DummyChatbot(ChatbotBase):
         # Use regex to split and keep spaces as separate elements
         tokens = re.findall(r"\S+(?:\s+)?", response)
 
-        for token in tokens:
-            yield token
+        yield from tokens
