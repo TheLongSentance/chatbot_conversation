@@ -135,7 +135,7 @@ class DummyChatbot(ChatbotBase):
         Returns:
             str: The chunk content unchanged
         """
-        return chunk
+        return chunk  # type: ignore
 
     def _generate_stream(
         self, conversation: list[ConversationMessage]

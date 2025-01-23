@@ -129,6 +129,7 @@ class GPTChatbot(ChatbotBase):
             APIConnectionError: On network connectivity issues
             RateLimitError: When API rate limits are exceeded
         """
+        response_content: str = ""
         completion = self.model_api.chat.completions.create(
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
@@ -173,7 +174,7 @@ class GPTChatbot(ChatbotBase):
             Uses streaming mode for real-time token generation
             Temperature and model settings are applied as configured
         """
-        return self.model_api.chat.completions.create(
+        return self.model_api.chat.completions.create(  #type: ignore
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
             stream=True,

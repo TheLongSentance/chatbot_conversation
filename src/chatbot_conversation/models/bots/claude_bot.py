@@ -120,6 +120,7 @@ class ClaudeChatbot(ChatbotBase):
             RateLimitError: When API rate limits are exceeded
             TimeoutError: When API call exceeds timeout
         """
+        response_content: str = ""
         message = self.model_api.messages.create(
             model=self.model_version,
             system=self.system_prompt,

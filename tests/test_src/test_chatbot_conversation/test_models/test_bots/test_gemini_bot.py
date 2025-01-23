@@ -28,11 +28,11 @@ class TestGeminiChatbot:
         "exception,should_retry",
         [
             (
-                google.api_core.exceptions.DeadlineExceeded("test"),
+                google.api_core.exceptions.DeadlineExceeded("test"),  # type: ignore
                 True,
             ),
             (
-                google.api_core.exceptions.ServiceUnavailable("test"),
+                google.api_core.exceptions.ServiceUnavailable("test"), # type: ignore
                 True,
             ),
             (ValueError("test"), False),
@@ -53,7 +53,7 @@ class TestGeminiChatbot:
             == should_retry
         )
 
-    @patch("google.generativeai.GenerativeModel")  # type: ignore
+    @patch("google.generativeai.GenerativeModel")  
     def test_api_call_parameters(
         self,
         mock_gemini_model: MagicMock,
@@ -91,7 +91,7 @@ class TestGeminiChatbot:
         assert gen_config.temperature == bot.model_temperature
         assert gen_config.max_output_tokens == bot.model_max_tokens
 
-    @patch("google.generativeai.GenerativeModel")  # type: ignore
+    @patch("google.generativeai.GenerativeModel")
     def test_system_prompt_reinit(
         self,
         mock_gemini_model: MagicMock,
@@ -141,6 +141,6 @@ class TestGeminiChatbot:
 
         # Verify message format and roles
         assert len(formatted) == 3  # pyright: ignore[reportUnknownArgumentType]
-        assert formatted[0] == {"role": "user", "parts": conversation[0]["content"]}  # type: ignore
-        assert formatted[1] == {"role": "model", "parts": conversation[1]["content"]}  # type: ignore
-        assert formatted[2] == {"role": "user", "parts": conversation[2]["content"]}  # type: ignore
+        assert formatted[0] == {"role": "user", "parts": conversation[0]["content"]}  
+        assert formatted[1] == {"role": "model", "parts": conversation[1]["content"]}  
+        assert formatted[2] == {"role": "user", "parts": conversation[2]["content"]}  

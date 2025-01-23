@@ -174,6 +174,7 @@ class OllamaChatbot(ChatbotBase):
             httpx.NetworkError: On network connectivity issues
             httpx.HTTPStatusError: On HTTP error responses
         """
+        response_content: str = ""
         response: ChatResponse = (
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
                 model=self.model_version,
@@ -198,7 +199,7 @@ class OllamaChatbot(ChatbotBase):
         Returns:
             str: Extracted text content from the chunk, or empty string if not found
         """
-        return chunk.get("message", {}).get("content", "")
+        return chunk.get("message", {}).get("content", "")  # type: ignore
 
     def _generate_stream(
         self, conversation: list[ConversationMessage]

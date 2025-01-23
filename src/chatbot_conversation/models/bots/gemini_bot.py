@@ -263,7 +263,7 @@ class GeminiChatbot(ChatbotBase):
         if self.model_system_prompt_needs_update:
             self._initialize_model_api()
 
-        return self.model_api.generate_content(
+        return self.model_api.generate_content(  # type: ignore
             self._format_conv_for_gemini_api(conversation),
             stream=True,
         )
