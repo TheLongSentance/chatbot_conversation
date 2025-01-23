@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import List
 
 from rich.console import Console
+from rich.live import Live
 from rich.markdown import Markdown
 
 from chatbot_conversation.conversation.loader import ConfigurationLoader
@@ -160,7 +161,22 @@ class ConversationManager:
         logger.debug("Starting new conversation round")
         for bot in self.bots:
             try:
-                response = bot.generate_response(self.conversation)
+                # Initialize buffer to collect full response
+                full_response: List[str] = []
+                current_text = ""  # Remove bot name prefix, let bot handle it
+
+                # Use rich.live to update markdown in real-time
+                with Live(Markdown(current_text), refresh_per_second=4) as live:
+                    # Use streaming response generation
+                    for chunk in bot.stream_response(self.conversation):
+                        full_response.append(chunk)
+                        current_text += chunk
+                        # Update the live display with markdown
+                        live.update(Markdown(current_text))
+
+                # Combine chunks into complete response
+                response = ''.join(full_response)  # No need to add bot name prefix
+
             except (IndexError, KeyError, AttributeError, ValueError) as e:
                 error_message = f"Exception: index/key/attribute/value error: {e}"
                 logger.error(error_message)
@@ -175,6 +191,8 @@ class ConversationManager:
                     f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
                     "My mind seems to be focussed elsewhere."
                 )
+
+            # Store the complete response in conversation history
             self.conversation.append({"bot_index": bot.bot_index, "content": response})
             logger.debug(
                 "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
@@ -183,7 +201,8 @@ class ConversationManager:
                 bot.bot_index,
                 json.dumps(self.conversation, indent=2),
             )
-            self.display_text(f"{response}\n\n---\n\n")
+            # Add separator after complete response
+            self.display_text("\n\n---\n\n")
         logger.info("Round completed successfully")
 
     def tell_bots_first_round(self) -> None:
