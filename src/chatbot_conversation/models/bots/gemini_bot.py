@@ -17,7 +17,7 @@ Supported Models:
 """
 
 import json
-from typing import List, TypedDict, Any, Iterator
+from typing import Any, Iterator, List, TypedDict
 
 import google.api_core.exceptions
 
@@ -245,7 +245,9 @@ class GeminiChatbot(ChatbotBase):
         """
         return chunk.text or ""
 
-    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
         """
         Generate streaming responses using the Gemini API.
 

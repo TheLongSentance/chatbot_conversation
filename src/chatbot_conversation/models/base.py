@@ -29,15 +29,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import (
-    Any,
-    ClassVar,
-    List,
-    Optional,
-    Set,
-    TypedDict,
-    Iterator,
-)
+from typing import Any, ClassVar, Iterator, List, Optional, Set, TypedDict
 
 from tenacity import (
     retry,

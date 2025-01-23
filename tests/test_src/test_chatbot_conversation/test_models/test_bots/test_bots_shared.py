@@ -95,7 +95,9 @@ class TestSharedBotParameters:
 class TestLiveAPIResponses:
     """Test actual API responses from each bot implementation"""
 
-    def test_generate_response(self, bot_fixture: str, request: pytest.FixtureRequest) -> None:
+    def test_generate_response(
+        self, bot_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
 
         bot = request.getfixturevalue(bot_fixture)
         conversation = [
@@ -111,7 +113,14 @@ class TestLiveAPIResponses:
 
 @pytest.mark.live_api  # Skip these tests unless explicitly running live API tests
 @pytest.mark.parametrize(
-    "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot", "dummy_chatbot"]
+    "bot_fixture",
+    [
+        "gpt_chatbot",
+        "claude_chatbot",
+        "ollama_chatbot",
+        "gemini_chatbot",
+        "dummy_chatbot",
+    ],
 )
 class TestLiveAPIStreamingResponses:
     """Test actual API streaming responses from each bot implementation"""

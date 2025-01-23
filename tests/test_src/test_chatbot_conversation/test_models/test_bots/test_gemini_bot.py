@@ -8,10 +8,9 @@ import pytest
 
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import (
-    MODEL_TYPE,
-    GeminiChatbot,
     _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
 )
+from chatbot_conversation.models.bots.gemini_bot import MODEL_TYPE, GeminiChatbot
 
 
 class TestGeminiChatbot:
@@ -134,7 +133,7 @@ class TestGeminiChatbot:
         ]
 
         # Format the conversation
-        formatted: List[_GeminiMessage] = (  # pyright: ignore[reportUnknownVariableType]
+        formatted: List[_GeminiMessage] = (   # pyright: ignore[reportUnknownVariableType]  
             gemini_chatbot._format_conv_for_gemini_api(  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
                 conversation
             )

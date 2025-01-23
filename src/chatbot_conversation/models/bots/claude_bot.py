@@ -9,7 +9,7 @@ Major Classes:
     ClaudeChatbot: Claude-specific chatbot implementation
 """
 
-from typing import List, Any, Iterator
+from typing import Any, Iterator, List
 
 import anthropic
 from anthropic import APIConnectionError, APIError, RateLimitError
@@ -145,7 +145,9 @@ class ClaudeChatbot(ChatbotBase):
         """
         return chunk or ""
 
-    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
         """
         Generate streaming responses using the Claude API.
 

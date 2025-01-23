@@ -15,7 +15,7 @@ Supported Models:
     - gpt-3.5: Base GPT-3.5 model
 """
 
-from typing import List, Iterator, Any
+from typing import Any, Iterator, List
 
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
@@ -140,7 +140,9 @@ class GPTChatbot(ChatbotBase):
         response_content = completion.choices[0].message.content
         return response_content
 
-    def _get_text_from_chunk(self, chunk: Any) -> str: # pyright: ignore[reportUnknownParameterType]
+    def _get_text_from_chunk(
+        self, chunk: Any
+    ) -> str:  # pyright: ignore[reportUnknownParameterType]
         """
         Extract text content from an OpenAI API streaming chunk.
 

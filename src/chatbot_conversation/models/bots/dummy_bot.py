@@ -10,8 +10,8 @@ Major Classes:
 """
 
 import random
-from typing import ClassVar, List, Iterator, Any
 import re
+from typing import Any, ClassVar, Iterator, List
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot

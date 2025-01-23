@@ -13,7 +13,7 @@ Notes:
     implementations which typically use 0.0-2.0.
 """
 
-from typing import List, Iterator, Any
+from typing import Any, Iterator, List
 
 import httpx
 import ollama
@@ -178,7 +178,7 @@ class OllamaChatbot(ChatbotBase):
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
                 model=self.model_version,
                 messages=self._format_conv_for_api_util(conversation),
-                stream = False,
+                stream=False,
                 options={
                     "temperature": self.model_temperature,
                     "num_predict": self.model_max_tokens,
@@ -200,7 +200,9 @@ class OllamaChatbot(ChatbotBase):
         """
         return chunk.get("message", {}).get("content", "")
 
-    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
         """
         Generate streaming responses using the Ollama API.
 
