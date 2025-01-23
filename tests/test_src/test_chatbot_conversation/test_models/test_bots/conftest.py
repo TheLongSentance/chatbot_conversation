@@ -16,12 +16,13 @@ from chatbot_conversation.models import (  # BotRegistry,; ChatbotFactory,
     ChatbotBase,
     ChatbotConfig,
     ChatbotModel,
-    ChatbotParamsOpt,
 )
+
 from chatbot_conversation.models.bots.claude_bot import ClaudeChatbot
 from chatbot_conversation.models.bots.gemini_bot import GeminiChatbot
 from chatbot_conversation.models.bots.gpt_bot import GPTChatbot
 from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
+from chatbot_conversation.models.bots.dummy_bot import DummyChatbot  
 
 
 @pytest.fixture
@@ -33,7 +34,6 @@ def gpt_chatbot() -> GPTChatbot:
         model=ChatbotModel(
             type="GPT",
             version="gpt-4o-mini",
-            params_opt=ChatbotParamsOpt(temperature=0.7),
         ),
     )
     return GPTChatbot(config)
@@ -58,7 +58,6 @@ def claude_chatbot() -> ClaudeChatbot:
         model=ChatbotModel(
             type="CLAUDE",
             version="claude-3-haiku-20240307",
-            params_opt=ChatbotParamsOpt(temperature=0.7),
         ),
     )
     return ClaudeChatbot(config)
@@ -83,7 +82,6 @@ def ollama_chatbot() -> OllamaChatbot:
         model=ChatbotModel(
             type="OLLAMA",
             version="llama3.2",
-            params_opt=ChatbotParamsOpt(temperature=0.7),
         ),
     )
     return OllamaChatbot(config)
@@ -108,7 +106,6 @@ def gemini_chatbot() -> GeminiChatbot:
         model=ChatbotModel(
             type="GEMINI",
             version="gemini-1.5-flash",
-            params_opt=ChatbotParamsOpt(temperature=0.7),
         ),
     )
     return GeminiChatbot(config)
@@ -116,11 +113,35 @@ def gemini_chatbot() -> GeminiChatbot:
 
 @pytest.fixture
 def gemini_config_for_tests() -> ChatbotConfig:
-    """Basic config fixture for Gemini-specific tests"""
+    """Basic config fixture for Ollama-specific tests"""
     return ChatbotConfig(
         name="TestGeminiBot",
         system_prompt="You are a test assistant.",
         model=ChatbotModel(type="GEMINI", version="gemini-1.5-flash"),
+    )
+
+
+@pytest.fixture
+def dummy_chatbot() -> DummyChatbot:
+    """Fixture to create an instance of GeminiChatbot."""
+    config = ChatbotConfig(
+        name="DummyTestBot1",
+        system_prompt="You are a helpful assistant.",
+        model=ChatbotModel(
+            type="DUMMY",
+            version="None",
+        ),
+    )
+    return DummyChatbot(config)
+
+
+@pytest.fixture
+def dummy_config_for_tests() -> ChatbotConfig:
+    """Basic config fixture for Gemini-specific tests"""
+    return ChatbotConfig(
+        name="TestDummyBot",
+        system_prompt="You are a test assistant.",
+        model=ChatbotModel(type="DUMMY", version="None"),
     )
 
 

@@ -15,7 +15,7 @@ Supported Models:
     - gpt-3.5: Base GPT-3.5 model
 """
 
-from typing import List
+from typing import List, Iterator, Any
 
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
@@ -129,14 +129,53 @@ class GPTChatbot(ChatbotBase):
             APIConnectionError: On network connectivity issues
             RateLimitError: When API rate limits are exceeded
         """
-        response_content: str = ""
-        formatted_messages = self._format_conv_for_api_util(conversation)
         completion = self.model_api.chat.completions.create(
             model=self.model_version,
-            messages=formatted_messages,
+            messages=self._format_conv_for_api_util(conversation),
+            stream=False,
             timeout=self.model_timeout.api_timeout,
             temperature=self.model_temperature,
             max_tokens=self.model_max_tokens,
         )
         response_content = completion.choices[0].message.content
         return response_content
+
+    def _get_text_from_chunk(self, chunk: Any) -> str: # pyright: ignore[reportUnknownParameterType]
+        """
+        Extract text content from an OpenAI API streaming chunk.
+
+        Args:
+            chunk (Any): A chunk of streaming response from OpenAI API
+
+        Returns:
+            str: Extracted text content from the chunk, or empty string if no content
+        """
+        return chunk.choices[0].delta.content or ""
+
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
+        """
+        Generate a streaming response using the OpenAI API.
+
+        Creates a streaming completion request with configured parameters,
+        allowing for real-time response generation.
+
+        Args:
+            conversation (list[ConversationMessage]): Sequential list of prior conversation messages
+
+        Returns:
+            Iterator[Any]: Stream of response chunks from the OpenAI API
+
+        Note:
+            Uses streaming mode for real-time token generation
+            Temperature and model settings are applied as configured
+        """
+        return self.model_api.chat.completions.create(
+            model=self.model_version,
+            messages=self._format_conv_for_api_util(conversation),
+            stream=True,
+            timeout=self.model_timeout.api_timeout,
+            temperature=self.model_temperature,
+            max_tokens=self.model_max_tokens,
+        )

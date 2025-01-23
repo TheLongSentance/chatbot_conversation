@@ -7,6 +7,7 @@ from chatbot_conversation.models.base import (
     ChatbotConfig,
     ChatbotModel,
     ChatbotParamsOpt,
+    ConversationMessage,
 )
 
 
@@ -88,21 +89,54 @@ class TestSharedBotParameters:
         assert bot.model_max_tokens == test_tokens
 
 
-@pytest.mark.live_api  # Skip these tests unless explicitly running live API tests
 @pytest.mark.parametrize(
     "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot"]
 )
 class TestLiveAPIResponses:
     """Test actual API responses from each bot implementation"""
 
-    async def test_live_response(
-        self, bot_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
-        """Test that each bot can generate a real response via API"""
+    def test_generate_response(self, bot_fixture: str, request: pytest.FixtureRequest) -> None:
+
         bot = request.getfixturevalue(bot_fixture)
-        
-        prompt = "What is 2+2? Reply with just the number."
-        response = await bot.get_response(prompt)
-        
+        conversation = [
+            ConversationMessage(
+                bot_index=0, content="What is 2+2? Reply with just the number."
+            )
+        ]
+        response = bot.generate_response(conversation)
+
         assert response is not None
         assert "4" in response
+
+
+@pytest.mark.live_api  # Skip these tests unless explicitly running live API tests
+@pytest.mark.parametrize(
+    "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot", "dummy_chatbot"]
+)
+class TestLiveAPIStreamingResponses:
+    """Test actual API streaming responses from each bot implementation"""
+
+    def test_generate_streaming_response(
+        self, bot_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        bot = request.getfixturevalue(bot_fixture)
+        conversation = [
+            ConversationMessage(
+                bot_index=0,
+                content="Give me a 100 token response on any subject, please.",
+            )
+        ]
+
+        response_chunks = list(bot.stream_response(conversation))
+
+        # Ensure response is not empty
+        assert response_chunks, "The response should not be empty"
+
+        # Ensure response is streamed in chunks
+        assert (
+            len(response_chunks) > 1
+        ), "The response should be streamed in multiple chunks"
+
+        # Print each chunk (for debugging purposes)
+        for chunk in response_chunks:
+            print(chunk)

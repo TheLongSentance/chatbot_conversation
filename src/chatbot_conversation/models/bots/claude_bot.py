@@ -9,7 +9,7 @@ Major Classes:
     ClaudeChatbot: Claude-specific chatbot implementation
 """
 
-from typing import List
+from typing import List, Any, Iterator
 
 import anthropic
 from anthropic import APIConnectionError, APIError, RateLimitError
@@ -120,17 +120,55 @@ class ClaudeChatbot(ChatbotBase):
             RateLimitError: When API rate limits are exceeded
             TimeoutError: When API call exceeds timeout
         """
-        response_content: str = ""
-        formatted_messages = self._format_conv_for_api_util(
-            conversation, add_system_prompt=False
-        )
         message = self.model_api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
-            messages=formatted_messages,
-            max_tokens=self.model_max_tokens,
+            messages=self._format_conv_for_api_util(
+                conversation, add_system_prompt=False
+            ),
             timeout=self.model_timeout.api_timeout,
+            max_tokens=self.model_max_tokens,
             temperature=self.model_temperature,
         )
         response_content = message.content[0].text
         return response_content
+
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """
+        Extract text content from a streaming response chunk.
+
+        Args:
+            chunk (Any): Response chunk from Claude streaming API
+
+        Returns:
+            str: Extracted text content from the chunk, or empty string if chunk is None
+        """
+        return chunk or ""
+
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+        """
+        Generate streaming responses using the Claude API.
+
+        Args:
+            conversation (list[ConversationMessage]): List of conversation messages
+
+        Returns:
+            Iterator[Any]: Iterator yielding response chunks from Claude's text stream
+
+        Note:
+            Uses Claude's streaming mode for real-time response generation
+        """
+        stream_manager = self.model_api.messages.stream(
+            model=self.model_version,
+            system=self.system_prompt,
+            messages=self._format_conv_for_api_util(
+                conversation, add_system_prompt=False
+            ),
+            timeout=self.model_timeout.api_timeout,
+            max_tokens=self.model_max_tokens,
+            temperature=self.model_temperature,
+        )
+        with stream_manager as stream:
+            # Consume stream inside context manager
+            for chunk in stream.text_stream:
+                yield chunk

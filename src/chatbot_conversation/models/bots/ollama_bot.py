@@ -13,7 +13,7 @@ Notes:
     implementations which typically use 0.0-2.0.
 """
 
-from typing import List
+from typing import List, Iterator, Any
 
 import httpx
 import ollama
@@ -89,15 +89,32 @@ class OllamaChatbot(ChatbotBase):
 
     @property
     def _min_temperature(self) -> float:
+        """
+        Get the minimum allowed temperature for Ollama models.
+
+        Returns:
+            float: Minimum temperature value (0.0) for Ollama
+        """
         return OLLAMA_MIN_MODEL_TEMP
 
     @property
     def _max_temperature(self) -> float:
+        """
+        Get the maximum allowed temperature for Ollama models.
+
+        Returns:
+            float: Maximum temperature value (1.0) for Ollama
+        """
         return OLLAMA_MAX_MODEL_TEMP
 
     @property
     def _default_temperature(self) -> float:
-        """Default temperature override"""
+        """
+        Get the default temperature setting for Ollama models.
+
+        Returns:
+            float: Default temperature value (0.8) for Ollama
+        """
         return OLLAMA_DEFAULT_TEMP
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
@@ -157,12 +174,11 @@ class OllamaChatbot(ChatbotBase):
             httpx.NetworkError: On network connectivity issues
             httpx.HTTPStatusError: On HTTP error responses
         """
-        response_content: str = ""
-        formatted_messages = self._format_conv_for_api_util(conversation)
         response: ChatResponse = (
             ollama.chat(  # pyright: ignore[reportUnknownMemberType]
                 model=self.model_version,
-                messages=formatted_messages,
+                messages=self._format_conv_for_api_util(conversation),
+                stream = False,
                 options={
                     "temperature": self.model_temperature,
                     "num_predict": self.model_max_tokens,
@@ -171,3 +187,38 @@ class OllamaChatbot(ChatbotBase):
         )
         response_content = response["message"]["content"]
         return response_content
+
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """
+        Extract text content from a streaming response chunk.
+
+        Args:
+            chunk (Any): Response chunk from Ollama streaming API
+
+        Returns:
+            str: Extracted text content from the chunk, or empty string if not found
+        """
+        return chunk.get("message", {}).get("content", "")
+
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+        """
+        Generate streaming responses using the Ollama API.
+
+        Args:
+            conversation (list[ConversationMessage]): List of conversation messages
+
+        Returns:
+            Iterator[Any]: Iterator yielding response chunks from Ollama's streaming API
+
+        Note:
+            Uses Ollama's streaming mode for real-time response generation
+        """
+        return ollama.chat(  # pyright: ignore[reportUnknownMemberType]
+            model=self.model_version,
+            messages=self._format_conv_for_api_util(conversation),
+            stream=True,
+            options={
+                "temperature": self.model_temperature,
+                "num_predict": self.model_max_tokens,
+            },
+        )

@@ -17,7 +17,7 @@ Supported Models:
 """
 
 import json
-from typing import List, TypedDict
+from typing import List, TypedDict, Any, Iterator
 
 import google.api_core.exceptions
 
@@ -119,14 +119,7 @@ class GeminiChatbot(ChatbotBase):
         # the generate_content call for Gemini as either a parameter or
         # part of the message history
 
-        self.model_api = google.generativeai.GenerativeModel(
-            model_name=self.model_version,
-            system_instruction=self.system_prompt,
-            generation_config=google.generativeai.GenerationConfig(
-                temperature=self.model_temperature,
-                max_output_tokens=self.model_max_tokens,
-            ),
-        )
+        self._initialize_model_api()
 
     @property
     def _default_temperature(self) -> float:
@@ -184,15 +177,7 @@ class GeminiChatbot(ChatbotBase):
         # and whenever it is updated (first round, after first round, before last)
 
         if self.model_system_prompt_needs_update:
-            self.model_api = google.generativeai.GenerativeModel(
-                model_name=self.model_version,
-                system_instruction=self.system_prompt,
-                generation_config=google.generativeai.GenerationConfig(
-                    temperature=self.model_temperature,
-                    max_output_tokens=self.model_max_tokens,
-                ),
-            )
-            self.model_system_prompt_updated()
+            self._initialize_model_api()
 
         message = (
             self.model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
@@ -226,3 +211,57 @@ class GeminiChatbot(ChatbotBase):
         self._log_debug(json.dumps(messages, indent=2))
 
         return messages
+
+    def _initialize_model_api(self) -> None:
+        """
+        Initialize or reinitialize the Gemini API client.
+
+        Creates a new GenerativeModel instance with current configuration settings
+        including system prompt, temperature, and token limits. Called on first
+        initialization and when system prompt changes.
+
+        Note:
+            Updates model_system_prompt_updated flag after initialization
+        """
+        self.model_api = google.generativeai.GenerativeModel(
+            model_name=self.model_version,
+            system_instruction=self.system_prompt,
+            generation_config=google.generativeai.GenerationConfig(
+                temperature=self.model_temperature,
+                max_output_tokens=self.model_max_tokens,
+            ),
+        )
+        self.model_system_prompt_updated()
+
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """
+        Extract text content from a streaming response chunk.
+
+        Args:
+            chunk (Any): Response chunk from Gemini streaming API
+
+        Returns:
+            str: Extracted text content from the chunk, or empty string if not found
+        """
+        return chunk.text or ""
+
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
+        """
+        Generate streaming responses using the Gemini API.
+
+        Reinitializes API client if system prompt has changed, then generates
+        content in streaming mode.
+
+        Args:
+            conversation (list[ConversationMessage]): List of conversation messages
+
+        Returns:
+            Iterator[Any]: Iterator yielding response chunks from Gemini's streaming API
+        """
+        if self.model_system_prompt_needs_update:
+            self._initialize_model_api()
+
+        return self.model_api.generate_content(
+            self._format_conv_for_gemini_api(conversation),
+            stream=True,
+        )

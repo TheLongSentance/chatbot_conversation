@@ -10,7 +10,8 @@ Major Classes:
 """
 
 import random
-from typing import ClassVar, List
+from typing import ClassVar, List, Iterator, Any
+import re
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -121,3 +122,46 @@ class DummyChatbot(ChatbotBase):
             str: Randomly selected predefined response
         """
         return random.choice(self._responses)
+
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """
+        Extract text content from a dummy stream chunk.
+
+        Simple pass-through implementation for testing purposes.
+
+        Args:
+            chunk (Any): A chunk of text from the dummy stream
+
+        Returns:
+            str: The chunk content unchanged
+        """
+        return chunk
+
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
+        """
+        Generate a mock streaming response.
+
+        Simulates streaming by splitting a predefined message into tokens
+        and yielding them one at a time. Used for testing stream functionality
+        without external dependencies.
+
+        Args:
+            conversation (list[ConversationMessage]): Unused conversation history
+
+        Returns:
+            Iterator[Any]: Stream of text tokens from the predefined response
+
+        Note:
+            Splits response on word boundaries and spaces for realistic simulation
+        """
+        response = (
+            "Hello! I'm a simple bot, pretending to stream a response, "
+            "regardless of what you say."
+        )
+        # Use regex to split and keep spaces as separate elements
+        tokens = re.findall(r"\S+(?:\s+)?", response)
+
+        for token in tokens:
+            yield token

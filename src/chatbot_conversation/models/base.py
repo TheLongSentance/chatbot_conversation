@@ -29,7 +29,15 @@ import json
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, List, Optional, Set, TypedDict
+from typing import (
+    Any,
+    ClassVar,
+    List,
+    Optional,
+    Set,
+    TypedDict,
+    Iterator,
+)
 
 from tenacity import (
     retry,
@@ -649,6 +657,24 @@ class ChatbotBase(ABC):
         self._log_debug(json.dumps(messages, indent=2))
 
         return messages
+
+    @abstractmethod
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """Extract text from a chunk in model-specific format"""
+        pass
+
+    @abstractmethod
+    def _generate_stream(
+        self, conversation: list[ConversationMessage]
+    ) -> Iterator[Any]:
+        """Generate stream of chunks in model-specific format"""
+        pass
+
+    def stream_response(self, conversation: list[ConversationMessage]) -> Iterator[str]:
+        """Stream response with chunks converted to text"""
+        stream = self._generate_stream(conversation)
+        for chunk in stream:
+            yield self._get_text_from_chunk(chunk)
 
     def _log_error(self, error_text: str) -> None:
         """
