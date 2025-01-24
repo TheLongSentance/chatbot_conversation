@@ -19,7 +19,10 @@ from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 
-from chatbot_conversation.conversation.loader import ConfigurationLoader
+from chatbot_conversation.conversation.loader import (
+    ChatbotConfigData,
+    ConfigurationLoader,
+)
 from chatbot_conversation.models import (
     BotRegistry,
     ChatbotBase,
@@ -64,13 +67,12 @@ class ConversationManager:
         factory = ChatbotFactory(bot_registry)
 
         for bot_config in self.config.bots:
-            # Format bot_name into shared prefix and add bot-specific prompt
-            bot_system_prompt = self.config.shared_prefix + bot_config.bot_prompt
-            bot_system_prompt = self.insert_bot_name(
-                bot_system_prompt, bot_config.bot_name
+            # Construct the system prompt for the bot
+            bot_system_prompt = self.construct_system_prompt(
+                self.config.shared_prefix, bot_config
             )
 
-            # Create ChatbotConfig using new structure
+            # Create ChatbotConfig object
             chatbot_config = ChatbotConfig(
                 name=bot_config.bot_name,
                 system_prompt=bot_system_prompt,
@@ -142,17 +144,20 @@ class ConversationManager:
         """
         self.display_text(f"## Round {round_num} of {self.config.rounds}\n\n---\n\n")
 
+        # Pre-round actions adjusting system prompt
         if round_num == 1:  # Add the first round system prompt postfix
             self.tell_bots_first_round()
         if round_num == self.config.rounds:  # Add the last round postfix
             self.tell_bots_last_round()
 
+        # Run the round now that the system prompt is set
         self.run_round()
 
+        # Post-round actions undoing system prompt adjustments
         if round_num == 1:  # Remove the first round system prompt postfix
             self.tell_bots_not_first_round()
-
-        # No need to remove the last round postfix since conversation over
+        # if round_num == self.config.rounds then no need to remove the
+        #   last round postfix since conversation is finished
 
     def run_round(self) -> None:
         """
@@ -175,7 +180,7 @@ class ConversationManager:
                         live.update(Markdown(current_text))
 
                 # Combine chunks into complete response
-                response = ''.join(full_response)  # No need to add bot name prefix
+                response = "".join(full_response)  # No need to add bot name prefix
 
             except (IndexError, KeyError, AttributeError, ValueError) as e:
                 error_message = f"Exception: index/key/attribute/value error: {e}"
@@ -210,7 +215,10 @@ class ConversationManager:
         Inform bots that the conversation is about to start.
         """
         for bot in self.bots:
-            suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
+            suffix = self.replace_variables(
+                self.config.first_round_postfix,
+                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
+            )
             self.system_prompt_add_suffix(bot, suffix)
 
     def tell_bots_not_first_round(self) -> None:
@@ -218,7 +226,10 @@ class ConversationManager:
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            suffix = self.insert_bot_name(self.config.first_round_postfix, bot.name)
+            suffix = self.replace_variables(
+                self.config.first_round_postfix,
+                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
+            )
             self.system_prompt_remove_suffix(bot, suffix)
 
     def tell_bots_last_round(self) -> None:
@@ -226,21 +237,58 @@ class ConversationManager:
         Inform bots that the conversation is about to end.
         """
         for bot in self.bots:
-            suffix = self.insert_bot_name(self.config.last_round_postfix, bot.name)
+            suffix = self.replace_variables(
+                self.config.first_round_postfix,
+                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
+            )
             self.system_prompt_add_suffix(bot, suffix)
 
-    def insert_bot_name(self, text: str, bot_name: str) -> str:
+    def replace_variables(self, text: str, variables: dict[str, str]) -> str:
         """
-        Insert the bot name into the text.
+        Replace placeholders in the text with the provided variable values.
 
         Args:
-            text (str): Text to insert the bot name into.
-            bot_name (str): Name of the bot.
+            text (str): The text containing placeholders.
+            variables (dict): A dictionary with variable names as keys and their corresponding values.
+            e.g. {"bot_name": "GPT-4", "max_tokens": "100"} will replace "{bot_name}" with "GPT-4" and
+            "{max_tokens}" with "100".
 
         Returns:
-            str: Text with the bot name inserted.
+            str: The text with placeholders replaced by their values.
         """
-        return text.replace("{bot_name}", bot_name)
+        for key, value in variables.items():
+            placeholder = f"{{{key}}}"
+            text = text.replace(placeholder, str(value))
+        return text
+
+    def construct_system_prompt(
+        self, shared_prefix: str, bot_config: ChatbotConfigData
+    ) -> str:
+        """
+        Construct the system prompt for a bot based on the shared prefix and bot configuration.
+
+        Args:
+            shared_prefix (str): The shared prefix for the system prompt.
+            bot_config: The configuration for the bot.
+
+        Returns:
+            str: The constructed system prompt.
+        """
+        bot_registry = BotRegistry()  # get the singleton instance
+
+        if bot_config.bot_params_opt.max_tokens is None:
+            bot_class = bot_registry.get_bot_class(bot_config.bot_type)
+            max_tokens = bot_class.get_default_max_tokens()
+        else:
+            max_tokens = bot_config.bot_params_opt.max_tokens
+
+        bot_system_prompt = shared_prefix + bot_config.bot_prompt
+        bot_system_prompt = self.replace_variables(
+            bot_system_prompt,
+            {"bot_name": bot_config.bot_name, "max_tokens": str(max_tokens)},
+        )
+
+        return bot_system_prompt
 
     def write_conversation_to_file(self, output_directory: str) -> None:
         """
