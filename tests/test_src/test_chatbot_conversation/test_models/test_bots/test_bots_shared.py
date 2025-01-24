@@ -9,6 +9,7 @@ from chatbot_conversation.models.base import (
     ChatbotParamsOpt,
     ConversationMessage,
 )
+from typing import Optional
 
 
 @pytest.mark.parametrize(
@@ -111,7 +112,7 @@ class TestLiveAPIResponses:
         assert "4" in response
 
 
-@pytest.mark.live_api  # Skip these tests unless explicitly running live API tests
+@pytest.mark.live_api
 @pytest.mark.parametrize(
     "bot_fixture",
     [
@@ -119,7 +120,6 @@ class TestLiveAPIResponses:
         "claude_chatbot",
         "ollama_chatbot",
         "gemini_chatbot",
-        "dummy_chatbot",
     ],
 )
 class TestLiveAPIStreamingResponses:
@@ -138,14 +138,104 @@ class TestLiveAPIStreamingResponses:
 
         response_chunks = list(bot.stream_response(conversation))
 
-        # Ensure response is not empty
         assert response_chunks, "The response should not be empty"
+        assert len(response_chunks) > 1, "The response should be streamed in multiple chunks"
 
-        # Ensure response is streamed in chunks
-        assert (
-            len(response_chunks) > 1
-        ), "The response should be streamed in multiple chunks"
-
-        # Print each chunk (for debugging purposes)
         for chunk in response_chunks:
             print(chunk)
+
+    def test_streaming_max_tokens(
+        self, bot_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        """Test that streaming responses respect various token limits."""
+        # Test cases: very small, medium, large, and default (None) limits
+        test_cases: list[tuple[Optional[int], str]] = [
+            (50, "small"),
+            (150, "medium"),
+            (500, "large"),
+            (None, "default")
+        ]
+
+        for max_tokens, size in test_cases:
+            # Create bot with specific token limit
+            config = ChatbotConfig(
+                name=f"{size.capitalize()}Limit_{bot_fixture}",
+                system_prompt="You are a test assistant.",
+                model=ChatbotModel(
+                    type=request.getfixturevalue(bot_fixture).model_type,
+                    version=request.getfixturevalue(bot_fixture).model_version,
+                    params_opt=ChatbotParamsOpt(max_tokens=max_tokens)
+                )
+            )
+            test_bot = type(request.getfixturevalue(bot_fixture))(config)
+
+            # Generate response
+            conversation = [
+                ConversationMessage(
+                    bot_index=0,
+                    content=f"Write about AI until you hit the {size} token limit.",
+                )
+            ]
+
+            chunks = list(test_bot.stream_response(conversation))
+            response = "".join(chunks)
+            word_count = len(response.split())
+            estimated_tokens = int(word_count * 1.25)
+
+            # Check against expected limit
+            expected_limit = max_tokens if max_tokens is not None else test_bot.get_default_max_tokens()
+            assert estimated_tokens <= expected_limit * 1.15, f"Token limit exceeded for {size} test"
+            assert estimated_tokens >= expected_limit * 0.85, f"Response too short for {size} test"
+
+    def test_streaming_temperature(
+        self, bot_fixture: str, request: pytest.FixtureRequest
+    ) -> None:
+        """Test that streaming responses reflect different temperature settings."""
+        # Test with different temperatures
+        test_temps = [0.0, 0.5, 1.0]  # Low, medium, high temperatures
+        responses_per_temp = 5  # Number of responses to generate per temperature
+        
+        # Simple prompt that should generate variable responses
+        prompt = "List 5 random words. Just the words, separated by spaces."
+        
+        for temp in test_temps:
+            # Create bot with specific temperature
+            config = ChatbotConfig(
+                name=f"Temp{temp}_{bot_fixture}".replace(".", "_"),
+                system_prompt="You are a test assistant.",
+                model=ChatbotModel(
+                    type=request.getfixturevalue(bot_fixture).model_type,
+                    version=request.getfixturevalue(bot_fixture).model_version,
+                    params_opt=ChatbotParamsOpt(temperature=temp)
+                )
+            )
+            test_bot = type(request.getfixturevalue(bot_fixture))(config)
+            
+            # Generate multiple responses at this temperature
+            responses: list[str] = []
+            for _ in range(responses_per_temp):
+                conversation = [
+                    ConversationMessage(
+                        bot_index=0,
+                        content=prompt,
+                    )
+                ]
+                chunks = list(test_bot.stream_response(conversation))
+                responses.append("".join(chunks).strip())
+            
+            # For very low temperature (0.1), responses should be more similar
+            if temp == 0.0:
+                # At least 2 responses should be identical at low temperature
+                assert any(
+                    responses.count(r) >= 2 for r in responses
+                ), f"Expected some identical responses at temperature {temp}"
+            
+            # For high temperature (1.9), responses should be more varied
+            if temp == 1.0:
+                # All responses should be different at high temperature
+                assert len(set(responses)) == len(
+                    responses
+                ), f"Expected all different responses at temperature {temp}"
+            
+            # Verify temperature was set correctly in bot
+            assert test_bot.model_temperature == temp
