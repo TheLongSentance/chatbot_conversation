@@ -224,6 +224,16 @@ class ChatbotBase(ABC):
         ValueError: On invalid configuration (name conflicts, invalid parameters)
     """
 
+    @staticmethod
+    def get_default_max_tokens() -> int:
+        """
+        Get default maximum tokens setting.
+
+        Returns:
+            int: The default maximum tokens for response generation (300)
+        """
+        return DEFAULT_MAX_TOKENS
+
     _total_count: ClassVar[int] = 0  # Class variable to track total instances
     _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
 
@@ -419,15 +429,6 @@ class ChatbotBase(ABC):
         """Get the maximum tokens setting for response generation."""
         return self._model.max_tokens
 
-    def _get_default_max_tokens(self) -> int:
-        """
-        Get default maximum tokens setting.
-
-        Returns:
-            int: The default maximum tokens for response generation (300)
-        """
-        return DEFAULT_MAX_TOKENS
-
     def _validate_max_tokens(self, max_tokens: int) -> None:
         """
         Validate the max tokens setting.
@@ -456,7 +457,7 @@ class ChatbotBase(ABC):
         return (
             config.model.params_opt.max_tokens
             if config.model.params_opt.max_tokens is not None
-            else self._get_default_max_tokens()
+            else self.get_default_max_tokens()
         )
 
     @property
