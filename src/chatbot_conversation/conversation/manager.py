@@ -238,7 +238,7 @@ class ConversationManager:
         """
         for bot in self.bots:
             suffix = self.replace_variables(
-                self.config.first_round_postfix,
+                self.config.last_round_postfix,
                 {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
             )
             self.system_prompt_add_suffix(bot, suffix)
