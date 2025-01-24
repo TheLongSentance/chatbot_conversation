@@ -18,6 +18,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from chatbot_conversation.conversation.manager import ConversationManager
+from chatbot_conversation.conversation.loader import ChatbotConfigData, ChatbotParamsOptData
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
 
 
@@ -89,23 +90,34 @@ def test_system_prompt_modifications(
 
 
 @pytest.mark.parametrize(
-    "text,bot_name,expected",
+    "text,bot_name,max_tokens,expected",
     [
-        ("Hello {bot_name}!", "TestBot", "Hello TestBot!"),
-        ("{bot_name} says hi", "Bot2", "Bot2 says hi"),
-        ("No placeholder text", "Bot3", "No placeholder text"),
+        (
+            "Hello {bot_name} with {max_tokens} tokens!",
+            "TestBot",
+            50,
+            "Hello TestBot with 50 tokens!",
+        ),
+        ("{bot_name} says hi", "Bot2", 100, "Bot2 says hi"),
+        ("{max_tokens} tokens!", "Bot2", 100, "100 tokens!"),
+        ("No placeholder text", "Bot3", 200, "No placeholder text"),
     ],
 )
-def test_insert_bot_name(
-    test_config_path: str, text: str, bot_name: str, expected: str
+def test_replace_variables(
+    test_config_path: str, 
+    text: str, 
+    bot_name: str, 
+    max_tokens: int,
+    expected: str
 ) -> None:
     """
     Test bot name insertion into text templates.
 
     Args:
         test_config_path (str): Path to test configuration file.
-        text (str): Template text with bot name placeholder.
+        text (str): Template text with variable placeholders.
         bot_name (str): Bot name to insert.
+        max_tokens (int): Maximum number of tokens.
         expected (str): Expected result after insertion.
 
     Verifies:
@@ -114,7 +126,10 @@ def test_insert_bot_name(
         - Multiple placeholder cases
     """
     manager = ConversationManager(test_config_path)
-    result = manager.insert_bot_name(text, bot_name)
+    result = manager.replace_variables(
+            text,
+            {"bot_name": bot_name, "max_tokens": str(max_tokens)},
+        )
     assert result == expected
 
 
@@ -182,3 +197,46 @@ def test_display_methods(mock_console: Mock, test_config_path: str) -> None:
 
     manager.display_text(test_text)
     mock_console.return_value.print.assert_called_once()
+
+
+def test_construct_system_prompt(test_config_path: str) -> None:
+    """
+    Test system prompt construction with variable replacements.
+
+    Args:
+        test_config_path (str): Path to test configuration file.
+
+    Verifies:
+        - Correct combination of shared prefix and bot prompt
+        - Proper variable replacement
+        - Default max tokens handling
+    """
+    manager = ConversationManager(test_config_path)
+    
+    shared_prefix: str = "Global prefix: "
+    params_opt = ChatbotParamsOptData(max_tokens=100)
+    bot_config = ChatbotConfigData(
+        bot_name="TestBot",
+        bot_prompt="My name is {bot_name} and I can use {max_tokens} tokens.",
+        bot_type="DUMMY",
+        bot_version="None",
+        bot_params_opt=params_opt
+    )
+
+    result = manager.construct_system_prompt(shared_prefix, bot_config)
+    expected = "Global prefix: My name is TestBot and I can use 100 tokens."
+    assert result == expected
+
+    # Test with no max_tokens specified (should use default)
+    params_opt_no_tokens = ChatbotParamsOptData()
+    bot_config_no_tokens = ChatbotConfigData(
+        bot_name="TestBot2",
+        bot_prompt="I am {bot_name} with {max_tokens} default tokens.",
+        bot_type="DUMMY",
+        bot_version="None",
+        bot_params_opt=params_opt_no_tokens
+    )
+
+    result_default = manager.construct_system_prompt(shared_prefix, bot_config_no_tokens)
+    assert "{max_tokens}" not in result_default
+    assert "TestBot2" in result_default
