@@ -94,4 +94,4 @@ def test_model_constants() -> None:
 
     assert bot.model_type == "DUMMY"
     assert bot._default_temperature == 1.0  # pyright: ignore[reportPrivateUsage]
-    assert bot._get_default_max_tokens() == 50  # pyright: ignore[reportPrivateUsage]
+    assert bot.get_default_max_tokens() == 50  # pyright: ignore[reportPrivateUsage]
