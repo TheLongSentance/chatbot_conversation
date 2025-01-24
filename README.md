@@ -362,7 +362,7 @@ Configuration parameters:
 - `shared_prefix`: Common instructions provided to all bots about conversation structure.
 - `first_round_postfix`: Instructions for first round only (e.g., bot introductions).
 - `last_round_postfix`: Instructions for last round only (e.g., concluding thoughts).
-  - Prefix and postfix all support template variable names: 
+  - Prefix and postfix all support template variable names:
     - Supports template variable `{bot_name}` which gets replaced with each bot's name
     - Example: "You are {bot_name}. " becomes "You are RogerFan. " for the RogerFan bot
     - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model
