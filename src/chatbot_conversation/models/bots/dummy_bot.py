@@ -1,12 +1,15 @@
 """
-Mock chatbot implementation for testing and demonstration.
+A simple mock chatbot implementation for testing and demonstration purposes.
 
-Provides a simple implementation of ChatbotBase that returns random responses
-from a predefined list. Useful for testing the framework, development without
-API dependencies, and as a reference implementation.
+This module provides a stateless chatbot implementation that returns random responses
+from a predefined list. It serves multiple purposes:
+- Testing the chatbot framework without external dependencies
+- Providing a reference implementation for custom chatbots
+- Demonstrating basic chatbot functionality
 
-Major Classes:
-    DummyChatbot: Testing-focused chatbot implementation
+Key Components:
+    DummyChatbot: A concrete implementation of ChatbotBase for testing
+    MODEL_TYPE: Constant identifier for the dummy bot model
 """
 
 import random
@@ -16,39 +19,39 @@ from typing import Any, ClassVar, Iterator, List
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
-MODEL_TYPE = "DUMMY"
+# Default temperature values for Dummy models
+MINIMUM_TEMPERATURE = 0.0
+MAXIMUM_TEMPERATURE = 1.0
+DEFAULT_TEMPERATURE = 1.0
 
-# Default temperature for Dummy models
-DUMMY_DEFAULT_TEMP = 1.0
 # Default max tokens for Dummy models
 DUMMY_MAX_TOKENS = 50
 
+MODEL_TYPE = "DUMMY"
 
 @register_bot(MODEL_TYPE)
 class DummyChatbot(ChatbotBase):
     """
-    Mock chatbot implementation returning predefined responses.
+    A mock chatbot that provides predefined responses for testing purposes.
 
-    Provides a concrete implementation of ChatbotBase focused on testing
-    and demonstration, requiring no external dependencies.
+    This implementation demonstrates the basic structure of a chatbot while 
+    requiring no external dependencies. It randomly selects responses from 
+    a predefined list, making it suitable for testing the framework and
+    showing basic chatbot behavior.
 
-    Features:
-    - Zero-dependency response generation
-    - Predefined response collection
-    - Configurable mock parameters
-    - Simplified error handling
-    - Local-only operation
+    Key Features:
+        - Dependency-free response generation
+        - Configurable mock parameters
+        - Support for both streaming and non-streaming responses
+        - Simple error handling demonstration
+        - Test-friendly implementation
 
     Args:
-        config (ChatbotConfig): Configuration object containing:
-            - name: Bot instance identifier
-            - system_prompt: Unused but required system instructions
-            - model: Model configuration (only type validation used)
-            - timeout: Unused timeout settings
-
-    Attributes:
-        Inherits all attributes from ChatbotBase plus:
-        _responses (List[str]): Collection of predefined responses
+        config (ChatbotConfig): Configuration containing:
+            name (str): Unique identifier for this bot instance
+            system_prompt (str): Initial instructions (not used in dummy implementation)
+            model (dict): Model configuration (only type validation)
+            timeout (float): Response timeout in seconds (not used)
     """
 
     # Not a standard thing to do for a model, but for demonstration purposes
@@ -68,10 +71,10 @@ class DummyChatbot(ChatbotBase):
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
-        Get the model type identifier for GPT models.
+        Retrieve the model type identifier for this chatbot implementation.
 
         Returns:
-            str: "GPT" as the model type identifier
+            str: The constant MODEL_TYPE value identifying this as a dummy bot
         """
         return MODEL_TYPE
 
@@ -79,61 +82,48 @@ class DummyChatbot(ChatbotBase):
     # super().__init__(config) to initialize the base class
     # and then specifics for the bot implementation
 
-    @property
-    def _default_temperature(self) -> float:
-        """Default temperature override"""
-        return DUMMY_DEFAULT_TEMP
-
-    def _get_default_max_tokens(self) -> int:
-        """
-        Get default maximum token count for dummy models.
-        Token count has no effect on response generation.
-
-        Returns:
-            int: Unused token limit (50)
-        """
-        return DUMMY_MAX_TOKENS
-
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Determine if an operation should be retried.
-        Arbitrarily to retry on ConnectionError for
-        testing and demonstration purposes.
+        Determine if a failed operation should be retried.
+
+        Implements a simple retry strategy that only retries on ConnectionError,
+        primarily for demonstration purposes.
 
         Args:
-            exception: Unused exception parameter
+            exception (Exception): The exception that occurred during operation
 
         Returns:
-            bool: True if ConnectionError - False otherwise
+            bool: True if the operation should be retried, False otherwise
         """
         return isinstance(exception, (ConnectionError))
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Generate a mock response by random selection.
+        Create a response by randomly selecting from predefined messages.
 
-        Ignores conversation history and returns a random predefined message.
-        No API calls or external dependencies are used.
+        This method demonstrates the simplest possible response generation,
+        ignoring the conversation history and selecting randomly from a fixed list.
 
         Args:
-            conversation: Unused conversation history
+            conversation (List[ConversationMessage]): The conversation history (unused)
 
         Returns:
-            str: Randomly selected predefined response
+            str: A randomly selected response from the predefined list
         """
         return random.choice(self._responses)
 
     def _get_text_from_chunk(self, chunk: Any) -> str:
         """
-        Extract text content from a dummy stream chunk.
+        Extract text content from a stream chunk.
 
-        Simple pass-through implementation for testing purposes.
+        In this dummy implementation, chunks are already strings and are
+        passed through unchanged.
 
         Args:
-            chunk (Any): A chunk of text from the dummy stream
+            chunk (Any): A chunk of response text
 
         Returns:
-            str: The chunk content unchanged
+            str: The input chunk, unmodified
         """
         return chunk  # type: ignore
 
@@ -141,20 +131,20 @@ class DummyChatbot(ChatbotBase):
         self, conversation: list[ConversationMessage]
     ) -> Iterator[Any]:
         """
-        Generate a mock streaming response.
+        Simulate a streaming response by yielding tokens sequentially.
 
-        Simulates streaming by splitting a predefined message into tokens
-        and yielding them one at a time. Used for testing stream functionality
-        without external dependencies.
+        Demonstrates streaming behavior by splitting a fixed response into
+        word-based tokens and yielding them one at a time. This provides
+        a way to test streaming functionality without external dependencies.
 
         Args:
-            conversation (list[ConversationMessage]): Unused conversation history
+            conversation (list[ConversationMessage]): The conversation history (unused)
 
         Returns:
-            Iterator[Any]: Stream of text tokens from the predefined response
+            Iterator[Any]: A stream of text tokens representing words and spaces
 
         Note:
-            Splits response on word boundaries and spaces for realistic simulation
+            Uses regex to preserve spacing, creating a more realistic streaming simulation
         """
         response = (
             "Hello! I'm a simple bot, pretending to stream a response, "
@@ -164,3 +154,33 @@ class DummyChatbot(ChatbotBase):
         tokens = re.findall(r"\S+(?:\s+)?", response)
 
         yield from tokens
+
+    @property
+    def model_min_temperature(self) -> float:
+        """
+        Get the minimum allowed temperature setting.
+
+        Returns:
+            float: The minimum valid temperature value (0.0)
+        """
+        return MINIMUM_TEMPERATURE
+
+    @property
+    def model_max_temperature(self) -> float:
+        """
+        Get the maximum allowed temperature setting.
+
+        Returns:
+            float: The maximum valid temperature value (1.0)
+        """
+        return MAXIMUM_TEMPERATURE
+
+    @property
+    def model_default_temperature(self) -> float:
+        """
+        Get the default temperature setting.
+
+        Returns:
+            float: The default temperature value (1.0)
+        """
+        return DEFAULT_TEMPERATURE

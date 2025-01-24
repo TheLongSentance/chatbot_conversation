@@ -8,6 +8,7 @@ Provides a comprehensive architecture for implementing AI chatbots with support 
 - Fault-tolerant API communication with retry logic
 - Bot instance uniqueness and validation
 - Streaming response capabilities
+- Temperature and token limit controls
 
 Key Components:
 - Message Classes: ChatMessage (API format) and ConversationMessage (internal format)
@@ -18,6 +19,18 @@ Usage:
     Extend ChatbotBase to implement specific model backends:
     ```python
     class MyModelBot(ChatbotBase):
+        @property
+        def model_min_temperature(self) -> float:
+            return 0.0
+            
+        @property
+        def model_max_temperature(self) -> float:
+            return 1.0
+            
+        @property
+        def model_default_temperature(self) -> float:
+            return 0.7
+            
         @classmethod
         def _get_class_model_type(cls) -> str:
             return "my_model"
@@ -51,9 +64,7 @@ DEFAULT_MAX_RETRIES = 5  # Maximum number of retry attempts
 DEFAULT_MIN_WAIT = 1
 DEFAULT_MAX_WAIT = 10
 DEFAULT_WAIT_MULTIPLIER = 1.5
-# Model temperature range (most seem to be adopting range of 0.0 to 2.0)
-MIN_MODEL_TEMP = 0.0
-MAX_MODEL_TEMP = 2.0
+
 # Default maximum tokens for response generation
 DEFAULT_MAX_TOKENS = 300
 
@@ -101,12 +112,12 @@ class ChatbotTimeout:
     backoff retry logic for handling transient failures.
 
     Attributes:
-        total (int): Maximum total time for API operation completion
-        api_timeout (int): Timeout for individual API calls
+        total (int): Maximum total time in seconds for API operation completion
+        api_timeout (int): Timeout in seconds for individual API calls
         max_retries (int): Maximum number of retry attempts
-        min_wait (int): Minimum delay between retries
-        max_wait (int): Maximum delay between retries
-        wait_multiplier (float): Exponential backoff multiplier
+        min_wait (int): Minimum delay in seconds between retries
+        max_wait (int): Maximum delay in seconds between retries
+        wait_multiplier (float): Exponential backoff multiplier for retry delays
     """
 
     total: int = DEFAULT_TOTAL_TIMEOUT
@@ -197,6 +208,7 @@ class ChatbotBase(ABC):
     - API communication with retry logic
     - Response streaming capabilities
     - Comprehensive error handling
+    - Temperature and token limit management
 
     Implementation Requirements:
         Subclasses must implement:
@@ -205,6 +217,9 @@ class ChatbotBase(ABC):
         - _should_retry_on_exception(): Define retry logic for specific errors
         - _get_text_from_chunk(): Extract text from streaming response chunks
         - _generate_stream(): Implement model-specific response streaming
+        - model_min_temperature: Property defining minimum temperature value
+        - model_max_temperature: Property defining maximum temperature value
+        - model_default_temperature: Property defining default temperature value
 
     Class Attributes:
         _total_count (int): Total number of bot instances created
@@ -215,24 +230,15 @@ class ChatbotBase(ABC):
         system_prompt (str): Current system instructions
         model_type (str): Model backend identifier
         model_version (str): Model version identifier
-        model_temperature (float): Response randomness setting
+        model_temperature (float): Response randomness setting (0.0 to 1.0)
         model_max_tokens (int): Response length limit
         bot_index (int): Unique numerical identifier
         model_api (Any): API client instance reference
+        model_timeout (ChatbotTimeout): Timeout and retry configuration
 
     Raises:
         ValueError: On invalid configuration (name conflicts, invalid parameters)
     """
-
-    @staticmethod
-    def get_default_max_tokens() -> int:
-        """
-        Get default maximum tokens setting.
-
-        Returns:
-            int: The default maximum tokens for response generation (300)
-        """
-        return DEFAULT_MAX_TOKENS
 
     _total_count: ClassVar[int] = 0  # Class variable to track total instances
     _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
@@ -362,6 +368,29 @@ class ChatbotBase(ABC):
         return self._model.version
 
     @property
+    @abstractmethod
+    def model_min_temperature(self) -> float:
+        """Get the minimum allowed temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @property
+    @abstractmethod
+    def model_max_temperature(self) -> float:
+        """Get the maximum allowed temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @property
+    @abstractmethod
+    def model_default_temperature(self) -> float:
+        """Get the default temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @property
+    def model_default_max_tokens(self) -> int:
+        """Get the default max tokens value."""
+        return DEFAULT_MAX_TOKENS
+
+    @property
     def model_temperature(self) -> float:
         """Get the current temperature setting for response generation."""
         return self._model.temperature
@@ -379,7 +408,7 @@ class ChatbotBase(ABC):
         return (
             config.model.params_opt.temperature
             if config.model.params_opt.temperature is not None
-            else self._default_temperature
+            else self.model_default_temperature
         )
 
     def _validate_temperature(self, temperature: float) -> None:
@@ -392,37 +421,11 @@ class ChatbotBase(ABC):
         Raises:
             ValueError: If temperature is outside valid range
         """
-        if not self._min_temperature <= temperature <= self._max_temperature:
+        if not self.model_min_temperature <= temperature <= self.model_max_temperature:
             raise ValueError(
                 f"Temperature for {self.__class__.__name__} must be between "
-                f"{MIN_MODEL_TEMP} and {MAX_MODEL_TEMP}"
+                f"{self.model_min_temperature} and {self.model_max_temperature}"
             )
-
-    @property
-    def _min_temperature(self) -> float:
-        """
-        Get the minimum allowed temperature value.
-
-        Returns:
-            float: Minimum temperature setting allowed by the model (0.0)
-        """
-        return MIN_MODEL_TEMP
-
-    @property
-    def _max_temperature(self) -> float:
-        """
-        Get the maximum allowed temperature value.
-
-        Returns:
-            float: Maximum temperature setting allowed by the model (2.0)
-        """
-        return MAX_MODEL_TEMP
-
-    @property
-    @abstractmethod
-    def _default_temperature(self) -> float:
-        """Protected default temperature, must be overridden"""
-        pass  # pylint: disable=unnecessary-pass
 
     @property
     def model_max_tokens(self) -> int:
@@ -457,7 +460,7 @@ class ChatbotBase(ABC):
         return (
             config.model.params_opt.max_tokens
             if config.model.params_opt.max_tokens is not None
-            else self.get_default_max_tokens()
+            else self.model_default_max_tokens
         )
 
     @property

@@ -1,16 +1,20 @@
 """
-Ollama API integration for chatbot functionality.
+Ollama API integration for chatbot conversations.
 
-Provides a concrete implementation of ChatbotBase for Ollama's local LLM service,
-handling API communication, message formatting, and conversation management
-with configurable parameters.
+This module provides a concrete implementation of ChatbotBase specifically designed
+for Ollama's local LLM service. It handles all aspects of API communication,
+message formatting, and conversation management with configurable parameters.
 
-Major Classes:
-    OllamaChatbot: Ollama-specific chatbot implementation
+Key Features:
+- Local LLM integration via Ollama API
+- Stateful conversation management
+- Configurable temperature and token limits
+- Support for both streaming and non-streaming responses
+- Automatic retry mechanisms for network failures
 
-Notes:
-    Ollama uses a modified temperature range (0.0-1.0) compared to other
-    implementations which typically use 0.0-2.0.
+Note:
+    Ollama uses a normalized temperature range (0.0-1.0) which differs from
+    other implementations that typically use 0.0-2.0.
 """
 
 from typing import Any, Iterator, List
@@ -23,10 +27,9 @@ from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
 # Model temperature range specifically for Ollama API
-# Overrides the base class range of 0.0-2.0
-OLLAMA_MIN_MODEL_TEMP = 0.0
-OLLAMA_MAX_MODEL_TEMP = 1.0
-OLLAMA_DEFAULT_TEMP = 0.8
+MINIMUM_TEMPERATURE = 0.0
+MAXIMUM_TEMPERATURE = 1.0
+DEFAULT_TEMPERATURE = 0.8
 
 MODEL_TYPE = "OLLAMA"
 
@@ -34,32 +37,33 @@ MODEL_TYPE = "OLLAMA"
 @register_bot(MODEL_TYPE)
 class OllamaChatbot(ChatbotBase):
     """
-    Chatbot implementation using Ollama's API service.
+    Chatbot implementation using Ollama's local API service.
 
-    Provides a concrete implementation of ChatbotBase for Ollama models,
-    extending core functionality with Ollama-specific API integration.
+    This class provides a concrete implementation of ChatbotBase for Ollama models,
+    handling all API interactions and conversation management. It supports both
+    streaming and non-streaming responses with configurable parameters.
 
     Features:
-    - Local LLM deployment support
-    - Ollama-specific temperature range (0.0-1.0)
-    - Network resilience with automatic retries
-    - HTTP error recovery
-    - Configurable system prompts
-    - Stateful conversation handling
+    - Local LLM integration via HTTP API (default: http://localhost:11434)
+    - Normalized temperature range (0.0-1.0)
+    - Automatic retry mechanism for network failures
+    - Configurable system prompts and model parameters
+    - Stateful conversation history management
+    - Token limit enforcement
+    - Streaming response support
 
     Args:
-        config (ChatbotConfig): Configuration object containing:
-            - name: Bot instance identifier
-            - system_prompt: Initial system behavior instructions
-            - model: Model type, version and parameters
-            - timeout: API communication settings
+        config (ChatbotConfig): Configuration containing:
+            - name (str): Bot instance identifier
+            - system_prompt (str): Initial system behavior instructions
+            - model (str): Model identifier and version
+            - temperature (float, optional): Response randomness (0.0-1.0)
+            - max_tokens (int, optional): Maximum response length
+            - timeout (float, optional): API request timeout in seconds
 
-    Attributes:
-        Inherits all attributes from ChatbotBase
-        No additional attributes required for Ollama implementation
-
-    Notes:
-        Uses local API communication (default: http://localhost:11434)
+    Raises:
+        ValueError: If configuration parameters are invalid
+        ConnectionError: If initial API connection fails
     """
 
     # no __init__() method needed, OllamaChatbot uses the base class __init__()
@@ -75,47 +79,20 @@ class OllamaChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    def _get_default_temperature(self) -> float:
-        """
-        Get the default temperature setting for Ollama models.
-
-        Returns:
-            float: Default temperature value (0.8) for Ollama response generation
-
-        Note:
-            Ollama uses a 0.0-1.0 temperature range unlike most other APIs
-        """
-        return OLLAMA_DEFAULT_TEMP
+    @property
+    def model_min_temperature(self) -> float:
+        """Get the minimum allowed temperature value."""
+        return MINIMUM_TEMPERATURE
 
     @property
-    def _min_temperature(self) -> float:
-        """
-        Get the minimum allowed temperature for Ollama models.
-
-        Returns:
-            float: Minimum temperature value (0.0) for Ollama
-        """
-        return OLLAMA_MIN_MODEL_TEMP
+    def model_max_temperature(self) -> float:
+        """Get the maximum allowed temperature value."""
+        return MAXIMUM_TEMPERATURE
 
     @property
-    def _max_temperature(self) -> float:
-        """
-        Get the maximum allowed temperature for Ollama models.
-
-        Returns:
-            float: Maximum temperature value (1.0) for Ollama
-        """
-        return OLLAMA_MAX_MODEL_TEMP
-
-    @property
-    def _default_temperature(self) -> float:
-        """
-        Get the default temperature setting for Ollama models.
-
-        Returns:
-            float: Default temperature value (0.8) for Ollama
-        """
-        return OLLAMA_DEFAULT_TEMP
+    def model_default_temperature(self) -> float:
+        """Get the default temperature value."""
+        return DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -136,25 +113,6 @@ class OllamaChatbot(ChatbotBase):
             exception,
             (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError),
         )
-
-    @ChatbotBase.model_temperature.setter  # type: ignore
-    def model_temperature(self, value: float) -> None:
-        """
-        Set the temperature value for response generation.
-
-        Validates and sets the temperature within Ollama's supported range (0.0-1.0).
-        Higher values increase response randomness, lower values make responses
-        more deterministic.
-
-        Args:
-            value (float): Temperature value between 0.0 and 1.0
-
-        Raises:
-            ValueError: If temperature is outside Ollama's valid range
-        """
-        if not OLLAMA_MIN_MODEL_TEMP <= value <= OLLAMA_MAX_MODEL_TEMP:
-            raise ValueError(f"Ollama temperature {value} must be between 0.0 and 1.0")
-        self._model_temperature = value
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -207,14 +165,19 @@ class OllamaChatbot(ChatbotBase):
         """
         Generate streaming responses using the Ollama API.
 
+        Implements streaming response generation by making API calls with
+        stream=True, allowing for real-time token generation and processing.
+
         Args:
-            conversation (list[ConversationMessage]): List of conversation messages
+            conversation: Sequential list of conversation messages
 
         Returns:
-            Iterator[Any]: Iterator yielding response chunks from Ollama's streaming API
+            Iterator[Any]: Stream of response chunks from Ollama API
 
-        Note:
-            Uses Ollama's streaming mode for real-time response generation
+        Raises:
+            httpx.TimeoutException: On connection/read timeout
+            httpx.NetworkError: On network connectivity issues
+            httpx.HTTPStatusError: On HTTP error responses
         """
         return ollama.chat(  # pyright: ignore[reportUnknownMemberType]
             model=self.model_version,

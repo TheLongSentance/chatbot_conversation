@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 from chatbot_conversation.models import ChatbotConfig, ChatbotModel
-from chatbot_conversation.models.base import ConversationMessage
+from chatbot_conversation.models.base import ConversationMessage, DEFAULT_MAX_TOKENS
 from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
 
 
@@ -93,5 +93,5 @@ def test_model_constants() -> None:
     bot = DummyChatbot(config)
 
     assert bot.model_type == "DUMMY"
-    assert bot._default_temperature == 1.0  # pyright: ignore[reportPrivateUsage]
-    assert bot.get_default_max_tokens() == 50  # pyright: ignore[reportPrivateUsage]
+    assert bot.model_default_temperature == 1.0
+    assert bot.model_default_max_tokens == DEFAULT_MAX_TOKENS

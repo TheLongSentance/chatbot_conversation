@@ -1,18 +1,27 @@
 """
 OpenAI GPT API integration for chatbot functionality.
 
-Provides a concrete implementation of ChatbotBase for OpenAI's GPT models,
-handling API communication, message formatting, and conversation management
-with configurable parameters.
+A concrete implementation of ChatbotBase specifically designed for OpenAI's GPT models.
+Handles API communication, message formatting, and conversation management with
+configurable parameters and robust error handling.
 
-Major Classes:
-    GPTChatbot: GPT-specific chatbot implementation
+Features:
+    - Full OpenAI GPT API integration with authentication
+    - Configurable model parameters (temperature, tokens, timeouts)
+    - Streaming and non-streaming response generation
+    - Automatic retry handling for API failures
+    - Conversation history management
+    - System prompt customization
 
 Supported Models:
     - gpt-4: Latest GPT-4 model
     - gpt-4-turbo: Optimized GPT-4 for faster responses
     - gpt-3.5-turbo: Enhanced GPT-3.5 model
     - gpt-3.5: Base GPT-3.5 model
+
+Dependencies:
+    - openai: Official OpenAI Python client
+    - ChatbotBase: Base class for chatbot implementations
 """
 
 from typing import Any, Iterator, List
@@ -27,9 +36,9 @@ from chatbot_conversation.models.base import (
 from chatbot_conversation.models.bot_registry import register_bot
 
 # OpenAI default temperature for GPT models
-# Inherits range from 0.0 to 2.0 from the base class
-# For other temps specify in the config file for a specific model
-OPENAI_DEFAULT_TEMP = 1.0
+MINIMUM_TEMPERATURE = 0.0
+MAXIMUM_TEMPERATURE = 2.0
+DEFAULT_TEMPERATURE = 1.0
 
 MODEL_TYPE = "GPT"
 
@@ -90,24 +99,38 @@ class GPTChatbot(ChatbotBase):
         self.model_api = OpenAI()
 
     @property
-    def _default_temperature(self) -> float:
-        """Default temperature override"""
-        return OPENAI_DEFAULT_TEMP
+    def model_min_temperature(self) -> float:
+        """Get the minimum allowed temperature value."""
+        return MINIMUM_TEMPERATURE
+
+    @property
+    def model_max_temperature(self) -> float:
+        """Get the maximum allowed temperature value."""
+        return MAXIMUM_TEMPERATURE
+
+    @property
+    def model_default_temperature(self) -> float:
+        """Get the default temperature value."""
+        return DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
-        Determine if an API call should be retried based on OpenAI-specific exceptions.
+        Determine if an API call should be retried based on the exception type.
 
-        Handles common OpenAI API errors that warrant retry attempts:
-        - APIError: General API communication failures
-        - APIConnectionError: Network connectivity issues
-        - RateLimitError: API quota/throughput limits
+        Evaluates common OpenAI API exceptions to determine if a retry attempt
+        would be appropriate. Retries are recommended for transient issues
+        like network errors or rate limits.
 
         Args:
-            exception: The caught exception
+            exception (Exception): The exception that occurred during the API call
 
         Returns:
-            bool: True if retry is recommended, False otherwise
+            bool: True if the operation should be retried, False otherwise
+
+        Supported retry cases:
+            - APIError: General API communication failures
+            - APIConnectionError: Network connectivity issues
+            - RateLimitError: API quota or rate limit exceeded
         """
         return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
 
@@ -115,19 +138,22 @@ class GPTChatbot(ChatbotBase):
         """
         Generate a response using the OpenAI API.
 
-        Formats conversation history and makes API call with configured parameters.
-        Handles message structure requirements specific to GPT chat models.
+        Makes a synchronous API call to generate a response based on the
+        conversation history. Applies all configured parameters including
+        temperature, token limits, and timeouts.
 
         Args:
-            conversation: Sequential list of prior conversation messages
+            conversation (List[ConversationMessage]): Complete conversation history
+                including system prompts and user messages
 
         Returns:
-            str: Generated response text from GPT
+            str: The generated response text from the GPT model
 
         Raises:
-            APIError: On API communication errors
-            APIConnectionError: On network connectivity issues
-            RateLimitError: When API rate limits are exceeded
+            APIError: For general API communication failures
+            APIConnectionError: When network connectivity fails
+            RateLimitError: When API rate/quota limits are exceeded
+            TimeoutError: When the API call exceeds configured timeout
         """
         response_content: str = ""
         completion = self.model_api.chat.completions.create(
@@ -145,13 +171,20 @@ class GPTChatbot(ChatbotBase):
         self, chunk: Any
     ) -> str:  # pyright: ignore[reportUnknownParameterType]
         """
-        Extract text content from an OpenAI API streaming chunk.
+        Extract text content from an OpenAI API streaming response chunk.
+
+        Processes a single chunk from the streaming API response to extract
+        the generated text content. Handles empty chunks gracefully.
 
         Args:
-            chunk (Any): A chunk of streaming response from OpenAI API
+            chunk (Any): Raw chunk from OpenAI's streaming API response
 
         Returns:
-            str: Extracted text content from the chunk, or empty string if no content
+            str: Extracted text content, or empty string if chunk contains no content
+
+        Notes:
+            - Chunk structure is specific to OpenAI's streaming format
+            - Empty chunks may occur during streaming and are handled safely
         """
         return chunk.choices[0].delta.content or ""
 
@@ -161,18 +194,22 @@ class GPTChatbot(ChatbotBase):
         """
         Generate a streaming response using the OpenAI API.
 
-        Creates a streaming completion request with configured parameters,
-        allowing for real-time response generation.
+        Creates a streaming API connection that yields response chunks in real-time
+        as they're generated. Enables progressive response display and potentially
+        faster first-token response times.
 
         Args:
-            conversation (list[ConversationMessage]): Sequential list of prior conversation messages
+            conversation (list[ConversationMessage]): Complete conversation history
+                including system prompts and user messages
 
         Returns:
             Iterator[Any]: Stream of response chunks from the OpenAI API
 
-        Note:
-            Uses streaming mode for real-time token generation
-            Temperature and model settings are applied as configured
+        Notes:
+            - Streaming mode reduces time to first token
+            - All configured parameters (temperature, tokens, etc.) are applied
+            - Each chunk contains partial response text
+            - Use _get_text_from_chunk() to process individual chunks
         """
         return self.model_api.chat.completions.create(  # type: ignore
             model=self.model_version,

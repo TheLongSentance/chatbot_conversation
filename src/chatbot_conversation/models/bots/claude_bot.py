@@ -22,9 +22,10 @@ from chatbot_conversation.models.base import (
 from chatbot_conversation.models.bot_registry import register_bot
 
 # Default temperature for Claude models
-# Inherits range from 0.0 to 2.0 from the base class
-# Other specify in the config file for a specific model
-CLAUDE_DEFAULT_TEMP = 1.0
+# Otherwise specify in the config file for a specific model
+MINIMUM_TEMPERATURE = 0.0
+MAXIMUM_TEMPERATURE = 1.0
+DEFAULT_TEMPERATURE = 1.0
 
 MODEL_TYPE = "CLAUDE"
 
@@ -48,8 +49,10 @@ class ClaudeChatbot(ChatbotBase):
         config (ChatbotConfig): Configuration object containing:
             - name: Bot instance identifier
             - system_prompt: Initial system behavior instructions
-            - model: Model type, version and parameters
-            - timeout: API communication settings
+            - model: Model type and version (e.g., "claude-3-opus-20240229")
+            - timeout: API request timeout settings
+            - temperature: Response randomness (0.0-1.0)
+            - max_tokens: Maximum response length
 
     Attributes:
         Inherits all attributes from ChatbotBase plus:
@@ -59,10 +62,10 @@ class ClaudeChatbot(ChatbotBase):
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
-        Get the model type identifier for GPT models.
+        Get the model type identifier for Claude models.
 
         Returns:
-            str: "GPT" as the model type identifier
+            str: "CLAUDE" as the model type identifier
         """
         return MODEL_TYPE
 
@@ -81,9 +84,34 @@ class ClaudeChatbot(ChatbotBase):
         self.model_api = anthropic.Anthropic()
 
     @property
-    def _default_temperature(self) -> float:
-        """Default temperature override"""
-        return CLAUDE_DEFAULT_TEMP
+    def model_min_temperature(self) -> float:
+        """
+        Get the minimum allowed temperature value.
+
+        Returns:
+            float: Minimum temperature value (0.0)
+        """
+        return MINIMUM_TEMPERATURE
+
+    @property
+    def model_max_temperature(self) -> float:
+        """
+        Get the maximum allowed temperature value.
+
+        Returns:
+            float: Maximum temperature value (1.0)
+        """
+        return MAXIMUM_TEMPERATURE
+
+    @property
+    def model_default_temperature(self) -> float:
+        """
+        Get the default temperature value.
+
+        Returns:
+            float: Default temperature value (1.0)
+        """
+        return DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
@@ -152,14 +180,19 @@ class ClaudeChatbot(ChatbotBase):
         """
         Generate streaming responses using the Claude API.
 
+        Implements real-time response streaming using Claude's streaming API endpoint.
+        Manages connection and yields response chunks as they become available.
+
         Args:
             conversation (list[ConversationMessage]): List of conversation messages
 
         Returns:
-            Iterator[Any]: Iterator yielding response chunks from Claude's text stream
+            Iterator[Any]: Iterator yielding text chunks from Claude's streaming response
 
-        Note:
-            Uses Claude's streaming mode for real-time response generation
+        Raises:
+            APIError: On API communication errors
+            RateLimitError: When API rate limits are exceeded
+            TimeoutError: When API call exceeds timeout
         """
         stream_manager = self.model_api.messages.stream(
             model=self.model_version,

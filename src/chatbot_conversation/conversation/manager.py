@@ -32,6 +32,8 @@ from chatbot_conversation.models import (
     ChatbotParamsOpt,
     ConversationMessage,
 )
+from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
+
 from chatbot_conversation.utils import get_logger
 
 from ..version import __version__
@@ -274,11 +276,8 @@ class ConversationManager:
         Returns:
             str: The constructed system prompt.
         """
-        bot_registry = BotRegistry()  # get the singleton instance
-
         if bot_config.bot_params_opt.max_tokens is None:
-            bot_class = bot_registry.get_bot_class(bot_config.bot_type)
-            max_tokens = bot_class.get_default_max_tokens()
+            max_tokens = DEFAULT_MAX_TOKENS
         else:
             max_tokens = bot_config.bot_params_opt.max_tokens
 

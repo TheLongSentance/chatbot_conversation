@@ -13,10 +13,9 @@ from chatbot_conversation.models.base import (
 )
 from chatbot_conversation.models.bots.ollama_bot import (
     MODEL_TYPE,
-    OLLAMA_DEFAULT_TEMP,
-    OLLAMA_MAX_MODEL_TEMP,
-    OLLAMA_MIN_MODEL_TEMP,
     OllamaChatbot,
+    MINIMUM_TEMPERATURE,
+    MAXIMUM_TEMPERATURE,
 )
 
 
@@ -37,7 +36,7 @@ class TestOllamaChatbot:
             model=ChatbotModel(type="OLLAMA", version="llama2"),
         )
         bot = OllamaChatbot(config)
-        assert bot.model_temperature == OLLAMA_DEFAULT_TEMP
+        assert bot.model_temperature == bot.model_default_temperature
 
         # Test valid temperature initialization
         config_valid = ChatbotConfig(
@@ -61,7 +60,7 @@ class TestOllamaChatbot:
                     type="OLLAMA",
                     version="llama2",
                     params_opt=ChatbotParamsOpt(
-                        temperature=OLLAMA_MAX_MODEL_TEMP + 0.1
+                        temperature=MAXIMUM_TEMPERATURE + 0.1
                     ),
                 ),
             )
@@ -76,7 +75,7 @@ class TestOllamaChatbot:
                     type="OLLAMA",
                     version="llama2",
                     params_opt=ChatbotParamsOpt(
-                        temperature=OLLAMA_MIN_MODEL_TEMP - 0.1
+                        temperature=MINIMUM_TEMPERATURE - 0.1
                     ),
                 ),
             )

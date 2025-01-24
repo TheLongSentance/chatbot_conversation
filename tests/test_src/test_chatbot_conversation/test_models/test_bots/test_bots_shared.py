@@ -65,7 +65,7 @@ class TestSharedBotParameters:
         # Check temperature is set to default
         assert (
             bot.model_temperature
-            == bot._default_temperature  # pyright: ignore[reportPrivateUsage]
+            == bot.model_default_temperature  # pyright: ignore[reportPrivateUsage]
         )
 
     def test_max_tokens_initialization(
@@ -183,7 +183,7 @@ class TestLiveAPIStreamingResponses:
             estimated_tokens = int(word_count * 1.25)
 
             # Check against expected limit
-            expected_limit = max_tokens if max_tokens is not None else test_bot.get_default_max_tokens()
+            expected_limit = max_tokens if max_tokens is not None else test_bot.model_default_max_tokens
             assert estimated_tokens <= expected_limit * 1.15, f"Token limit exceeded for {size} test"
             assert estimated_tokens >= expected_limit * 0.85, f"Response too short for {size} test"
 
