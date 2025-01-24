@@ -174,7 +174,7 @@ class GPTChatbot(ChatbotBase):
             Uses streaming mode for real-time token generation
             Temperature and model settings are applied as configured
         """
-        return self.model_api.chat.completions.create(  #type: ignore
+        return self.model_api.chat.completions.create(  # type: ignore
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
             stream=True,
