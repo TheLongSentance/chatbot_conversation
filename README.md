@@ -5,6 +5,7 @@ An extensible Python application that facilitates conversations between multiple
 ## Features
 
 - Configurable conversation settings via JSON
+- Real-time streaming of bot responses with live Markdown rendering
 - Existing support for multiple AI models:
   - OpenAI GPT
   - Anthropic Claude
@@ -359,12 +360,15 @@ Configuration parameters:
 - `conversation_seed`: The initial prompt to start the discussion.
 - `rounds`: Number of conversation rounds.
 - `shared_prefix`: Common instructions provided to all bots about conversation structure.
-  - Supports template variable `{bot_name}` which gets replaced with each bot's name
-  - Example: "You are {bot_name}" becomes "You are RogerFan" for the RogerFan bot
 - `first_round_postfix`: Instructions for first round only (e.g., bot introductions).
 - `last_round_postfix`: Instructions for last round only (e.g., concluding thoughts).
+  - Prefix and postfix all support template variable names: 
+    - Supports template variable `{bot_name}` which gets replaced with each bot's name
+    - Example: "You are {bot_name}. " becomes "You are RogerFan. " for the RogerFan bot
+    - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model
+    - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 500 tokens. " for a max_tokens parameter set to 500
 - `bots`: Array of bot configurations:
-  - `bot_name`: Display name for the bot
+  - `bot_name`: Display name for the bot (see template variable `{bot_name}` above)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
   - `bot_version`: Specific model version to use
   - `bot_prompt`: Role-specific instructions for each bot
@@ -378,6 +382,7 @@ Configuration parameters:
     - `max_tokens`: Maximum length of generated responses
       - Defaults to 300 if not specified
       - Higher values allow longer responses but may use more API tokens
+      - Supported in prompting with the template variable `{max_tokens}` (see above)
 
 Important validation rules:
 
@@ -388,14 +393,14 @@ Important validation rules:
 
 ### Template Variables
 
-The following strings support the `{bot_name}` template variable:
+The following strings support the `{bot_name}` and `{max_tokens}` template variables:
 
 - `shared_prefix`
 - `first_round_postfix`
 - `last_round_postfix`
 - `bot_prompt`
 
-This variable is replaced with the bot's name from its configuration, allowing for personalized prompts and instructions.
+These template variables allow for personalized system prompts and instructions for each bot at different stages of the conversation.
 
 ## Usage
 
