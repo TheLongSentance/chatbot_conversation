@@ -213,8 +213,8 @@ class TestLiveAPIStreamingResponses:
             # For high temperature (1.0), responses should be more varied
             if temp == 1.0:
                 # Almost all responses should be different at higher temperature
-                assert len(set(responses)) >= len(responses) - 1,  \
-                    f"Expected all different responses at temperature {temp}"
+                assert len(set(responses)) >= (len(responses) - 1),  \
+                    f"Expected almost all different responses at temperature {temp}"
             
             # Verify temperature was set correctly in bot
             assert test_bot.model_temperature == temp
