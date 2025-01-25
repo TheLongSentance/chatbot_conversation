@@ -650,16 +650,42 @@ class ChatbotBase(ABC):
 
         Provides incremental response chunks for real-time output handling.
         Converts model-specific chunk formats to plain text.
+        Implements fault-tolerant API communication using configured retry
+        parameters and exponential backoff for transient failures.
 
         Args:
             conversation: Sequential list of prior messages as ConversationMessage
 
         Yields:
             Text segments of the generated response as they become available
+
+        Raises:
+            Exception: Model-specific API exceptions from implementations
         """
-        stream = self._generate_stream(conversation)
-        for chunk in stream:
-            yield self._get_text_from_chunk(chunk)
+        @retry(
+            stop=stop_any(
+                stop_after_attempt(self.model_timeout.max_retries),
+                stop_after_delay(self.model_timeout.total),
+            ),
+            wait=wait_random_exponential(
+                multiplier=self.model_timeout.wait_multiplier,
+                min=self.model_timeout.min_wait,
+                max=self.model_timeout.max_wait,
+            ),
+            retry=retry_if_exception(
+                lambda e: (
+                    self._should_retry_on_exception(e)
+                    if isinstance(e, Exception)
+                    else False
+                )
+            ),
+        )
+        def _inner_stream_response() -> Iterator[str]:
+            stream = self._generate_stream(conversation)
+            for chunk in stream:
+                yield self._get_text_from_chunk(chunk)
+
+        yield from _inner_stream_response()
 
     def _log_error(self, error_text: str) -> None:
         """
