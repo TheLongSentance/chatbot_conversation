@@ -507,23 +507,6 @@ class ChatbotBase(ABC):
         if not value or not value.strip():
             raise ValueError("System prompt cannot be empty")
         self._system_prompt = value
-        self._model_system_prompt_needs_update = True
-
-    @property
-    def model_system_prompt_needs_update(self) -> bool:
-        """
-        Check if the system prompt needs to be updated in the model.
-
-        Returns:
-            bool: True if the system prompt needs to be updated, False otherwise.
-        """
-        return self._model_system_prompt_needs_update
-
-    def model_system_prompt_updated(self) -> None:
-        """
-        Mark the model system prompt as updated.
-        """
-        self._model_system_prompt_needs_update = False
 
     def _validate_model_type(self, config: ChatbotConfig) -> None:
         """

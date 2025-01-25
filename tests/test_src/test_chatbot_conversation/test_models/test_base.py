@@ -54,7 +54,6 @@ class TestChatbotConfig:
         assert bot.model_timeout == config.timeout
         assert bot.bot_index == ChatbotBase.get_total_bots()
         assert bot.model_api is None
-        assert bot.model_system_prompt_needs_update is True
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -307,23 +306,6 @@ class TestChatbotBaseSystemPrompt:
                 ),
             )
             bot_class(config)
-
-    def test_update_system_prompt(self, bot_class: type[ChatbotBase]) -> None:
-        """Test system prompt update functionality"""
-        config = ChatbotConfig(
-            name="TestBot",
-            system_prompt="Initial system prompt",
-            model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
-            ),
-        )
-        bot = bot_class(config)
-        new_prompt = "New system prompt"
-        bot.system_prompt = new_prompt
-        assert bot.system_prompt == new_prompt
-        assert bot.model_system_prompt_needs_update
-        bot.model_system_prompt_updated()
-        assert not bot.model_system_prompt_needs_update
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)

@@ -9,6 +9,7 @@ import pytest
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import (
     _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
+    GeminiChatbot,    
 )
 from chatbot_conversation.models.bots.gemini_bot import MODEL_TYPE, GeminiChatbot
 
@@ -145,3 +146,21 @@ class TestGeminiChatbot:
         assert formatted[0] == {"role": "user", "parts": conversation[0]["content"]}
         assert formatted[1] == {"role": "model", "parts": conversation[1]["content"]}
         assert formatted[2] == {"role": "user", "parts": conversation[2]["content"]}
+
+
+class TestGeminiChatbotSystemPrompt:
+    """Test system prompt handling in GeminiChatbot"""
+
+    def test_update_system_prompt(
+        self,
+        gemini_config_for_tests: ChatbotConfig,
+    ) -> None:
+        """Test system prompt update functionality"""
+        bot = GeminiChatbot(gemini_config_for_tests)
+
+        new_prompt = "New system prompt"
+        bot.system_prompt = new_prompt
+        assert bot.system_prompt == new_prompt
+        assert bot.gemini_system_prompt_needs_update  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+        bot.gemini_system_prompt_updated()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+        assert not bot.gemini_system_prompt_needs_update  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]

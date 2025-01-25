@@ -18,26 +18,6 @@ from typing import Optional
 class TestSharedBotBehavior:
     """Test behavior common to all bot implementations"""
 
-    def test_system_prompt_update(
-        self, bot_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
-        """Test that system prompt updates are handled correctly"""
-        bot = request.getfixturevalue(bot_fixture)
-        original_prompt = bot.system_prompt
-
-        # Update prompt
-        new_prompt = "New test prompt"
-        bot.system_prompt = new_prompt
-
-        assert bot.system_prompt == new_prompt
-        assert bot.system_prompt != original_prompt
-        assert bot.model_system_prompt_needs_update
-
-        # Mark as updated
-        bot.model_system_prompt_updated()
-        assert not bot.model_system_prompt_needs_update
-
-
 @pytest.mark.parametrize(
     "bot_class", ["GPTChatbot", "ClaudeChatbot", "OllamaChatbot", "GeminiChatbot"]
 )
