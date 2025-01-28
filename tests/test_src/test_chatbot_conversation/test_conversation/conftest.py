@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from typing import List
 
 import pytest
-from chatbot_conversation.conversation.display import RichDisplayManager
+
 from chatbot_conversation.conversation import (
     ConversationConfig, 
     ChatbotConfigData, 
@@ -47,12 +47,6 @@ def sample_conversation_data() -> List[ConversationMessage]:
         {"bot_index": 1, "content": "Bot1 response"},
         {"bot_index": 2, "content": "Bot2 response"},
     ]
-
-
-@pytest.fixture
-def display_manager() -> RichDisplayManager:
-    """Provide a RichDisplayManager instance for testing."""
-    return RichDisplayManager()
 
 
 @pytest.fixture
