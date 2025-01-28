@@ -662,6 +662,7 @@ class ChatbotBase(ABC):
         Raises:
             Exception: Model-specific API exceptions from implementations
         """
+
         @retry(
             stop=stop_any(
                 stop_after_attempt(self.model_timeout.max_retries),

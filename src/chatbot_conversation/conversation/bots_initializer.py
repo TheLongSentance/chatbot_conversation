@@ -2,6 +2,7 @@
 This module provides initialization logic for chatbot bots by configuring
 and creating Chatbot instances using the provided conversation configuration.
 """
+
 from typing import List
 
 from chatbot_conversation.conversation import ConversationConfig
@@ -20,6 +21,7 @@ class BotsInitializer:
     """
     Initializes and manages the creation of Chatbot instances.
     """
+
     def __init__(self, config: ConversationConfig) -> None:
 
         self.bot_registry = BotRegistry()  # get the singleton instance

@@ -229,9 +229,10 @@ class TestChatbotBaseTemperature:
     def test_invalid_temperature(self, bot_class: type[ChatbotBase]) -> None:
         """Test that invalid temperatures are rejected"""
         # Use appropriate invalid temperatures based on bot type
-        if (bot_class.__name__ == "OllamaChatbot" or 
-            bot_class.__name__ == "ClaudeChatbot" or
-            bot_class.__name__ == "DummyChatbot"
+        if (
+            bot_class.__name__ == "OllamaChatbot"
+            or bot_class.__name__ == "ClaudeChatbot"
+            or bot_class.__name__ == "DummyChatbot"
         ):
             invalid_temps = [-0.1, 1.1]  # Outside Ollama range
         else:

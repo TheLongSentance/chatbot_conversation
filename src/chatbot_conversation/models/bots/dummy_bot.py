@@ -29,13 +29,14 @@ DUMMY_MAX_TOKENS = 50
 
 MODEL_TYPE = "DUMMY"
 
+
 @register_bot(MODEL_TYPE)
 class DummyChatbot(ChatbotBase):
     """
     A mock chatbot that provides predefined responses for testing purposes.
 
-    This implementation demonstrates the basic structure of a chatbot while 
-    requiring no external dependencies. It randomly selects responses from 
+    This implementation demonstrates the basic structure of a chatbot while
+    requiring no external dependencies. It randomly selects responses from
     a predefined list, making it suitable for testing the framework and
     showing basic chatbot behavior.
 

@@ -72,9 +72,7 @@ class ConversationManager:
         self.display_manager.show_text(completion_message)
 
         transcript_path: Path = TranscriptManager.save_transcript(
-            self.conversation, 
-            self.config, 
-            self.config_path
+            self.conversation, self.config, self.config_path
         )
 
         self.display_manager.show_text(

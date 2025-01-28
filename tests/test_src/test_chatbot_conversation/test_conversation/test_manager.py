@@ -37,6 +37,7 @@ def test_initialization(test_config_path: str) -> None:
     assert "bot_index" in manager.conversation[0]
     assert "content" in manager.conversation[0]
 
+
 def test_invalid_config_loading(invalid_config_path: str) -> None:
     """
     Test manager behavior with invalid configuration.

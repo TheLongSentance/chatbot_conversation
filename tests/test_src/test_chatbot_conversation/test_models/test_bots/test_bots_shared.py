@@ -19,6 +19,7 @@ from chatbot_conversation.models.base import (
 class TestSharedBotBehavior:
     """Test behavior common to all bot implementations"""
 
+
 @pytest.mark.parametrize(
     "bot_class", ["GPTChatbot", "ClaudeChatbot", "OllamaChatbot", "GeminiChatbot"]
 )
@@ -120,7 +121,9 @@ class TestLiveAPIStreamingResponses:
         response_chunks = list(bot.stream_response(conversation))
 
         assert response_chunks, "The response should not be empty"
-        assert len(response_chunks) > 1, "The response should be streamed in multiple chunks"
+        assert (
+            len(response_chunks) > 1
+        ), "The response should be streamed in multiple chunks"
 
         for chunk in response_chunks:
             print(chunk)
@@ -134,7 +137,7 @@ class TestLiveAPIStreamingResponses:
             (50, "small"),
             (150, "medium"),
             (500, "large"),
-            (None, "default")
+            (None, "default"),
         ]
 
         system_prompt = (
@@ -151,8 +154,8 @@ class TestLiveAPIStreamingResponses:
                 model=ChatbotModel(
                     type=request.getfixturevalue(bot_fixture).model_type,
                     version=request.getfixturevalue(bot_fixture).model_version,
-                    params_opt=ChatbotParamsOpt(max_tokens=max_tokens)
-                )
+                    params_opt=ChatbotParamsOpt(max_tokens=max_tokens),
+                ),
             )
             test_bot = type(request.getfixturevalue(bot_fixture))(config)
 
@@ -170,9 +173,17 @@ class TestLiveAPIStreamingResponses:
             estimated_tokens = int(word_count * 1.25)
 
             # Check against expected limit
-            expected_limit = max_tokens if max_tokens is not None else test_bot.model_default_max_tokens
-            assert estimated_tokens <= expected_limit * 1.25, f"Token limit exceeded for {size} test"
-            assert estimated_tokens >= expected_limit * 0.75, f"Response too short for {size} test"
+            expected_limit = (
+                max_tokens
+                if max_tokens is not None
+                else test_bot.model_default_max_tokens
+            )
+            assert (
+                estimated_tokens <= expected_limit * 1.25
+            ), f"Token limit exceeded for {size} test"
+            assert (
+                estimated_tokens >= expected_limit * 0.75
+            ), f"Response too short for {size} test"
 
     def test_streaming_temperature(
         self, bot_fixture: str, request: pytest.FixtureRequest
@@ -181,10 +192,10 @@ class TestLiveAPIStreamingResponses:
         # Test with different temperatures
         test_temps = [0.0, 0.5, 1.0]  # Low, medium, high temperatures
         responses_per_temp = 5  # Number of responses to generate per temperature
-        
+
         # Simple prompt that should generate variable responses
         prompt = "List 5 random words. Just the words, separated by spaces."
-        
+
         for temp in test_temps:
             # Create bot with specific temperature
             config = ChatbotConfig(
@@ -193,11 +204,11 @@ class TestLiveAPIStreamingResponses:
                 model=ChatbotModel(
                     type=request.getfixturevalue(bot_fixture).model_type,
                     version=request.getfixturevalue(bot_fixture).model_version,
-                    params_opt=ChatbotParamsOpt(temperature=temp)
-                )
+                    params_opt=ChatbotParamsOpt(temperature=temp),
+                ),
             )
             test_bot = type(request.getfixturevalue(bot_fixture))(config)
-            
+
             # Generate multiple responses at this temperature
             responses: list[str] = []
             for _ in range(responses_per_temp):
@@ -209,19 +220,20 @@ class TestLiveAPIStreamingResponses:
                 ]
                 chunks = list(test_bot.stream_response(conversation))
                 responses.append("".join(chunks).strip())
-            
+
             # For very low temperature (0.0), responses should be more similar
             if temp == 0.0:
                 # At least 2 responses should be identical at low temperature
                 assert any(
                     responses.count(r) >= 2 for r in responses
                 ), f"Expected some identical responses at temperature {temp}"
-            
+
             # For high temperature (1.0), responses should be more varied
             if temp == 1.0:
                 # Almost all responses should be different at higher temperature
-                assert len(set(responses)) >= (len(responses) - 1),  \
-                    f"Expected almost all different responses at temperature {temp}"
-            
+                assert len(set(responses)) >= (
+                    len(responses) - 1
+                ), f"Expected almost all different responses at temperature {temp}"
+
             # Verify temperature was set correctly in bot
             assert test_bot.model_temperature == temp

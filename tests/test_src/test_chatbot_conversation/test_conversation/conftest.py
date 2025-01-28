@@ -80,7 +80,7 @@ def sample_conversation_config() -> ConversationConfig:
                 bot_params_opt=ChatbotParamsOptData(
                     temperature=0.9,
                     max_tokens=200,
-                )
-            )
+                ),
+            ),
         ],
     )

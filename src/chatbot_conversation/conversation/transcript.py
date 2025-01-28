@@ -2,6 +2,7 @@
 This module handles transcript management and saving conversation logs to file
 using the TranscriptManager for the provided conversation configuration.
 """
+
 import json
 import logging
 from dataclasses import dataclass
@@ -20,6 +21,7 @@ TRANSCRIPT_FILE_STUB: str = "transcript_"
 TRANSCRIPT_OUTPUT_DIR: str = "./output/"
 
 logger = logging.getLogger("conversation")
+
 
 @dataclass
 class TranscriptManager:
@@ -82,12 +84,7 @@ class TranscriptManager:
 
                 # Write metadata
                 TranscriptManager._write_metadata(
-                    file, 
-                    config,
-                    num_rounds, 
-                    num_bots, 
-                    author, 
-                    config_path
+                    file, config, num_rounds, num_bots, author, config_path
                 )
 
             logger.info("Conversation saved to %s", file_path)
