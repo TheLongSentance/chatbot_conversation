@@ -296,7 +296,7 @@ class GeminiChatbot(ChatbotBase):
             stream=True,
         )
 
-    @ChatbotBase.system_prompt.setter
+    @ChatbotBase.system_prompt.setter  # type: ignore
     def system_prompt(self, value: str) -> None:
         """
         Set the system prompt content.

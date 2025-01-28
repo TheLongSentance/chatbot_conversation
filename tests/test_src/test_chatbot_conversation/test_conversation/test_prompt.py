@@ -7,7 +7,7 @@ from chatbot_conversation.conversation.prompt import PromptManager
 from chatbot_conversation.models import ChatbotBase
 
 
-def test_replace_variables():
+def test_replace_variables() -> None:
     """
     Test the replace_variables method of PromptManager.
     """
@@ -17,7 +17,7 @@ def test_replace_variables():
     assert result == "Hello, GPT-4! Your max tokens are 100."
 
 
-def test_system_prompt_add_suffix(mock_bot: ChatbotBase):
+def test_system_prompt_add_suffix(mock_bot: ChatbotBase) -> None:
     """
     Test the system_prompt_add_suffix method of PromptManager.
     """
@@ -27,7 +27,7 @@ def test_system_prompt_add_suffix(mock_bot: ChatbotBase):
     assert mock_bot.system_prompt == initial_prompt + additional_prompt
 
 
-def test_system_prompt_remove_suffix(mock_bot: ChatbotBase):
+def test_system_prompt_remove_suffix(mock_bot: ChatbotBase) -> None:
     """
     Test the system_prompt_remove_suffix method of PromptManager.
     """
@@ -37,7 +37,7 @@ def test_system_prompt_remove_suffix(mock_bot: ChatbotBase):
     assert mock_bot.system_prompt == initial_prompt.replace(text_to_remove, "")
 
 
-def test_construct_system_prompt(sample_conversation_config: ConversationConfig):
+def test_construct_system_prompt(sample_conversation_config: ConversationConfig) -> None:
     """
     Test the construct_system_prompt method of PromptManager.
     """
