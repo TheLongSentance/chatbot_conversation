@@ -8,6 +8,7 @@ from typing import List
 from datetime import datetime
 import logging
 from typing import TextIO
+import json
 
 from chatbot_conversation.models import ConversationMessage
 from chatbot_conversation.conversation.loader import ConversationConfig
@@ -83,6 +84,7 @@ class TranscriptManager:
                 # Write metadata
                 TranscriptManager._write_metadata(
                     file, 
+                    config,
                     num_rounds, 
                     num_bots, 
                     author, 
@@ -100,6 +102,7 @@ class TranscriptManager:
     @staticmethod
     def _write_metadata(
         file: TextIO,
+        config: ConversationConfig,
         num_rounds: int,
         num_bots: int,
         author: str,
@@ -122,4 +125,5 @@ class TranscriptManager:
             f"## *Software Version* : {__version__}\n\n"
             f"## *Configuration Author* : {author}\n\n"
             f"## *Configuration File* : {config_path}\n\n"
+            f"```json\n{json.dumps(config.model_dump(), indent=4)}\n```\n"
         )
