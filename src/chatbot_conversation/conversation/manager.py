@@ -12,8 +12,8 @@ Classes:
 
 import json
 import os
-from datetime import datetime
 from typing import List
+from pathlib import Path
 
 from rich.console import Console
 from rich.live import Live
@@ -24,22 +24,14 @@ from chatbot_conversation.conversation.loader import (
     ConfigurationLoader,
 )
 from chatbot_conversation.models import (
-    BotRegistry,
     ChatbotBase,
-    ChatbotConfig,
-    ChatbotFactory,
-    ChatbotModel,
-    ChatbotParamsOpt,
     ConversationMessage,
 )
+from chatbot_conversation.conversation.bots_initializer import BotsInitializer
+from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
 
 from chatbot_conversation.utils import get_logger
-
-from ..version import __version__
-
-TRANSCRIPT_FILE_STUB = "transcript_"
-TRANSCRIPT_OUTPUT_DIR = "./output/"
 
 logger = get_logger("conversation")
 
@@ -65,31 +57,8 @@ class ConversationManager:
             {"bot_index": 0, "content": self.config.conversation_seed}
         ]
 
-        bot_registry = BotRegistry()  # get the singleton instance
-        factory = ChatbotFactory(bot_registry)
-
-        for bot_config in self.config.bots:
-            # Construct the system prompt for the bot
-            bot_system_prompt = self.construct_system_prompt(
-                self.config.shared_prefix, bot_config
-            )
-
-            # Create ChatbotConfig object
-            chatbot_config = ChatbotConfig(
-                name=bot_config.bot_name,
-                system_prompt=bot_system_prompt,
-                model=ChatbotModel(
-                    type=bot_config.bot_type,
-                    version=bot_config.bot_version,
-                    params_opt=ChatbotParamsOpt(
-                        temperature=bot_config.bot_params_opt.temperature,
-                        max_tokens=bot_config.bot_params_opt.max_tokens,
-                    ),
-                ),
-            )
-
-            bot = factory.create_bot(chatbot_config)
-            self.add_bot(bot)
+        bots_initializer = BotsInitializer(self.config)
+        self.bots = bots_initializer.initialize_bots(self.config)
 
         self.console = Console()  # Initialize the console for rich text output
 
@@ -135,7 +104,16 @@ class ConversationManager:
         )
         self.display_text(completion_message)
 
-        self.write_conversation_to_file(TRANSCRIPT_OUTPUT_DIR)
+        transcript_path: Path = TranscriptManager.save_transcript(
+            self.conversation, 
+            self.config, 
+            self.config_path
+        )
+
+        self.display_text(
+            "Conversation transcript and configuration data saved to: "
+            f"`{transcript_path}`\n\n---\n\n"
+        )
 
     def manage_round(self, round_num: int) -> None:
         """
@@ -288,68 +266,6 @@ class ConversationManager:
         )
 
         return bot_system_prompt
-
-    def write_conversation_to_file(self, output_directory: str) -> None:
-        """
-        Write the entire conversation to a markdown file.
-
-        Args:
-            output_directory (str): Directory to save the transcript file.
-        """
-        try:
-            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-            file_path = os.path.join(
-                output_directory, f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"
-            )
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, "w", encoding="utf-8") as file:
-                # Write the title
-                file.write(f"# {self.conversation[0]['content']}\n\n")
-
-                # Write each round and responses
-                round_index = 1
-                for i, message in enumerate(self.conversation[1:], start=1):
-                    if (i - 1) % len(self.bots) == 0:
-                        file.write(
-                            f"## Round {round_index} of {self.config.rounds}\n\n"
-                        )
-                        round_index += 1
-                    file.write(f"{message['content']}\n\n---\n\n")
-
-                # Write the finish message
-                file.write(
-                    f"## Conversation Finished - {self.config.rounds} Rounds With "
-                    f"{len(self.bots)} Bots Completed!\n\n"
-                )
-
-                # Write the conversation generated datetime
-                file.write(
-                    "## *Conversation Generated* : "
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                )
-
-                # Write the application version
-                file.write(f"## *Software Version* : {__version__}\n\n")
-
-                # Write the configuration author name
-                file.write(f"## *Configuration Author* : {self.config.author}\n\n")
-
-                # Write the configuration file name
-                file.write(f"## *Configuration File* : {self.config_path}\n\n")
-
-                # Write the configuration data
-                file.write("```json\n")
-                file.write(json.dumps(self.config.model_dump(), indent=4))
-                file.write("\n```\n")
-
-            self.display_text(
-                "Conversation transcript and configuration data saved to: "
-                f"`{file_path}`\n\n---\n\n"
-            )
-            logger.info("Conversation successfully written to %s", file_path)
-
-        except (IOError, ValueError) as e:
-            logger.error("Failed to write conversation to file: %s", str(e))
 
     def system_prompt_add_suffix(
         self, bot: ChatbotBase, additional_prompt: str
