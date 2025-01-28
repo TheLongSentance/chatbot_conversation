@@ -1,0 +1,125 @@
+"""
+This module handles transcript management and saving conversation logs to file
+using the TranscriptManager for the provided conversation configuration.
+"""
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List
+from datetime import datetime
+import logging
+from typing import TextIO
+
+from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.conversation.loader import ConversationConfig
+
+# relative import to avoid circular import:
+from ..version import __version__
+
+# Constants
+TRANSCRIPT_FILE_STUB: str = "transcript_"
+TRANSCRIPT_OUTPUT_DIR: str = "./output/"
+
+logger = logging.getLogger("conversation")
+
+@dataclass
+class TranscriptManager:
+    """Manages message formatting and transcript operations.
+
+    output_dir: str
+    file_prefix: str
+
+    Attributes:
+        output_dir: Directory path for saving transcripts
+        file_prefix: Prefix for transcript filenames
+    """
+
+    @staticmethod
+    def save_transcript(
+        conversation: List[ConversationMessage],
+        config: ConversationConfig,
+        config_path: str,
+    ) -> Path:
+        """Save conversation transcript to a file.
+
+        Args:
+            transcript_dir: Path to the transcript directory
+            conversation: List of conversation messages
+            author: Author of the conversation
+            num_rounds: Total number of conversation rounds
+            num_bots: Number of participating bots
+            config_path: Path to the configuration file
+
+        Returns:
+            Path to the saved transcript file
+
+        Raises:
+            IOError: If file operations fail
+        """
+        # Generate timestamp for unique filename
+        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+        file_path = (
+            Path(TRANSCRIPT_OUTPUT_DIR) / f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"
+        )
+
+        # Extract metadata from the configuration
+        num_rounds = config.rounds
+        num_bots = len(config.bots)
+        author = config.author
+
+        try:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(file_path, "w", encoding="utf-8") as file:
+                # Write conversation title
+                file.write(f"# {conversation[0]['content']}\n\n")
+
+                # Write conversation content
+                round_index = 1
+                for i, message in enumerate(conversation[1:], start=1):
+                    if (i - 1) % num_bots == 0:
+                        file.write(f"## Round {round_index} of {num_rounds}\n\n")
+                        round_index += 1
+                    file.write(f"{message['content']}\n\n---\n\n")
+
+                # Write metadata
+                TranscriptManager._write_metadata(
+                    file, 
+                    num_rounds, 
+                    num_bots, 
+                    author, 
+                    config_path
+                )
+
+            logger.info("Conversation saved to %s", file_path)
+            return file_path
+
+        except IOError as e:
+            error_msg = f"Failed to write conversation: {str(e)}"
+            logger.error(error_msg)
+            raise IOError(error_msg) from e
+
+    @staticmethod
+    def _write_metadata(
+        file: TextIO,
+        num_rounds: int,
+        num_bots: int,
+        author: str,
+        config_path: str,
+    ) -> None:
+        """Write conversation metadata to the transcript file.
+
+        Args:
+            file: Open file object for writing
+            num_rounds: Total number of conversation rounds
+            num_bots: Number of participating bots
+            author: Author of the conversation
+            config_path: Path to the configuration file
+        """
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        file.write(
+            f"## Conversation Finished - {num_rounds} Rounds With "
+            f"{num_bots} Bots Completed!\n\n"
+            f"## *Conversation Generated* : {now}\n\n"
+            f"## *Software Version* : {__version__}\n\n"
+            f"## *Configuration Author* : {author}\n\n"
+            f"## *Configuration File* : {config_path}\n\n"
+        )
