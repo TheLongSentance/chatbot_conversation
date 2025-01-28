@@ -20,7 +20,6 @@ from rich.live import Live
 from rich.markdown import Markdown
 
 from chatbot_conversation.conversation.loader import (
-    ChatbotConfigData,
     ConfigurationLoader,
 )
 from chatbot_conversation.models import (
@@ -29,7 +28,7 @@ from chatbot_conversation.models import (
 )
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.transcript import TranscriptManager
-from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
+from chatbot_conversation.conversation.prompt import PromptManager
 
 from chatbot_conversation.utils import get_logger
 
@@ -59,6 +58,8 @@ class ConversationManager:
 
         bots_initializer = BotsInitializer(self.config)
         self.bots = bots_initializer.initialize_bots(self.config)
+        
+        self.prompt_manager = PromptManager()
 
         self.console = Console()  # Initialize the console for rich text output
 
@@ -195,98 +196,30 @@ class ConversationManager:
         Inform bots that the conversation is about to start.
         """
         for bot in self.bots:
-            suffix = self.replace_variables(
+            suffix = self.prompt_manager.replace_variables(
                 self.config.first_round_postfix,
                 {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
             )
-            self.system_prompt_add_suffix(bot, suffix)
+            self.prompt_manager.add_suffix(bot, suffix)
 
     def tell_bots_not_first_round(self) -> None:
         """
         Remove the first round system prompt postfix from the system prompt.
         """
         for bot in self.bots:
-            suffix = self.replace_variables(
+            suffix = self.prompt_manager.replace_variables(
                 self.config.first_round_postfix,
                 {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
             )
-            self.system_prompt_remove_suffix(bot, suffix)
+            self.prompt_manager.remove_suffix(bot, suffix)
 
     def tell_bots_last_round(self) -> None:
         """
         Inform bots that the conversation is about to end.
         """
         for bot in self.bots:
-            suffix = self.replace_variables(
+            suffix = self.prompt_manager.replace_variables(
                 self.config.last_round_postfix,
                 {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
             )
-            self.system_prompt_add_suffix(bot, suffix)
-
-    def replace_variables(self, text: str, variables: dict[str, str]) -> str:
-        """
-        Replace placeholders in the text with the provided variable values.
-
-        Args:
-            text (str): The text containing placeholders.
-            variables (dict): A dictionary with variable names as keys and their corresponding values.
-            e.g. {"bot_name": "GPT-4", "max_tokens": "100"} will replace "{bot_name}" with "GPT-4" and
-            "{max_tokens}" with "100".
-
-        Returns:
-            str: The text with placeholders replaced by their values.
-        """
-        for key, value in variables.items():
-            placeholder = f"{{{key}}}"
-            text = text.replace(placeholder, str(value))
-        return text
-
-    def construct_system_prompt(
-        self, shared_prefix: str, bot_config: ChatbotConfigData
-    ) -> str:
-        """
-        Construct the system prompt for a bot based on the shared prefix and bot configuration.
-
-        Args:
-            shared_prefix (str): The shared prefix for the system prompt.
-            bot_config: The configuration for the bot.
-
-        Returns:
-            str: The constructed system prompt.
-        """
-        if bot_config.bot_params_opt.max_tokens is None:
-            max_tokens = DEFAULT_MAX_TOKENS
-        else:
-            max_tokens = bot_config.bot_params_opt.max_tokens
-
-        bot_system_prompt = shared_prefix + bot_config.bot_prompt
-        bot_system_prompt = self.replace_variables(
-            bot_system_prompt,
-            {"bot_name": bot_config.bot_name, "max_tokens": str(max_tokens)},
-        )
-
-        return bot_system_prompt
-
-    def system_prompt_add_suffix(
-        self, bot: ChatbotBase, additional_prompt: str
-    ) -> None:
-        """
-        Append additional text to the system prompt.
-
-        Args:
-            additional_prompt (str): The text to append.
-        """
-        if additional_prompt:
-            bot.system_prompt += additional_prompt
-
-    def system_prompt_remove_suffix(
-        self, bot: ChatbotBase, text_to_remove: str
-    ) -> None:
-        """
-        Remove specific text from the end of the system prompt.
-
-        Args:
-            text_to_remove (str): The text to remove.
-        """
-        if text_to_remove and bot.system_prompt.endswith(text_to_remove):
-            bot.system_prompt = bot.system_prompt[: -len(text_to_remove)]
+            self.prompt_manager.add_suffix(bot, suffix)

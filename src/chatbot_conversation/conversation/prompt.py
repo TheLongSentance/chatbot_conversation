@@ -6,6 +6,7 @@ from chatbot_conversation.conversation import ChatbotConfigData
 from chatbot_conversation.models import ChatbotBase
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
 
+
 class PromptManager:
     """Handles system prompt adjustments for bots."""
 
@@ -29,7 +30,7 @@ class PromptManager:
         return text
 
     @staticmethod
-    def system_prompt_add_suffix(bot: ChatbotBase, additional_prompt: str) -> None:
+    def add_suffix(bot: ChatbotBase, additional_prompt: str) -> None:
         """
         Append additional text to the system prompt.
 
@@ -40,7 +41,7 @@ class PromptManager:
             bot.system_prompt += additional_prompt
 
     @staticmethod
-    def system_prompt_remove_suffix(bot: ChatbotBase, text_to_remove: str) -> None:
+    def remove_suffix(bot: ChatbotBase, text_to_remove: str) -> None:
         """
         Remove specific text from the end of the system prompt.
 
@@ -51,7 +52,9 @@ class PromptManager:
             bot.system_prompt = bot.system_prompt[: -len(text_to_remove)]
 
     @staticmethod
-    def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -> str:
+    def construct_system_prompt(
+        shared_prefix: str, bot_config: ChatbotConfigData
+    ) -> str:
         """
         Construct the system prompt for a bot based on the shared prefix and bot configuration.
 
