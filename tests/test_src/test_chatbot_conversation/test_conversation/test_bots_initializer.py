@@ -5,6 +5,7 @@ from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.models import ChatbotBase
 
+
 class TestBotsInitializer:
     """
     Tests for the BotsInitializer class and its functionality.

@@ -11,22 +11,15 @@ Classes:
 """
 
 import json
-from typing import List
 from pathlib import Path
+from typing import List
 
-from chatbot_conversation.conversation.display import create_display
-
-from chatbot_conversation.conversation.loader import (
-    ConfigurationLoader,
-)
-from chatbot_conversation.models import (
-    ChatbotBase,
-    ConversationMessage,
-)
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
-from chatbot_conversation.conversation.transcript import TranscriptManager
+from chatbot_conversation.conversation.display import create_display
+from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.conversation.prompt import PromptManager
-
+from chatbot_conversation.conversation.transcript import TranscriptManager
+from chatbot_conversation.models import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils import get_logger
 
 logger = get_logger("conversation")

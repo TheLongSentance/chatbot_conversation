@@ -3,8 +3,11 @@ Unit tests for the RichDisplayManager class in display.py.
 """
 
 from typing import Generator
+
 from _pytest.capture import CaptureFixture
+
 from chatbot_conversation.conversation.display import RichDisplay
+
 
 def test_show_text(display: RichDisplay, capsys: CaptureFixture[str]) -> None:
     """

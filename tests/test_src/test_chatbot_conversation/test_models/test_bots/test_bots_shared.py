@@ -1,5 +1,7 @@
 """Tests shared across concrete child classes of ChatbotBase"""
 
+from typing import Optional
+
 import pytest
 
 from chatbot_conversation.models.base import (
@@ -9,7 +11,6 @@ from chatbot_conversation.models.base import (
     ChatbotParamsOpt,
     ConversationMessage,
 )
-from typing import Optional
 
 
 @pytest.mark.parametrize(

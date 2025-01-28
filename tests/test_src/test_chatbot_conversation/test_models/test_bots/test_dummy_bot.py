@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 from chatbot_conversation.models import ChatbotConfig, ChatbotModel
-from chatbot_conversation.models.base import ConversationMessage, DEFAULT_MAX_TOKENS
+from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ConversationMessage
 from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
 
 

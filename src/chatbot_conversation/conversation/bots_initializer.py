@@ -2,17 +2,19 @@
 This module provides initialization logic for chatbot bots by configuring
 and creating Chatbot instances using the provided conversation configuration.
 """
-from chatbot_conversation.conversation import ConversationConfig
-from chatbot_conversation.models import(
-    BotRegistry,
-    ChatbotFactory, 
-    ChatbotConfig, 
-    ChatbotModel, 
-    ChatbotParamsOpt,
-    ChatbotBase,
-)
 from typing import List
+
+from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.prompt import PromptManager
+from chatbot_conversation.models import (
+    BotRegistry,
+    ChatbotBase,
+    ChatbotConfig,
+    ChatbotFactory,
+    ChatbotModel,
+    ChatbotParamsOpt,
+)
+
 
 class BotsInitializer:
     """

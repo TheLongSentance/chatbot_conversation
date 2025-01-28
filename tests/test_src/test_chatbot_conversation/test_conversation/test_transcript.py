@@ -2,13 +2,14 @@
 Unit tests for the TranscriptManager class in the chatbot_conversation package.
 """
 
-from unittest.mock import patch, mock_open
 import json
-from chatbot_conversation.version import __version__
 from pathlib import Path
-from chatbot_conversation.models import ConversationMessage
+from unittest.mock import mock_open, patch
+
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.conversation.transcript import TranscriptManager
+from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.version import __version__
 
 
 def test_save_transcript(

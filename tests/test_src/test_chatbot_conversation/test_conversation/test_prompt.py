@@ -2,9 +2,9 @@
 Unit tests for the PromptManager class in prompt.py.
 """
 
+from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.prompt import PromptManager
 from chatbot_conversation.models import ChatbotBase
-from chatbot_conversation.conversation import ConversationConfig
 
 
 def test_replace_variables():

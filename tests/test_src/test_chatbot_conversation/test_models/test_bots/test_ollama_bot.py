@@ -12,10 +12,10 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bots.ollama_bot import (
+    MAXIMUM_TEMPERATURE,
+    MINIMUM_TEMPERATURE,
     MODEL_TYPE,
     OllamaChatbot,
-    MINIMUM_TEMPERATURE,
-    MAXIMUM_TEMPERATURE,
 )
 
 

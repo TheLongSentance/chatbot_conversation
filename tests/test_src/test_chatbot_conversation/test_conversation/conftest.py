@@ -1,16 +1,16 @@
 import os
-from unittest.mock import Mock
 from typing import List
+from unittest.mock import Mock
 
 import pytest
 
 from chatbot_conversation.conversation import (
-    ConversationConfig, 
-    ChatbotConfigData, 
+    ChatbotConfigData,
     ChatbotParamsOptData,
+    ConversationConfig,
 )
-
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
+
 
 @pytest.fixture
 def test_config_path() -> str:

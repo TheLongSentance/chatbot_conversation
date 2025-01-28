@@ -1,7 +1,7 @@
 """Abstract base class for display implementations."""
 
 from abc import ABC, abstractmethod
-from typing import Iterator, Any
+from typing import Any, Iterator
 
 
 class DisplayInterface(ABC):

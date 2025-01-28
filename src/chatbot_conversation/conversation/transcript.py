@@ -2,16 +2,15 @@
 This module handles transcript management and saving conversation logs to file
 using the TranscriptManager for the provided conversation configuration.
 """
-from dataclasses import dataclass
-from pathlib import Path
-from typing import List
-from datetime import datetime
-import logging
-from typing import TextIO
 import json
+import logging
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import List, TextIO
 
-from chatbot_conversation.models import ConversationMessage
 from chatbot_conversation.conversation.loader import ConversationConfig
+from chatbot_conversation.models import ConversationMessage
 
 # relative import to avoid circular import:
 from ..version import __version__

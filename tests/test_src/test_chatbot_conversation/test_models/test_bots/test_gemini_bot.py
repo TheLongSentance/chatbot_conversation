@@ -9,7 +9,6 @@ import pytest
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import (
     _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
-    GeminiChatbot,    
 )
 from chatbot_conversation.models.bots.gemini_bot import MODEL_TYPE, GeminiChatbot
 

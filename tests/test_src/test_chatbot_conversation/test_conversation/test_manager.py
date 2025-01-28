@@ -14,6 +14,7 @@ Test cases cover:
 """
 
 import pytest
+
 from chatbot_conversation.conversation.manager import ConversationManager
 
 
