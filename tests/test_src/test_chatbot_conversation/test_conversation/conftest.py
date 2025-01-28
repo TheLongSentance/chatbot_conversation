@@ -1,10 +1,16 @@
 import os
 from unittest.mock import Mock
+from typing import List
 
 import pytest
+from chatbot_conversation.conversation.display import RichDisplayManager
+from chatbot_conversation.conversation import (
+    ConversationConfig, 
+    ChatbotConfigData, 
+    ChatbotParamsOptData,
+)
 
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
-
 
 @pytest.fixture
 def test_config_path() -> str:
@@ -34,10 +40,53 @@ def mock_bot() -> ChatbotBase:
 
 
 @pytest.fixture
-def sample_conversation_data() -> list[ConversationMessage]:
+def sample_conversation_data() -> List[ConversationMessage]:
     """Return sample conversation data for testing."""
     return [
         {"bot_index": 0, "content": "Test seed message"},
-        {"bot_index": 1, "content": "Bot 1 response"},
-        {"bot_index": 2, "content": "Bot 2 response"},
+        {"bot_index": 1, "content": "Bot1 response"},
+        {"bot_index": 2, "content": "Bot2 response"},
     ]
+
+
+@pytest.fixture
+def display_manager() -> RichDisplayManager:
+    """Provide a RichDisplayManager instance for testing."""
+    return RichDisplayManager()
+
+
+@pytest.fixture
+def sample_conversation_config() -> ConversationConfig:
+    """
+    Provide a valid ConversationConfig with dictionary-based bots.
+    """
+    return ConversationConfig(
+        author="Test Author",
+        conversation_seed="Test seed",
+        rounds=2,
+        shared_prefix="Shared prefix",
+        first_round_postfix="First round postfix",
+        last_round_postfix="Last round postfix",
+        bots=[
+            ChatbotConfigData(
+                bot_name="Bot1",
+                bot_prompt="You are Bot1, an example bot.",
+                bot_type="DUMMY",
+                bot_version="None",
+                bot_params_opt=ChatbotParamsOptData(
+                    temperature=0.7,
+                    max_tokens=100,
+                ),
+            ),
+            ChatbotConfigData(
+                bot_name="Bot2",
+                bot_prompt="You are Bot2, an example bot.",
+                bot_type="DUMMY",
+                bot_version="None",
+                bot_params_opt=ChatbotParamsOptData(
+                    temperature=0.9,
+                    max_tokens=200,
+                )
+            )
+        ],
+    )
