@@ -29,9 +29,15 @@ chatbot_conversation/
 │   ├── test_src/
 │   │   └── test_chatbot_conversation/
 │   │       ├── test_conversation/
+│   │       │   ├── test_display/
+│   │       │   │   ├── conftest.py
+│   │       │   │   └── test_display.py
 │   │       │   ├── conftest.py
+│   │       │   ├── test_bots_initializer.py
 │   │       │   ├── test_loader.py
-│   │       │   └── test_manager.py
+│   │       │   ├── test_manager.py
+│   │       │   ├── test_prompt.py
+│   │       │   └── test_transcript.py
 │   │       ├── test_models/
 │   │       │   ├── testbots/
 │   │       │   │   ├── conftest.py
@@ -56,9 +62,16 @@ chatbot_conversation/
 ├── src/
 │   └── chatbot_conversation/
 │       ├── conversation/
+│       │   ├── display/
+│       │   │   ├── __init__.py
+│       │   │   ├── abstract_display.py
+│       │   │   └── rich_display.py
 │       │   ├── __init__.py
+│       │   ├── bots_initializer.py
 │       │   ├── loader.py
-│       │   └── manager.py
+│       │   ├── manager.py
+│       │   ├── prompt.py
+│       │   └── transcript.py
 │       ├── models/
 │       │   ├── bots/
 │       │   │   ├── __init__.py
