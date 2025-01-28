@@ -23,9 +23,9 @@ from chatbot_conversation.models.bot_registry import register_bot
 
 # Default temperature for Claude models
 # Otherwise specify in the config file for a specific model
-MINIMUM_TEMPERATURE = 0.0
-MAXIMUM_TEMPERATURE = 1.0
-DEFAULT_TEMPERATURE = 1.0
+CLAUDE_MINIMUM_TEMPERATURE = 0.0
+CLAUDE_MAXIMUM_TEMPERATURE = 1.0
+CLAUDE_DEFAULT_TEMPERATURE = 1.0
 
 MODEL_TYPE = "CLAUDE"
 
@@ -91,7 +91,7 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             float: Minimum temperature value (0.0)
         """
-        return MINIMUM_TEMPERATURE
+        return CLAUDE_MINIMUM_TEMPERATURE
 
     @property
     def model_max_temperature(self) -> float:
@@ -101,7 +101,7 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             float: Maximum temperature value (1.0)
         """
-        return MAXIMUM_TEMPERATURE
+        return CLAUDE_MAXIMUM_TEMPERATURE
 
     @property
     def model_default_temperature(self) -> float:
@@ -111,7 +111,7 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             float: Default temperature value (1.0)
         """
-        return DEFAULT_TEMPERATURE
+        return CLAUDE_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

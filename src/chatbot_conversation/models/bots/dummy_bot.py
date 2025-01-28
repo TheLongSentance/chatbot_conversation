@@ -20,9 +20,9 @@ from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
 # Default temperature values for Dummy models
-MINIMUM_TEMPERATURE = 0.0
-MAXIMUM_TEMPERATURE = 1.0
-DEFAULT_TEMPERATURE = 1.0
+DUMMY_MINIMUM_TEMPERATURE = 0.0
+DUMMY_MAXIMUM_TEMPERATURE = 1.0
+DUMMY_DEFAULT_TEMPERATURE = 1.0
 
 # Default max tokens for Dummy models
 DUMMY_MAX_TOKENS = 50
@@ -164,7 +164,7 @@ class DummyChatbot(ChatbotBase):
         Returns:
             float: The minimum valid temperature value (0.0)
         """
-        return MINIMUM_TEMPERATURE
+        return DUMMY_MINIMUM_TEMPERATURE
 
     @property
     def model_max_temperature(self) -> float:
@@ -174,7 +174,7 @@ class DummyChatbot(ChatbotBase):
         Returns:
             float: The maximum valid temperature value (1.0)
         """
-        return MAXIMUM_TEMPERATURE
+        return DUMMY_MAXIMUM_TEMPERATURE
 
     @property
     def model_default_temperature(self) -> float:
@@ -184,4 +184,4 @@ class DummyChatbot(ChatbotBase):
         Returns:
             float: The default temperature value (1.0)
         """
-        return DEFAULT_TEMPERATURE
+        return DUMMY_DEFAULT_TEMPERATURE

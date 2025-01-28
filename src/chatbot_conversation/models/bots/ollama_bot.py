@@ -27,9 +27,9 @@ from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
 
 # Model temperature range specifically for Ollama API
-MINIMUM_TEMPERATURE = 0.0
-MAXIMUM_TEMPERATURE = 1.0
-DEFAULT_TEMPERATURE = 0.8
+OLLAMA_MINIMUM_TEMPERATURE = 0.0
+OLLAMA_MAXIMUM_TEMPERATURE = 1.0
+OLLAMA_DEFAULT_TEMPERATURE = 0.8
 
 MODEL_TYPE = "OLLAMA"
 
@@ -82,17 +82,17 @@ class OllamaChatbot(ChatbotBase):
     @property
     def model_min_temperature(self) -> float:
         """Get the minimum allowed temperature value."""
-        return MINIMUM_TEMPERATURE
+        return OLLAMA_MINIMUM_TEMPERATURE
 
     @property
     def model_max_temperature(self) -> float:
         """Get the maximum allowed temperature value."""
-        return MAXIMUM_TEMPERATURE
+        return OLLAMA_MAXIMUM_TEMPERATURE
 
     @property
     def model_default_temperature(self) -> float:
         """Get the default temperature value."""
-        return DEFAULT_TEMPERATURE
+        return OLLAMA_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

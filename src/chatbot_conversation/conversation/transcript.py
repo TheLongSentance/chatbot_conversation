@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, TextIO
 
 from chatbot_conversation.conversation.loader import ConversationConfig
-from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.models.base import ConversationMessage
 
 # relative import to avoid circular import:
 from ..version import __version__
@@ -66,7 +66,6 @@ class TranscriptManager:
         # Extract metadata from the configuration
         num_rounds = config.rounds
         num_bots = len(config.bots)
-        author = config.author
 
         try:
             file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -83,9 +82,7 @@ class TranscriptManager:
                     file.write(f"{message['content']}\n\n---\n\n")
 
                 # Write metadata
-                TranscriptManager._write_metadata(
-                    file, config, num_rounds, num_bots, author, config_path
-                )
+                TranscriptManager._write_metadata(file, config, config_path)
 
             logger.info("Conversation saved to %s", file_path)
             return file_path
@@ -99,20 +96,21 @@ class TranscriptManager:
     def _write_metadata(
         file: TextIO,
         config: ConversationConfig,
-        num_rounds: int,
-        num_bots: int,
-        author: str,
         config_path: str,
     ) -> None:
         """Write conversation metadata to the transcript file.
 
         Args:
             file: Open file object for writing
-            num_rounds: Total number of conversation rounds
-            num_bots: Number of participating bots
-            author: Author of the conversation
+            config: Conversation configuration
             config_path: Path to the configuration file
         """
+
+        # Extract metadata from the configuration
+        num_rounds = config.rounds
+        num_bots = len(config.bots)
+        author = config.author
+
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         file.write(
             f"## Conversation Finished - {num_rounds} Rounds With "

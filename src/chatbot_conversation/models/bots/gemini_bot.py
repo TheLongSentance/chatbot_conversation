@@ -41,9 +41,9 @@ from chatbot_conversation.models.bot_registry import register_bot
 from chatbot_conversation.utils import get_logger
 
 # Gemini 1.5 models default temperature (others may vary)
-MINIMUM_TEMPERATURE = 0.0
-MAXIMUM_TEMPERATURE = 2.0
-DEFAULT_TEMPERATURE = 1.0
+GEMINI_MINIMUM_TEMPERATURE = 0.0
+GEMINI_MAXIMUM_TEMPERATURE = 2.0
+GEMINI_DEFAULT_TEMPERATURE = 1.0
 
 MODEL_TYPE = "GEMINI"
 
@@ -137,17 +137,17 @@ class GeminiChatbot(ChatbotBase):
     @property
     def model_min_temperature(self) -> float:
         """Get the minimum allowed temperature value."""
-        return MINIMUM_TEMPERATURE
+        return GEMINI_MINIMUM_TEMPERATURE
 
     @property
     def model_max_temperature(self) -> float:
         """Get the maximum allowed temperature value."""
-        return MAXIMUM_TEMPERATURE
+        return GEMINI_MAXIMUM_TEMPERATURE
 
     @property
     def model_default_temperature(self) -> float:
         """Get the default temperature value."""
-        return DEFAULT_TEMPERATURE
+        return GEMINI_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

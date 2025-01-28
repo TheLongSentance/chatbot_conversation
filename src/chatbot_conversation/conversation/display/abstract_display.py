@@ -10,7 +10,7 @@ class DisplayInterface(ABC):
     @abstractmethod
     def clear(self) -> None:
         """Clear the display."""
-        pass
+        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def show_text(self, text: str) -> None:
@@ -19,7 +19,7 @@ class DisplayInterface(ABC):
         Args:
             text: Text to display
         """
-        pass
+        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def show_streaming_text(self, text_generator: Iterator[Any]) -> str:
@@ -31,4 +31,4 @@ class DisplayInterface(ABC):
         Returns:
             Complete text after all chunks processed
         """
-        pass
+        pass  # pylint: disable=unnecessary-pass

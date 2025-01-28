@@ -163,8 +163,12 @@ class TestLiveAPIStreamingResponses:
             conversation = [
                 ConversationMessage(
                     bot_index=0,
-                    content=f"Write about any subject you choose until you hit the {size} max token limit.",
-                )
+                    content=(
+                        f"Write about any part of English history that you choose until you hit the {size} max token limit."
+                        "Do not warn me that you cannot exceed your limits, I will try not to exceed them so proceed "
+                        "straight away with your response."
+                    )
+                )   
             ]
 
             chunks = list(test_bot.stream_response(conversation))

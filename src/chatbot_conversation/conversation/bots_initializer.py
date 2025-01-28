@@ -5,7 +5,7 @@ and creating Chatbot instances using the provided conversation configuration.
 
 from typing import List
 
-from chatbot_conversation.conversation import ConversationConfig
+from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.conversation.prompt import PromptManager
 from chatbot_conversation.models import (
     BotRegistry,
@@ -22,7 +22,7 @@ class BotsInitializer:
     Initializes and manages the creation of Chatbot instances.
     """
 
-    def __init__(self, config: ConversationConfig) -> None:
+    def __init__(self) -> None:
 
         self.bot_registry = BotRegistry()  # get the singleton instance
         self.factory = ChatbotFactory(self.bot_registry)
@@ -56,3 +56,9 @@ class BotsInitializer:
             bot = self.factory.create_bot(chatbot_config)
             bots.append(bot)
         return bots
+
+    def get_bot_registry(self) -> BotRegistry:
+        """
+        Returns the bot registry instance.
+        """
+        return self.bot_registry

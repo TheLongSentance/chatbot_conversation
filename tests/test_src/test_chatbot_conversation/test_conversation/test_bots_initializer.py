@@ -18,7 +18,7 @@ class TestBotsInitializer:
         """
         Test that initialize_bots returns a non-empty list of ChatbotBase instances.
         """
-        initializer = BotsInitializer(sample_conversation_config)
+        initializer = BotsInitializer()
         result = initializer.initialize_bots(sample_conversation_config)
         assert len(result) == 2
         for bot in result:

@@ -36,9 +36,9 @@ from chatbot_conversation.models.base import (
 from chatbot_conversation.models.bot_registry import register_bot
 
 # OpenAI default temperature for GPT models
-MINIMUM_TEMPERATURE = 0.0
-MAXIMUM_TEMPERATURE = 2.0
-DEFAULT_TEMPERATURE = 1.0
+GPT_MINIMUM_TEMPERATURE = 0.0
+GPT_MAXIMUM_TEMPERATURE = 2.0
+GPT_DEFAULT_TEMPERATURE = 1.0
 
 MODEL_TYPE = "GPT"
 
@@ -101,17 +101,17 @@ class GPTChatbot(ChatbotBase):
     @property
     def model_min_temperature(self) -> float:
         """Get the minimum allowed temperature value."""
-        return MINIMUM_TEMPERATURE
+        return GPT_MINIMUM_TEMPERATURE
 
     @property
     def model_max_temperature(self) -> float:
         """Get the maximum allowed temperature value."""
-        return MAXIMUM_TEMPERATURE
+        return GPT_MAXIMUM_TEMPERATURE
 
     @property
     def model_default_temperature(self) -> float:
         """Get the default temperature value."""
-        return DEFAULT_TEMPERATURE
+        return GPT_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

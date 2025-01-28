@@ -1,10 +1,10 @@
 """
-This module provides functionality for constructing and adjusting system prompts for Chatbot instances.
+This module provides functionality for constructing and adjusting system prompts 
+for Chatbot instances.
 """
 
-from chatbot_conversation.conversation import ChatbotConfigData
-from chatbot_conversation.models import ChatbotBase
-from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
+from chatbot_conversation.conversation.loader import ChatbotConfigData
+from chatbot_conversation.models.base import ChatbotBase, DEFAULT_MAX_TOKENS
 
 
 class PromptManager:
@@ -17,9 +17,9 @@ class PromptManager:
 
         Args:
             text (str): The text containing placeholders.
-            variables (dict): A dictionary with variable names as keys and their corresponding values.
-            e.g. {"bot_name": "GPT-4", "max_tokens": "100"} will replace "{bot_name}" with "GPT-4" and
-            "{max_tokens}" with "100".
+            variables (dict): A dictionary with variable names as keys and their 
+            corresponding values. e.g. {"bot_name": "GPT-4", "max_tokens": "100"} 
+            will replace "{bot_name}" with "GPT-4" and "{max_tokens}" with "100".
 
         Returns:
             str: The text with placeholders replaced by their values.

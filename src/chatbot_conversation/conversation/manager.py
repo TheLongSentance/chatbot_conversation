@@ -19,8 +19,8 @@ from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.conversation.prompt import PromptManager
 from chatbot_conversation.conversation.transcript import TranscriptManager
-from chatbot_conversation.models import ChatbotBase, ConversationMessage
-from chatbot_conversation.utils import get_logger
+from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.utils.logging_util import get_logger
 
 logger = get_logger("conversation")
 
@@ -46,7 +46,7 @@ class ConversationManager:
             {"bot_index": 0, "content": self.config.conversation_seed}
         ]
 
-        bots_initializer = BotsInitializer(self.config)
+        bots_initializer = BotsInitializer()
         self.bots = bots_initializer.initialize_bots(self.config)
 
         self.prompt_manager = PromptManager()

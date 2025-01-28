@@ -55,7 +55,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from chatbot_conversation.utils import get_logger
+from chatbot_conversation.utils.logging_util import get_logger
 
 # Timeout constants (in seconds)
 DEFAULT_TOTAL_TIMEOUT = 90  # Maximum time for total trip through API
