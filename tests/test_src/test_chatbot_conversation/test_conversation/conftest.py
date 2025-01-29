@@ -10,6 +10,7 @@ from chatbot_conversation.conversation import (
     ConversationConfig,
 )
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
+from chatbot_conversation.conversation.prompt import SuffixManager
 
 
 @pytest.fixture
@@ -36,7 +37,14 @@ def mock_bot() -> ChatbotBase:
     mock.name = "TestBot"
     mock.bot_index = 1
     mock.system_prompt = "Initial prompt"
+    mock.model_max_tokens = 100
     return mock
+
+
+@pytest.fixture
+def suffix_manager() -> SuffixManager:
+    """Provide a SuffixManager instance for testing."""
+    return SuffixManager()
 
 
 @pytest.fixture

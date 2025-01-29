@@ -6,7 +6,7 @@ and creating Chatbot instances using the provided conversation configuration.
 from typing import List
 
 from chatbot_conversation.conversation.loader import ConversationConfig
-from chatbot_conversation.conversation.prompt import PromptManager
+from chatbot_conversation.conversation.prompt import construct_system_prompt
 from chatbot_conversation.models import (
     BotRegistry,
     ChatbotBase,
@@ -35,7 +35,7 @@ class BotsInitializer:
 
         for bot_config in config.bots:
             # Construct the system prompt for the bot
-            bot_system_prompt = PromptManager.construct_system_prompt(
+            bot_system_prompt = construct_system_prompt(
                 config.shared_prefix, bot_config
             )
 

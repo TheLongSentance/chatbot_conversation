@@ -17,7 +17,8 @@ from typing import List
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import ConfigurationLoader
-from chatbot_conversation.conversation.prompt import PromptManager
+from chatbot_conversation.conversation.prompt import SuffixManager
+
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils.logging_util import get_logger
@@ -49,9 +50,8 @@ class ConversationManager:
         bots_initializer = BotsInitializer()
         self.bots = bots_initializer.initialize_bots(self.config)
 
-        self.prompt_manager = PromptManager()
-
         self.display_manager = create_display()  # Use create_display for display
+        self.suffix_manager = SuffixManager()
 
     def run_conversation(self) -> None:
         """
@@ -91,20 +91,11 @@ class ConversationManager:
             f"## Round {round_num} of {self.config.rounds}\n\n---\n\n"
         )
 
-        # Pre-round actions adjusting system prompt
-        if round_num == 1:  # Add the first round system prompt postfix
-            self.tell_bots_first_round()
-        if round_num == self.config.rounds:  # Add the last round postfix
-            self.tell_bots_last_round()
+        self.round_setup(round_num)
 
-        # Run the round now that the system prompt is set
         self.run_round()
 
-        # Post-round actions undoing system prompt adjustments
-        if round_num == 1:  # Remove the first round system prompt postfix
-            self.tell_bots_not_first_round()
-        # if round_num == self.config.rounds then no need to remove the
-        #   last round postfix since conversation is finished
+        self.round_cleanup(round_num)
 
     def run_round(self) -> None:
         """
@@ -145,35 +136,31 @@ class ConversationManager:
             self.display_manager.show_text("\n\n---\n\n")
         logger.info("Round completed successfully")
 
-    def tell_bots_first_round(self) -> None:
+    def round_setup(self, round_num: int) -> None:
         """
-        Inform bots that the conversation is about to start.
-        """
-        for bot in self.bots:
-            suffix = self.prompt_manager.replace_variables(
-                self.config.first_round_postfix,
-                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
-            )
-            self.prompt_manager.add_suffix(bot, suffix)
+        Perform setup actions before starting a new round.
 
-    def tell_bots_not_first_round(self) -> None:
+        Args:
+            round_num (int): Index of the current round.
         """
-        Remove the first round system prompt postfix from the system prompt.
-        """
-        for bot in self.bots:
-            suffix = self.prompt_manager.replace_variables(
-                self.config.first_round_postfix,
-                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
-            )
-            self.prompt_manager.remove_suffix(bot, suffix)
+        postfix: str = ""
+        if round_num == 1:
+            postfix = self.config.first_round_postfix
+        elif round_num == self.config.rounds:
+            postfix = self.config.last_round_postfix
 
-    def tell_bots_last_round(self) -> None:
+        if round_num == 1 or round_num == self.config.rounds:
+            for bot in self.bots:
+                self.suffix_manager.setup_round_suffix(bot, postfix)
+
+    def round_cleanup(self, round_num: int) -> None:
         """
-        Inform bots that the conversation is about to end.
+        Perform cleanup actions after finishing a round.
+
+        Args:
+            round_num (int): Index of the current round.
         """
-        for bot in self.bots:
-            suffix = self.prompt_manager.replace_variables(
-                self.config.last_round_postfix,
-                {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
-            )
-            self.prompt_manager.add_suffix(bot, suffix)
+        # Post-round actions undoing system prompt adjustments
+        if round_num == 1 or round_num == self.config.rounds:
+            for bot in self.bots:
+                self.suffix_manager.cleanup_round_suffix(bot)
