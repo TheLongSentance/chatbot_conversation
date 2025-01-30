@@ -9,7 +9,7 @@ from chatbot_conversation.conversation.loader import ChatbotConfigData
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ChatbotBase
 
 BOT_NAME_VARIABLE_PLACEHOLDER: Final[str] = "bot_name"
-MAX_TOKENS_PLACEHOLDER: Final[str] = "max_tokens"
+MAX_TOKENS_VARIABLE_PLACEHOLDER: Final[str] = "max_tokens"
 
 # Multiplier for buffer tokens to avoid hitting the max token limit
 MAX_TOKENS_BUFFER_MULTIPLIER: Final[float] = 0.66
@@ -95,20 +95,30 @@ def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -
     else:
         max_tokens = bot_config.bot_params_opt.max_tokens
 
-    # Apply butter to max tokens to avoid hitting the limit
-    max_tokens = int(max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
+    max_tokens = max_tokens_for_prompt(max_tokens)
 
     bot_system_prompt = shared_prefix + bot_config.bot_prompt
     bot_system_prompt = replace_variables(
         bot_system_prompt,
         {
             BOT_NAME_VARIABLE_PLACEHOLDER: bot_config.bot_name,
-            MAX_TOKENS_PLACEHOLDER: str(max_tokens),
+            MAX_TOKENS_VARIABLE_PLACEHOLDER: str(max_tokens),
         },
     )
 
     return bot_system_prompt
 
+def max_tokens_for_prompt(max_tokens: int) -> int:
+    """
+    Calculate the maximum number of tokens to use for a system prompt.
+
+    Args:
+        max_tokens (int): The maximum number of tokens allowed for the model.
+
+    Returns:
+        int: The adjusted maximum number of tokens for the system prompt.
+    """
+    return int(max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
 
 class SuffixManager:
     """Manages temporary suffixes for bot system prompts during conversation rounds."""
@@ -126,13 +136,13 @@ class SuffixManager:
         """
 
         # Apply butter to max tokens to avoid hitting the limit
-        max_tokens = int(bot.model_max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
+        max_tokens = max_tokens_for_prompt(bot.model_max_tokens)
 
         suffix = replace_variables(
             suffix_template,
             {
                 BOT_NAME_VARIABLE_PLACEHOLDER: bot.name,
-                MAX_TOKENS_PLACEHOLDER: str(max_tokens),
+                MAX_TOKENS_VARIABLE_PLACEHOLDER: str(max_tokens),
             },
         )
         self._bot_suffixes[bot] = suffix
