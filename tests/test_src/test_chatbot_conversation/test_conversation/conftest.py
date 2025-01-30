@@ -11,6 +11,7 @@ from chatbot_conversation.conversation import (
 )
 from chatbot_conversation.conversation.prompt import SuffixManager
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
+from chatbot_conversation.conversation.manager import ConversationManager
 
 
 @pytest.fixture
@@ -92,3 +93,17 @@ def sample_conversation_config() -> ConversationConfig:
             ),
         ],
     )
+
+
+@pytest.fixture
+def manager(test_config_path: str) -> ConversationManager:
+    """
+    Provide a ConversationManager instance for testing.
+
+    Args:
+        test_config_path (str): Path to test configuration file.
+
+    Returns:
+        ConversationManager: Instance of ConversationManager.
+    """
+    return ConversationManager(test_config_path)

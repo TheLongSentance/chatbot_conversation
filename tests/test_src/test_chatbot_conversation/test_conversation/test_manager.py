@@ -51,3 +51,61 @@ def test_invalid_config_loading(invalid_config_path: str) -> None:
     """
     with pytest.raises(FileNotFoundError):
         ConversationManager(invalid_config_path)
+
+
+def test_clean_truncated_response(manager: ConversationManager) -> None:
+    """
+    Test the clean_truncated_response method for various edge cases.
+
+    Args:
+        manager (ConversationManager): Instance of ConversationManager.
+
+    Verifies:
+        - Proper truncation at the last complete sentence.
+        - Handling of ellipses.
+        - Leaving valid responses unchanged.
+    """
+    # Test case: valid response with complete sentences
+    response = "This is a complete sentence. This is another one."
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response
+
+    # Test case: response ending with an incomplete sentence
+    response = "This is a complete sentence. This is another one. Incomplete"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == "This is a complete sentence. This is another one."
+
+    # Test case: response with ellipses
+    response = "This is a complete sentence... But this is incomplete"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == "This is a complete sentence..."
+
+    # Test case: response with question marks and exclamation marks
+    response = "Is this a question? Yes! It is."
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response
+
+    # Test case: response with question marks and exclamation marks
+    response = "Is this a question? Yes!"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response
+
+    # Test case: response with question marks and exclamation marks
+    response = "Is this a question?"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response
+
+    # Test case: response with no complete sentences
+    response = "Incomplete sentence without ending"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response
+
+    # Test case: response with one complete sentence
+    response = "Complete sentence! Incomplete sentence without ending"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == "Complete sentence!"
+
+    # Test case: response with multiple sentence endings
+    response = "First sentence. Second sentence! Third sentence?"
+    cleaned_response = manager.clean_truncated_response(response)
+    assert cleaned_response == response

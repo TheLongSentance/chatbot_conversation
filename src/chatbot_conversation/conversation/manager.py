@@ -104,9 +104,16 @@ class ConversationManager:
         for bot in self.bots:
             try:
                 # Use show_streaming_text to handle streaming response
+                # Note: more complex to truncate streaming response to
+                # last complete sentence since you don't know when it ends
                 response = self.display_manager.show_streaming_text(
                     bot.stream_response(self.conversation)
                 )
+
+                # Clean potentially truncated response for use in
+                # conversation history and transcript
+                response = self.clean_truncated_response(response)
+
             except (IndexError, KeyError, AttributeError, ValueError) as e:
                 error_message = f"Exception: index/key/attribute/value error: {e}"
                 logger.error(error_message)
@@ -163,3 +170,40 @@ class ConversationManager:
         if round_num in (1, self.config.rounds):
             for bot in self.bots:
                 self.suffix_manager.cleanup_round_suffix(bot)
+
+    def clean_truncated_response(self, response: str) -> str:
+        """
+        Clean a potentially truncated response by finding the last complete sentence.
+        Handles sentences ending with periods, question marks, or exclamation marks.
+        Preserves any markdown formatting.
+
+        Args:
+            response (str): The potentially truncated response
+
+        Returns:
+            str: Response truncated to last complete sentence
+        """
+        sentence_endings = {".", "?", "!"}
+        last_ending = -1
+        for i in range(len(response) - 1, -1, -1):
+            if response[i] in sentence_endings and i > 0:
+                # Check not part of ellipsis
+                if (
+                    response[i] == "."
+                    and i > 1
+                    and response[i - 1] == "."
+                    and response[i - 2] == "."
+                ):
+                    last_ending = i
+                    break
+
+                # Check has non-whitespace before
+                if not response[i - 1].isspace():
+                    # Check is end of string or has space after
+                    if i == len(response) - 1 or response[i + 1].isspace():
+                        last_ending = i
+                        break
+
+        if last_ending != -1:
+            return response[: last_ending + 1]
+        return response
