@@ -2,10 +2,14 @@
 This module provides functionality for constructing and adjusting system prompts 
 for Chatbot instances.
 """
-
+from typing import Final
 from chatbot_conversation.conversation.loader import ChatbotConfigData
 from chatbot_conversation.models.base import ChatbotBase, DEFAULT_MAX_TOKENS
 
+BOT_NAME_VARIABLE_PLACEHOLDER: Final[str] = "bot_name"
+MAX_TOKENS_PLACEHOLDER: Final[str] = "max_tokens"
+
+MAX_TOKENS_BUFFER_MULTIPLIER: Final[float] = 0.66 # Multiplier for buffer tokens to avoid hitting the max token limit
 
 def replace_variables(text: str, variables: dict[str, str]) -> str:
     """
@@ -86,10 +90,16 @@ def construct_system_prompt(
     else:
         max_tokens = bot_config.bot_params_opt.max_tokens
 
+    # Apply butter to max tokens to avoid hitting the limit
+    max_tokens = int(max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
+
     bot_system_prompt = shared_prefix + bot_config.bot_prompt
     bot_system_prompt = replace_variables(
         bot_system_prompt,
-        {"bot_name": bot_config.bot_name, "max_tokens": str(max_tokens)},
+        {
+            BOT_NAME_VARIABLE_PLACEHOLDER: bot_config.bot_name,
+            MAX_TOKENS_PLACEHOLDER: str(max_tokens),
+        },
     )
 
     return bot_system_prompt
@@ -109,9 +119,16 @@ class SuffixManager:
             bot: The bot to setup the suffix for
             suffix_template: Template string containing {bot_name} and {max_tokens} placeholders
         """
+
+        # Apply butter to max tokens to avoid hitting the limit
+        max_tokens = int(bot.model_max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
+
         suffix = replace_variables(
             suffix_template,
-            {"bot_name": bot.name, "max_tokens": str(bot.model_max_tokens)},
+            {
+                BOT_NAME_VARIABLE_PLACEHOLDER: bot.name,
+                MAX_TOKENS_PLACEHOLDER: str(max_tokens),
+            },
         )
         self._bot_suffixes[bot] = suffix
         add_suffix(bot, suffix)

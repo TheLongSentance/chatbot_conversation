@@ -44,7 +44,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Iterator, List, Optional, Set, TypedDict
+from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, TypedDict
 
 from tenacity import (
     retry,
@@ -58,15 +58,19 @@ from tenacity import (
 from chatbot_conversation.utils.logging_util import get_logger
 
 # Timeout constants (in seconds)
-DEFAULT_TOTAL_TIMEOUT = 90  # Maximum time for total trip through API
-DEFAULT_API_TIMEOUT = 30  # For per try of API call if child classes api parameter
-DEFAULT_MAX_RETRIES = 5  # Maximum number of retry attempts
-DEFAULT_MIN_WAIT = 1
-DEFAULT_MAX_WAIT = 10
-DEFAULT_WAIT_MULTIPLIER = 1.5
+DEFAULT_TOTAL_TIMEOUT: Final[int] = 90  # Maximum time for total trip through API
+DEFAULT_API_TIMEOUT: Final[int] = 30 # Timeout for individual API calls 
+DEFAULT_MAX_RETRIES: Final[int] = 5  # Maximum number of retry attempts
+DEFAULT_MIN_WAIT: Final[int] = 1
+DEFAULT_MAX_WAIT: Final[int] = 10
+DEFAULT_WAIT_MULTIPLIER: Final[float] = 1.5
 
-# Default maximum tokens for response generation
-DEFAULT_MAX_TOKENS = 300
+# Default maximum tokens for response generation to prevent excessive response 
+# length. Value below chosen based on typical API limits and response size.
+# Prompts to bots refering to max_tokens (either defined by the default here or
+# on a bot-specific basis, should be use a number less than this value to avoid 
+# hitting the limit.
+DEFAULT_MAX_TOKENS: Final[int] = 750
 
 logger = get_logger("models")
 
