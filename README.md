@@ -93,9 +93,24 @@ chatbot_conversation/
 │       └── version.py
 ├── config/
 │   ├── examples/
+│   │   ├── aliens.config.json
+│   │   ├── apocalypse.config.json
+│   │   ├── art.config.json
+│   │   ├── caeser.config.json
+│   │   ├── chess.config.json
 │   │   ├── churchill.config.json
+│   │   ├── conscious.config.json
+│   │   ├── cryto.config.json
 │   │   ├── dummy.config.json
-│   │   └── tennis.config.json
+│   │   ├── immortal.config.json
+│   │   ├── mars.config.json
+│   │   ├── music.config.json
+│   │   ├── robots.config.json
+│   │   ├── scifi.config.json
+│   │   ├── shakespeare.config.json
+│   │   ├── tennis.config.json
+│   │   ├── timetravel.config.json
+│   │   └── turingtest.config.json
 │   ├── .env.example
 │   ├── config.json
 │   └── logging.conf
