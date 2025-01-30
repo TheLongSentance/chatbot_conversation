@@ -378,8 +378,8 @@ Configuration parameters:
   - Prefix and postfix all support template variable names:
     - Supports template variable `{bot_name}` which gets replaced with each bot's name
     - Example: "You are {bot_name}. " becomes "You are RogerFan. " for the RogerFan bot
-    - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model
-    - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 500 tokens. " for a max_tokens parameter set to 500
+    - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model api
+    - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 400 tokens. " for a max_tokens parameter set to 600 - this is due to allow for bots not being good at counting their own token output. The value passed to the api is unadjusted at 600.
 - `bots`: Array of bot configurations:
   - `bot_name`: Display name for the bot (see template variable `{bot_name}` above)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
@@ -392,8 +392,9 @@ Configuration parameters:
       - Lower values: More focused, deterministic responses
       - Higher values: More creative, varied responses
       - Defaults to model-specific values if not specified
-    - `max_tokens`: Maximum length of generated responses
-      - Defaults to 300 if not specified
+    - `max_tokens`: Maximum length of generated responses passed to api
+      - Defaults to 750 if not specified for use by api
+      - Value replaced by 2/3 that in prompts to allow for bots not being good at counting their own token output
       - Higher values allow longer responses but may use more API tokens
       - Supported in prompting with the template variable `{max_tokens}` (see above)
 
