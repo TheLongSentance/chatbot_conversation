@@ -6,7 +6,10 @@ from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.prompt import (
     SuffixManager,
     add_suffix,
+    BOT_NAME_VARIABLE_PLACEHOLDER,
     construct_system_prompt,
+    max_tokens_for_prompt,
+    MAX_TOKENS_VARIABLE_PLACEHOLDER,
     remove_suffix,
     replace_variables,
 )
@@ -20,8 +23,11 @@ def test_replace_variables() -> None:
     This test ensures that the placeholders in the text are correctly replaced
     with the provided variable values.
     """
-    text = "Hello, {bot_name}! Your max tokens are {max_tokens}."
-    variables = {"bot_name": "GPT-4", "max_tokens": "100"}
+    text = f"Hello, {{{BOT_NAME_VARIABLE_PLACEHOLDER}}}! Your max tokens are {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
+    variables = {
+        BOT_NAME_VARIABLE_PLACEHOLDER: "GPT-4",
+        MAX_TOKENS_VARIABLE_PLACEHOLDER: "100",
+    }
     result = replace_variables(text, variables)
     assert result == "Hello, GPT-4! Your max tokens are 100."
 
@@ -61,10 +67,10 @@ def test_construct_system_prompt(
     This test ensures that the system prompt is correctly constructed based on
     the shared prefix and bot configuration.
     """
-    shared_prefix = "Shared prefix "
+    shared_prefix = "Shared prefix: "
     bot_config = sample_conversation_config.bots[0]
     result = construct_system_prompt(shared_prefix, bot_config)
-    expected_prompt = "Shared prefix You are Bot1, an example bot."
+    expected_prompt = "Shared prefix: You are Bot1, an example bot."
     assert result == expected_prompt
 
 
@@ -75,9 +81,12 @@ def test_suffix_manager_setup_round_suffix(mock_bot: ChatbotBase) -> None:
     This test ensures that the suffix is correctly calculated and appended to the bot's system prompt.
     """
     suffix_manager = SuffixManager()
-    suffix_template = " Suffix for {bot_name} with max tokens {max_tokens}."
+    suffix_template = (
+        f" Suffix for {{{BOT_NAME_VARIABLE_PLACEHOLDER}}} "
+        f"with max tokens {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
+    )
     suffix_manager.setup_round_suffix(mock_bot, suffix_template)
-    expected_suffix = " Suffix for TestBot with max tokens 100."
+    expected_suffix = f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
     assert mock_bot.system_prompt.endswith(expected_suffix)
 
 
@@ -88,8 +97,14 @@ def test_suffix_manager_cleanup_round_suffix(mock_bot: ChatbotBase) -> None:
     This test ensures that the suffix is correctly removed from the bot's system prompt.
     """
     suffix_manager = SuffixManager()
-    suffix_template = " Suffix for {bot_name} with max tokens {max_tokens}."
+    suffix_template = (
+        f" Suffix for {{{BOT_NAME_VARIABLE_PLACEHOLDER}}} "
+        f"with max tokens {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
+    )
     suffix_manager.setup_round_suffix(mock_bot, suffix_template)
+    expected_suffix = (
+        f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
+    )
+    assert mock_bot.system_prompt.endswith(expected_suffix)
     suffix_manager.cleanup_round_suffix(mock_bot)
-    expected_suffix = " Suffix for TestBot with max tokens 100."
     assert not mock_bot.system_prompt.endswith(expected_suffix)
