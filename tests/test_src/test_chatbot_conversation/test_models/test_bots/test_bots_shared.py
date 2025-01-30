@@ -142,8 +142,6 @@ class TestLiveAPIStreamingResponses:
 
         system_prompt = (
             "You are a test assistant, involved in testing max token limits for your api. "
-            "Please respond to the following prompts and attempt to generate the number of "
-            "tokens specified in the prompt."
         )
 
         for max_tokens, size in test_cases:
@@ -164,9 +162,7 @@ class TestLiveAPIStreamingResponses:
                 ConversationMessage(
                     bot_index=0,
                     content=(
-                        f"Write about any part of English history that you choose until you hit the {size} max token limit."
-                        "Do not warn me that you cannot exceed your limits, I will try not to exceed them so proceed "
-                        "straight away with your response."
+                        f"Write a really long response that is several pages long on the role of AI in society."
                     ),
                 )
             ]
