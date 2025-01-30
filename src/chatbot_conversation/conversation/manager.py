@@ -18,7 +18,6 @@ from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import ConfigurationLoader
 from chatbot_conversation.conversation.prompt import SuffixManager
-
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils.logging_util import get_logger
@@ -149,7 +148,7 @@ class ConversationManager:
         elif round_num == self.config.rounds:
             postfix = self.config.last_round_postfix
 
-        if round_num == 1 or round_num == self.config.rounds:
+        if round_num in (1, self.config.rounds):
             for bot in self.bots:
                 self.suffix_manager.setup_round_suffix(bot, postfix)
 
@@ -161,6 +160,6 @@ class ConversationManager:
             round_num (int): Index of the current round.
         """
         # Post-round actions undoing system prompt adjustments
-        if round_num == 1 or round_num == self.config.rounds:
+        if round_num in (1, self.config.rounds):
             for bot in self.bots:
                 self.suffix_manager.cleanup_round_suffix(bot)

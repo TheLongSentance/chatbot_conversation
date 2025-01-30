@@ -59,16 +59,16 @@ from chatbot_conversation.utils.logging_util import get_logger
 
 # Timeout constants (in seconds)
 DEFAULT_TOTAL_TIMEOUT: Final[int] = 90  # Maximum time for total trip through API
-DEFAULT_API_TIMEOUT: Final[int] = 30 # Timeout for individual API calls 
+DEFAULT_API_TIMEOUT: Final[int] = 30  # Timeout for individual API calls
 DEFAULT_MAX_RETRIES: Final[int] = 5  # Maximum number of retry attempts
 DEFAULT_MIN_WAIT: Final[int] = 1
 DEFAULT_MAX_WAIT: Final[int] = 10
 DEFAULT_WAIT_MULTIPLIER: Final[float] = 1.5
 
-# Default maximum tokens for response generation to prevent excessive response 
+# Default maximum tokens for response generation to prevent excessive response
 # length. Value below chosen based on typical API limits and response size.
 # Prompts to bots refering to max_tokens (either defined by the default here or
-# on a bot-specific basis, should be use a number less than this value to avoid 
+# on a bot-specific basis, should be use a number less than this value to avoid
 # hitting the limit.
 DEFAULT_MAX_TOKENS: Final[int] = 750
 

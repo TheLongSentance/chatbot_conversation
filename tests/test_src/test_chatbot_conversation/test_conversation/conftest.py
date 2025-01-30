@@ -9,8 +9,8 @@ from chatbot_conversation.conversation import (
     ChatbotParamsOptData,
     ConversationConfig,
 )
-from chatbot_conversation.models import ChatbotBase, ConversationMessage
 from chatbot_conversation.conversation.prompt import SuffixManager
+from chatbot_conversation.models import ChatbotBase, ConversationMessage
 
 
 @pytest.fixture
