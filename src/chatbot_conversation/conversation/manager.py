@@ -131,6 +131,8 @@ class ConversationManager:
 
             # Store the complete response in conversation history
             self.conversation.append({"bot_index": bot.bot_index, "content": response})
+
+            # Log the conversation content for debugging
             logger.debug(
                 "Bot Class: %s, Bot Name: %s, Bot Index: %s, Updated conversation: : %s",
                 bot.__class__.__name__,
@@ -138,6 +140,7 @@ class ConversationManager:
                 bot.bot_index,
                 json.dumps(self.conversation, indent=2),
             )
+
             # Add separator after complete response
             self.display_manager.show_text("\n\n---\n\n")
         logger.info("Round completed successfully")
@@ -159,6 +162,15 @@ class ConversationManager:
             for bot in self.bots:
                 self.suffix_manager.setup_round_suffix(bot, postfix)
 
+                # Log the adjusted system prompt for debugging
+                logger.debug(
+                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, System Prompt: %s",
+                    bot.__class__.__name__,
+                    bot.name,
+                    bot.bot_index,
+                    bot.system_prompt,
+                )
+
     def round_cleanup(self, round_num: int) -> None:
         """
         Perform cleanup actions after finishing a round.
@@ -170,6 +182,15 @@ class ConversationManager:
         if round_num in (1, self.config.rounds):
             for bot in self.bots:
                 self.suffix_manager.cleanup_round_suffix(bot)
+
+                # # Log the adjusted system prompt for debugging
+                # logger.debug(
+                #     "Bot Class: %s, Bot Name: %s, Bot Index: %s, System Prompt: %s",
+                #     bot.__class__.__name__,
+                #     bot.name,
+                #     bot.bot_index,
+                #     bot.system_prompt,
+                # )
 
     def clean_truncated_response(self, response: str) -> str:
         """
