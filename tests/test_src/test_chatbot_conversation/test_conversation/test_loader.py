@@ -29,7 +29,7 @@ def test_load_valid_config(test_config_path: str) -> None:
     config: ConversationConfig = ConfigurationLoader.load_config(test_config_path)
     assert isinstance(config, ConversationConfig)
     assert config.author == "Brian Sentance"
-    assert config.rounds == 3
+    assert config.rounds == 5
     assert len(config.bots) == 3
     assert config.core_prompt is not None
     assert len(config.moderator_messages_opt) > 0
@@ -169,6 +169,33 @@ def test_moderator_messages_validation() -> None:
     ]
     with pytest.raises(ValueError, match="Round numbers exceed total rounds"):
         ConversationConfig(**config_data)
+
+
+def test_moderator_message_display_opt() -> None:
+    """Test moderator message display_opt configurations."""
+    config_data: Dict[str, Any] = {
+        "author": "Test Author",
+        "conversation_seed": "Test seed",
+        "rounds": 2,
+        "core_prompt": "Test {bot_name}",
+        "moderator_messages_opt": [
+            {"round_number": 1, "content": "Message 1"},  # No display_opt
+            {"round_number": 2, "content": "Message 2", "display_opt": False},
+        ],
+        "bots": [
+            {
+                "bot_name": "bot1",
+                "bot_prompt": "Valid prompt",
+                "bot_type": "type1",
+                "bot_version": "v1",
+            }
+        ],
+    }
+
+    config = ConversationConfig(**config_data)
+    assert len(config.moderator_messages_opt) == 2
+    assert config.moderator_messages_opt[0].display_opt is True  # Default value
+    assert config.moderator_messages_opt[1].display_opt is False  # Explicit value
 
 
 def test_bot_name_format_validation() -> None:
