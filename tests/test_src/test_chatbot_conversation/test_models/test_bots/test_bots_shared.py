@@ -140,9 +140,7 @@ class TestLiveAPIStreamingResponses:
             (None, "default"),
         ]
 
-        system_prompt = (
-            "You are a test assistant, involved in testing max token limits for your api. "
-        )
+        system_prompt = "You are a test assistant, involved in testing max token limits for your api. "
 
         for max_tokens, size in test_cases:
             # Create bot with specific token limit

@@ -108,6 +108,7 @@ def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -
 
     return bot_system_prompt
 
+
 def max_tokens_for_prompt(max_tokens: int) -> int:
     """
     Calculate the maximum number of tokens to use for a system prompt.
@@ -119,6 +120,7 @@ def max_tokens_for_prompt(max_tokens: int) -> int:
         int: The adjusted maximum number of tokens for the system prompt.
     """
     return int(max_tokens * MAX_TOKENS_BUFFER_MULTIPLIER)
+
 
 class SuffixManager:
     """Manages temporary suffixes for bot system prompts during conversation rounds."""

@@ -86,7 +86,9 @@ def test_suffix_manager_setup_round_suffix(mock_bot: ChatbotBase) -> None:
         f"with max tokens {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
     )
     suffix_manager.setup_round_suffix(mock_bot, suffix_template)
-    expected_suffix = f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
+    expected_suffix = (
+        f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
+    )
     assert mock_bot.system_prompt.endswith(expected_suffix)
 
 
