@@ -2,9 +2,10 @@
     "author": "",
     "conversation_seed": "",
     "rounds": 0,
-    "shared_prefix": "",
-    "first_round_postfix": "",
-    "last_round_postfix": "",
+    "core_prompt": "",
+    "moderator_messages_opt": [
+
+    ],
     "bots": [
 
     ]

@@ -8,6 +8,7 @@ from chatbot_conversation.conversation.loader import (
     ChatbotParamsOptData,
     ConfigurationLoader,
     ConversationConfig,
+    ModeratorMessage,
 )
 from chatbot_conversation.conversation.manager import ConversationManager
 
@@ -17,4 +18,5 @@ __all__ = [
     "ConversationConfig",
     "ConversationManager",
     "ConfigurationLoader",
+    "ModeratorMessage",
 ]

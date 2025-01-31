@@ -2,12 +2,13 @@
 
 This module contains test cases for the configuration loading and validation
 functionality, including testing for valid configurations, error cases, and
-parameter validation.
+parameter validation. It covers template variable validation, moderator message
+validation, and bot configuration validation.
 """
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import pytest
 
@@ -23,20 +24,22 @@ def test_load_valid_config(test_config_path: str) -> None:
     """Test loading a valid configuration file.
 
     Args:
-        test_config_path: Path to a valid test configuration file.
+        test_config_path: Path to a valid test configuration file
     """
     config: ConversationConfig = ConfigurationLoader.load_config(test_config_path)
     assert isinstance(config, ConversationConfig)
     assert config.author == "Brian Sentance"
     assert config.rounds == 3
     assert len(config.bots) == 3
+    assert config.core_prompt is not None
+    assert len(config.moderator_messages_opt) > 0
 
 
 def test_load_nonexistent_config(invalid_config_path: str) -> None:
     """Test loading a nonexistent configuration file raises FileNotFoundError.
 
     Args:
-        invalid_config_path: Path to a nonexistent configuration file.
+        invalid_config_path: Path to a nonexistent configuration file
     """
     with pytest.raises(FileNotFoundError):
         ConfigurationLoader.load_config(invalid_config_path)
@@ -46,7 +49,7 @@ def test_empty_config_validation(test_config_empty_path: str) -> None:
     """Test validation of an empty configuration file.
 
     Args:
-        test_config_empty_path: Path to an empty configuration file.
+        test_config_empty_path: Path to an empty configuration file
     """
     with pytest.raises(ValueError):
         ConfigurationLoader.load_config(test_config_empty_path)
@@ -58,9 +61,8 @@ def test_duplicate_bot_names() -> None:
         "author": "Test Author",
         "conversation_seed": "Test seed",
         "rounds": 1,
-        "shared_prefix": "",
-        "first_round_postfix": "",
-        "last_round_postfix": "",
+        "core_prompt": "Test prompt {bot_name}",
+        "moderator_messages": [],
         "bots": [
             {
                 "bot_name": "same_name",
@@ -75,10 +77,122 @@ def test_duplicate_bot_names() -> None:
                 "bot_version": "v2",
             },
         ],
-        "bot_params_opt": ChatbotParamsOptData(temperature=0.5, max_tokens=100),
     }
     with pytest.raises(ValueError, match="Duplicate bot names"):
         ConversationConfig(**config_data)
+
+
+def test_template_variables_validation() -> None:
+    """Test validation of template variables in core_prompt and bot_prompt."""
+    # Test invalid variable in core_prompt
+    config_data: Dict[str, Any] = {
+        "author": "Test Author",
+        "conversation_seed": "Test seed",
+        "rounds": 1,
+        "core_prompt": "Invalid {variable} here",
+        "moderator_messages": [],
+        "bots": [
+            {
+                "bot_name": "bot1",
+                "bot_prompt": "Valid prompt",
+                "bot_type": "type1",
+                "bot_version": "v1",
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="Invalid template variables"):
+        ConversationConfig(**config_data)
+
+    # Test invalid variable in bot_prompt
+    config_data["core_prompt"] = "Valid {bot_name} prompt"
+    config_data["bots"][0]["bot_prompt"] = "Invalid {unknown_var} here"
+    with pytest.raises(ValueError):
+        ConversationConfig(**config_data)
+
+
+def test_optional_moderator_messages() -> None:
+    """Test configuration with and without moderator messages."""
+    # Test with no moderator messages
+    config_data: Dict[str, Any] = {
+        "author": "Test Author",
+        "conversation_seed": "Test seed",
+        "rounds": 2,
+        "core_prompt": "Test {bot_name}",
+        "bots": [
+            {
+                "bot_name": "bot1",
+                "bot_prompt": "Valid prompt",
+                "bot_type": "type1",
+                "bot_version": "v1",
+            }
+        ],
+    }
+    config = ConversationConfig(**config_data)
+    assert len(config.moderator_messages_opt) == 0
+
+    # Test with moderator messages
+    config_data["moderator_messages_opt"] = [
+        {"round_number": 1, "content": "Message 1"},
+        {"round_number": 2, "content": "Message 2"},
+    ]
+    config = ConversationConfig(**config_data)
+    assert len(config.moderator_messages_opt) == 2
+
+
+def test_moderator_messages_validation() -> None:
+    """Test validation of moderator messages configuration."""
+    # Test duplicate round numbers
+    config_data: Dict[str, Any] = {
+        "author": "Test Author",
+        "conversation_seed": "Test seed",
+        "rounds": 2,
+        "core_prompt": "Test {bot_name}",
+        "moderator_messages_opt": [
+            {"round_number": 1, "content": "Message 1"},
+            {"round_number": 1, "content": "Message 2"},  # Duplicate round
+        ],
+        "bots": [
+            {
+                "bot_name": "bot1",
+                "bot_prompt": "Valid prompt",
+                "bot_type": "type1",
+                "bot_version": "v1",
+            }
+        ],
+    }
+    with pytest.raises(ValueError, match="Duplicate round numbers"):
+        ConversationConfig(**config_data)
+
+    # Test round number exceeding total rounds
+    config_data["moderator_messages_opt"] = [
+        {"round_number": 3, "content": "Message 1"}  # Exceeds total rounds (2)
+    ]
+    with pytest.raises(ValueError, match="Round numbers exceed total rounds"):
+        ConversationConfig(**config_data)
+
+
+def test_bot_name_format_validation() -> None:
+    """Test validation of bot name format."""
+    invalid_names: List[str] = ["_invalid", "invalid_", "invalid@name"]
+
+    for name in invalid_names:
+        config_data: Dict[str, Any] = {
+            "author": "Test Author",
+            "conversation_seed": "Test seed",
+            "rounds": 1,
+            "core_prompt": "Test {bot_name}",
+            "moderator_messages": [],
+            "bots": [
+                {
+                    "bot_name": name,
+                    "bot_prompt": "Valid prompt",
+                    "bot_type": "type1",
+                    "bot_version": "v1",
+                }
+            ],
+        }
+        with pytest.raises(ValueError, match="Invalid bot names"):
+            ConversationConfig(**config_data)
 
 
 def test_invalid_temperature() -> None:
@@ -115,7 +229,7 @@ def test_invalid_json_format(tmp_path: Path) -> None:
     """Test handling of malformed JSON configuration files.
 
     Args:
-        tmp_path: Temporary directory path for creating test files.
+        tmp_path: Temporary directory path for creating test files
     """
     invalid_json_path: Path = tmp_path / "invalid.json"
     with open(invalid_json_path, "w", encoding="utf-8") as f:
@@ -131,9 +245,8 @@ def test_zero_rounds() -> None:
         "author": "Test Author",
         "conversation_seed": "Test seed",
         "rounds": 0,  # Should be > 0
-        "shared_prefix": "",
-        "first_round_postfix": "",
-        "last_round_postfix": "",
+        "core_prompt": "Test {bot_name}",
+        "moderator_messages": [],
         "bots": [
             {
                 "bot_name": "bot1",
@@ -153,9 +266,8 @@ def test_empty_bots_list() -> None:
         "author": "Test Author",
         "conversation_seed": "Test seed",
         "rounds": 1,
-        "shared_prefix": "",
-        "first_round_postfix": "",
-        "last_round_postfix": "",
+        "core_prompt": "Test {bot_name}",
+        "moderator_messages": [],
         "bots": [],  # Should not be empty
     }
     with pytest.raises(ValueError):

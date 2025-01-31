@@ -1,3 +1,9 @@
+"""Test fixtures for chatbot conversation testing.
+
+This module provides pytest fixtures used across multiple test modules,
+including configuration data, mock objects, and manager instances.
+"""
+
 import os
 from typing import List
 from unittest.mock import Mock
@@ -8,6 +14,7 @@ from chatbot_conversation.conversation import (
     ChatbotConfigData,
     ChatbotParamsOptData,
     ConversationConfig,
+    ModeratorMessage,
 )
 from chatbot_conversation.conversation.prompt import SuffixManager
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
@@ -16,11 +23,21 @@ from chatbot_conversation.conversation.manager import ConversationManager
 
 @pytest.fixture
 def test_config_path() -> str:
+    """Provide path to test configuration file.
+
+    Returns:
+        str: Path to test configuration file
+    """
     return os.path.join(os.path.dirname(__file__), "../../../config/test_config.json")
 
 
 @pytest.fixture
 def test_config_empty_path() -> str:
+    """Provide path to empty test configuration file.
+
+    Returns:
+        str: Path to empty test configuration file
+    """
     return os.path.join(
         os.path.dirname(__file__), "../../../config/test_config_empty.json"
     )
@@ -28,12 +45,21 @@ def test_config_empty_path() -> str:
 
 @pytest.fixture
 def invalid_config_path() -> str:
+    """Provide path to nonexistent configuration file.
+
+    Returns:
+        str: Path to nonexistent configuration file
+    """
     return "nonexistent_config.json"
 
 
 @pytest.fixture
 def mock_bot() -> ChatbotBase:
-    """Create a mock chatbot for testing."""
+    """Create a mock chatbot for testing.
+
+    Returns:
+        ChatbotBase: Mock chatbot instance
+    """
     mock = Mock(spec=ChatbotBase)
     mock.name = "TestBot"
     mock.bot_index = 1
@@ -44,13 +70,21 @@ def mock_bot() -> ChatbotBase:
 
 @pytest.fixture
 def suffix_manager() -> SuffixManager:
-    """Provide a SuffixManager instance for testing."""
+    """Provide a SuffixManager instance for testing.
+
+    Returns:
+        SuffixManager: Instance for managing conversation suffixes
+    """
     return SuffixManager()
 
 
 @pytest.fixture
 def sample_conversation_data() -> List[ConversationMessage]:
-    """Return sample conversation data for testing."""
+    """Return sample conversation data for testing.
+
+    Returns:
+        List[ConversationMessage]: Sample conversation messages
+    """
     return [
         {"bot_index": 0, "content": "Test seed message"},
         {"bot_index": 1, "content": "Bot1 response"},
@@ -60,16 +94,20 @@ def sample_conversation_data() -> List[ConversationMessage]:
 
 @pytest.fixture
 def sample_conversation_config() -> ConversationConfig:
-    """
-    Provide a valid ConversationConfig with dictionary-based bots.
+    """Provide a valid ConversationConfig with sample data.
+
+    Returns:
+        ConversationConfig: Sample configuration for testing
     """
     return ConversationConfig(
         author="Test Author",
         conversation_seed="Test seed",
         rounds=2,
-        shared_prefix="Shared prefix",
-        first_round_postfix="First round postfix",
-        last_round_postfix="Last round postfix",
+        core_prompt="You are {bot_name}. Respond within {max_tokens} tokens.",
+        moderator_messages_opt=[
+            ModeratorMessage(round_number=1, content="Welcome to round 1"),
+            ModeratorMessage(round_number=2, content="Final round"),
+        ],
         bots=[
             ChatbotConfigData(
                 bot_name="Bot1",
@@ -97,13 +135,12 @@ def sample_conversation_config() -> ConversationConfig:
 
 @pytest.fixture
 def manager(test_config_path: str) -> ConversationManager:
-    """
-    Provide a ConversationManager instance for testing.
+    """Provide a ConversationManager instance for testing.
 
     Args:
-        test_config_path (str): Path to test configuration file.
+        test_config_path: Path to test configuration file
 
     Returns:
-        ConversationManager: Instance of ConversationManager.
+        ConversationManager: Instance of ConversationManager
     """
     return ConversationManager(test_config_path)

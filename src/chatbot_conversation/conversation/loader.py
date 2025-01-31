@@ -1,34 +1,33 @@
 """
 This module contains classes for loading and validating conversation configurations from JSON files.
 
-Classes:
-    ChatbotParamsOptData: Optional parameters for bot configuration.
-    ChatbotConfigData: Configuration model for a single bot participant.
-    ConversationConfig: Configuration model for the entire conversation.
-    ConfigurationLoader: Loads and validates conversation configurations.
+The module provides a robust configuration system that validates:
+- Bot configuration parameters (name format, uniqueness, etc.)
+- Template variable usage in prompts
+- Moderator message round numbers and uniqueness
+- Various required fields and their constraints
 
-Validation:
-    - Bot names must be unique within a conversation
-    - Temperature must be between 0.0 and 2.0 if provided
-    - Max tokens must be positive if provided
-    - Various required fields cannot be empty strings
+Classes:
+    ChatbotParamsOptData: Optional parameters for bot configuration
+    ChatbotConfigData: Configuration model for a single bot participant
+    ModeratorMessage: Configuration model for round-specific moderator messages
+    ConversationConfig: Configuration model for the entire conversation
+    ConfigurationLoader: Loads and validates conversation configurations
 """
 
 import json
+import re
 from collections import Counter
-from typing import List, Optional
-
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from typing import Dict, List, Optional
+from pydantic import BaseModel, Field, ValidationError, field_validator, ValidationInfo
 
 
 class ChatbotParamsOptData(BaseModel):
     """Optional parameters for bot configuration.
 
     Attributes:
-        temperature (float | None): Temperature parameter for response randomness.
-            Must be between 0.0 and 2.0 if provided.
-        max_tokens (int | None): Maximum tokens for response generation.
-            Must be a positive integer if provided.
+        temperature: Controls response randomness (0.0 to 2.0)
+        max_tokens: Maximum tokens for response generation
     """
 
     temperature: Optional[float] = Field(
@@ -48,13 +47,11 @@ class ChatbotConfigData(BaseModel):
     """Configuration model for a single bot participant in the conversation.
 
     Attributes:
-        bot_name (str): Unique identifier for the bot. Must be non-empty and unique
-            within the conversation.
-        bot_prompt (str): Initial system prompt for the bot. Must be non-empty.
-        bot_type (str): Type/model of the bot (e.g., 'gpt-4', 'claude'). Must be non-empty.
-        bot_version (str): Version identifier for the bot. Must be non-empty.
-        bot_params_opt (ChatbotParamsOptData): Optional parameters for the bot.
-            Includes temperature and max_tokens settings.
+        bot_name: Unique identifier for the bot
+        bot_prompt: Role-specific instructions for the bot
+        bot_type: Type of model to use (e.g., "GPT", "CLAUDE")
+        bot_version: Specific model version identifier
+        bot_params_opt: Optional configuration parameters
     """
 
     bot_name: str = Field(..., min_length=1, description="Bot name cannot be empty")
@@ -68,63 +65,185 @@ class ChatbotConfigData(BaseModel):
         description="Optional parameters for the bot",
     )
 
+    @field_validator("bot_prompt")
+    @classmethod
+    def validate_bot_prompt_templates(cls, v: str) -> str:
+        """Validate template variables in bot prompts.
+
+        Args:
+            v: The bot prompt string to validate
+
+        Returns:
+            str: The validated bot prompt
+
+        Raises:
+            ValueError: If template variables are malformed or invalid
+        """
+        if v.count("{") != v.count("}"):
+            raise ValueError("Mismatched template variable braces in bot_prompt")
+
+        allowed_vars = {"bot_name", "max_tokens"}
+        template_vars = re.findall(r"\{([^}]+)\}", v)
+        invalid_vars = set(template_vars) - allowed_vars
+        if invalid_vars:
+            raise ValueError(
+                f"Invalid template variables in bot_prompt: {invalid_vars}"
+            )
+        return v
+
+
+class ModeratorMessage(BaseModel):
+    """Configuration model for moderator messages at specific rounds.
+
+    Attributes:
+        round_number: The conversation round this message applies to
+        content: The message content to be displayed
+    """
+
+    round_number: int = Field(gt=0, description="Round number must be positive")
+    content: str = Field(
+        ..., min_length=1, description="Message content cannot be empty"
+    )
+
 
 class ConversationConfig(BaseModel):
     """Configuration model for managing a multi-bot conversation.
 
     Attributes:
-        author (str): Creator or owner of the conversation. Must be non-empty.
-        conversation_seed (str): Initial topic or context for the conversation.
-            Must be non-empty.
-        rounds (int): Number of conversation rounds to execute. Must be positive.
-        shared_prefix (str): Common prefix added to all bot prompts. Can be empty.
-        first_round_postfix (str): Text appended to the first round's prompt.
-            Can be empty.
-        last_round_postfix (str): Text appended to the final round's prompt.
-            Can be empty.
-        bots (List[ChatbotConfigData]): List of bot configurations for participants.
-            Must contain at least one bot and all bot names must be unique.
+        author: Name of the configuration author
+        conversation_seed: Initial prompt to start the discussion
+        rounds: Number of conversation rounds
+        core_prompt: Base instructions provided to all bots
+        moderator_messages: Optional list of round-specific moderator messages
+        bots: List of bot configurations
+
     """
 
-    author: str = Field(..., min_length=1, description="Author of the conversation")
+    author: str = Field(..., min_length=1, description="Author name cannot be empty")
     conversation_seed: str = Field(
         ..., min_length=1, description="Conversation seed cannot be empty"
     )
     rounds: int = Field(gt=0, description="Rounds must be a positive integer")
-    shared_prefix: str  # Can be empty string
-    first_round_postfix: str  # Can be empty string
-    last_round_postfix: str  # Can be empty string
+    core_prompt: str = Field(
+        ..., min_length=1, description="Core prompt cannot be empty"
+    )
+    moderator_messages_opt: List[ModeratorMessage] = Field(
+        default_factory=list, description="Optional round-specific moderator messages"
+    )
     bots: List[ChatbotConfigData] = Field(
         ..., min_length=1, description="Bots list cannot be empty"
     )
+
+    @field_validator("core_prompt")
+    @classmethod
+    def validate_template_variables(cls, v: str) -> str:
+        """Validate that template variables in core_prompt are properly formatted.
+
+        Args:
+            v: The core_prompt string to validate
+
+        Returns:
+            str: The validated core_prompt string
+
+        Raises:
+            ValueError: If template variables are malformed or invalid
+        """
+        if v.count("{") != v.count("}"):
+            raise ValueError("Mismatched template variable braces in core_prompt")
+
+        allowed_vars = {"bot_name", "max_tokens"}
+        template_vars = re.findall(r"\{([^}]+)\}", v)
+        invalid_vars = set(template_vars) - allowed_vars
+        if invalid_vars:
+            raise ValueError(f"Invalid template variables found: {invalid_vars}")
+        return v
 
     @field_validator("bots")
     @classmethod
     def validate_unique_bot_names(
         cls, v: List[ChatbotConfigData]
     ) -> List[ChatbotConfigData]:
-        """Validate that bot names are unique within the configuration.
+        """Validate that bot names are unique and properly formatted.
 
         Args:
-            v (List[ChatbotConfigData]): List of bot configurations to validate
+            v: List of bot configurations to validate
 
         Returns:
             List[ChatbotConfigData]: The validated list of bot configurations
 
         Raises:
-            ValueError: If duplicate bot names are found in the configuration
+            ValueError: If duplicate or invalid bot names are found
         """
-        names = [bot.bot_name for bot in v]
-        name_counts = Counter(names)
-        duplicates = [name for name, count in name_counts.items() if count > 1]
+        bot_name_pattern = re.compile(r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$")
+
+        # Check for invalid name formats
+        invalid_names = [
+            bot.bot_name for bot in v if not bot_name_pattern.match(bot.bot_name)
+        ]
+        if invalid_names:
+            raise ValueError(
+                f"Invalid bot names (must be alphanumeric with optional underscores, "
+                f"not starting/ending with underscore): {', '.join(invalid_names)}"
+            )
+
+        # Check for duplicates
+        names: List[str] = [bot.bot_name for bot in v]
+        name_counts: Dict[str, int] = Counter(names)
+        duplicates: List[str] = [
+            name for name, count in name_counts.items() if count > 1
+        ]
         if duplicates:
             raise ValueError(
                 f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
             )
         return v
 
+    @field_validator("moderator_messages_opt")
+    @classmethod
+    def validate_moderator_messages(
+        cls, v: List[ModeratorMessage], info: ValidationInfo
+    ) -> List[ModeratorMessage]:
+        """Validate moderator messages round numbers if present.
 
-class ConfigurationLoader:  # pylint: disable=too-few-public-methods
+        Args:
+            v: List of moderator messages to validate
+            info: Validation context containing other field values
+
+        Returns:
+            List[ModeratorMessage]: The validated list of moderator messages
+
+        Raises:
+            ValueError: If round numbers are invalid or duplicated
+        """
+        if not v:  # Empty list is valid
+            return v
+
+        total_rounds: Optional[int] = info.data.get("rounds")
+        if total_rounds is None:
+            raise ValueError("Cannot validate moderator messages without total rounds")
+
+        # Check round numbers are unique
+        round_nums: List[int] = [msg.round_number for msg in v]
+        round_counts: Dict[int, int] = Counter(round_nums)
+        duplicates: List[int] = [
+            num for num, count in round_counts.items() if count > 1
+        ]
+        if duplicates:
+            raise ValueError(
+                f"Duplicate round numbers found in moderator messages: {', '.join(map(str, duplicates))}"
+            )
+
+        # Check round numbers don't exceed total rounds
+        invalid_rounds: List[int] = [num for num in round_nums if num > total_rounds]
+        if invalid_rounds:
+            raise ValueError(
+                f"Round numbers exceed total rounds ({total_rounds}): {', '.join(map(str, invalid_rounds))}"
+            )
+
+        return v
+
+
+class ConfigurationLoader:
     """Handles loading and validation of conversation configurations from JSON files.
 
     This class provides static methods to safely load and parse JSON configuration files,
@@ -137,7 +256,7 @@ class ConfigurationLoader:  # pylint: disable=too-few-public-methods
         """Load and validate a conversation configuration from a JSON file.
 
         Args:
-            config_path (str): Path to the JSON configuration file
+            config_path: Path to the JSON configuration file
 
         Returns:
             ConversationConfig: Validated configuration object
