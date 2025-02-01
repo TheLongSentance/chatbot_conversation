@@ -36,7 +36,7 @@ class BotsInitializer:
         for bot_config in config.bots:
             # Construct the system prompt for the bot
             bot_system_prompt = construct_system_prompt(
-                config.shared_prefix, bot_config
+                config.core_prompt, bot_config
             )
 
             # Create ChatbotConfig object

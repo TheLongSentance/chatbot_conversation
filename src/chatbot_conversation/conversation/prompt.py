@@ -74,12 +74,12 @@ def remove_suffix(bot: ChatbotBase, text_to_remove: str) -> None:
         bot.system_prompt = bot.system_prompt[: -len(text_to_remove)]
 
 
-def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -> str:
+def construct_system_prompt(core_prompt: str, bot_config: ChatbotConfigData) -> str:
     """
     Construct the system prompt for a bot based on the shared prefix and bot configuration.
 
     Args:
-        shared_prefix (str): The shared prefix for the system prompt.
+        core_prompt (str): The shared prefix for the system prompt.
         bot_config (ChatbotConfigData): The configuration for the bot.
 
     Returns:
@@ -87,8 +87,8 @@ def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -
 
     Example:
         >>> bot_config = ChatbotConfigData(bot_name="Bot1", bot_prompt="You are Bot1.")
-        >>> construct_system_prompt("Shared prefix: ", bot_config)
-        'Shared prefix: You are Bot1.'
+        >>> construct_system_prompt("Core prompt: ", bot_config)
+        'Core prompt: You are Bot1.'
     """
     if bot_config.bot_params_opt.max_tokens is None:
         max_tokens = DEFAULT_MAX_TOKENS
@@ -97,7 +97,7 @@ def construct_system_prompt(shared_prefix: str, bot_config: ChatbotConfigData) -
 
     max_tokens = max_tokens_for_prompt(max_tokens)
 
-    bot_system_prompt = shared_prefix + bot_config.bot_prompt
+    bot_system_prompt = core_prompt + bot_config.bot_prompt
     bot_system_prompt = replace_variables(
         bot_system_prompt,
         {

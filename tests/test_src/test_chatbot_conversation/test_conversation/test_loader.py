@@ -180,7 +180,7 @@ def test_moderator_message_display_opt() -> None:
         "core_prompt": "Test {bot_name}",
         "moderator_messages_opt": [
             {"round_number": 1, "content": "Message 1"},  # No display_opt
-            {"round_number": 2, "content": "Message 2", "display_opt": False},
+            {"round_number": 2, "content": "Message 2", "display_opt": True},
         ],
         "bots": [
             {
@@ -194,8 +194,8 @@ def test_moderator_message_display_opt() -> None:
 
     config = ConversationConfig(**config_data)
     assert len(config.moderator_messages_opt) == 2
-    assert config.moderator_messages_opt[0].display_opt is True  # Default value
-    assert config.moderator_messages_opt[1].display_opt is False  # Explicit value
+    assert config.moderator_messages_opt[0].display_opt is False  # Default value
+    assert config.moderator_messages_opt[1].display_opt is True  # Explicit value
 
 
 def test_bot_name_format_validation() -> None:

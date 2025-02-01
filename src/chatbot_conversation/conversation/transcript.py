@@ -8,13 +8,14 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, TextIO
+from typing import List, TextIO, Set
 
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.models.base import ConversationMessage
 
-# relative import to avoid circular import:
-from ..version import __version__
+# specific import path to avoid circular from package:
+# from ..version import __version__
+from chatbot_conversation.version import __version__
 
 # Constants
 TRANSCRIPT_FILE_STUB: str = "transcript_"
@@ -67,6 +68,13 @@ class TranscriptManager:
         num_rounds = config.rounds
         num_bots = len(config.bots)
 
+        # Get set of hidden moderator message rounds
+        hidden_moderator_rounds: Set[int] = {
+            msg.round_number
+            for msg in config.moderator_messages_opt
+            if not msg.display_opt
+        }
+
         try:
             file_path.parent.mkdir(parents=True, exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as file:
@@ -74,12 +82,29 @@ class TranscriptManager:
                 file.write(f"# {conversation[0]['content']}\n\n")
 
                 # Write conversation content
-                round_index = 1
-                for i, message in enumerate(conversation[1:], start=1):
-                    if (i - 1) % num_bots == 0:
-                        file.write(f"## Round {round_index} of {num_rounds}\n\n")
-                        round_index += 1
-                    file.write(f"{message['content']}\n\n---\n\n")
+                round_num = 1
+                bot_round_count = 0
+                announce_round = True
+                for message in conversation[1:]:
+
+                    if announce_round: # if new round
+                        file.write(f"## Round {round_num} of {num_rounds}\n\n")
+                        announce_round = False # reset announcement flag
+
+                    if message["bot_index"] != 0: # if a bot not moderator
+
+                        # Write bot message
+                        file.write(f"{message['content']}\n\n---\n\n")
+
+                        bot_round_count += 1 # count bots in round so far
+                        if bot_round_count == num_bots: # if all bots have responded in round
+                            round_num += 1  # increment round number
+                            announce_round = True # announce this new round in next iteration
+                            bot_round_count = 0 # reset bot count
+
+                    # else must be a moderator message so immediately test whether to display
+                    elif round_num not in hidden_moderator_rounds:
+                        file.write(f"{message['content']}\n\n---\n\n")
 
                 # Write metadata
                 TranscriptManager._write_metadata(file, config, config_path)

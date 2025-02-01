@@ -60,8 +60,12 @@ class ConversationManager:
         # Display conversation seed as title
         self.display_manager.show_text(f"# {self.config.conversation_seed}\n")
 
-        for round_index in range(self.config.rounds):
-            self.manage_round(round_index + 1)
+        # Run conversation for configured number of rounds 1 to num_rounds
+        for round_num in range(1, self.config.rounds + 1):
+            self.display_manager.show_text(
+                f"## Round {round_num} of {self.config.rounds}\n\n---\n\n"
+            )
+            self.run_round(round_num)
 
         # Conversation completed
         completion_message = (
@@ -79,28 +83,28 @@ class ConversationManager:
             f"`{transcript_path}`\n\n---\n\n"
         )
 
-    def manage_round(self, round_num: int) -> None:
-        """
-        Manage the conversation for a single round.
-
-        Args:
-            round_index (int): Index of the current round.
-        """
-        self.display_manager.show_text(
-            f"## Round {round_num} of {self.config.rounds}\n\n---\n\n"
-        )
-
-        self.round_setup(round_num)
-
-        self.run_round()
-
-        self.round_cleanup(round_num)
-
-    def run_round(self) -> None:
+    def run_round(self, round_num: int) -> None:
         """
         Run one round of responses from all bots.
         """
         logger.debug("Starting new conversation round")
+
+        # Check for moderator message for this round
+        for moderator_msg in self.config.moderator_messages_opt:
+            if moderator_msg.round_number == round_num:
+                moderator_content = f"**Moderator**: {moderator_msg.content}"
+                # Always add to conversation history
+                self.conversation.append(
+                    {"bot_index": 0, "content": moderator_content}
+                )
+                # Only display if display_opt is True
+                if moderator_msg.display_opt:
+                    self.display_manager.show_text(
+                        f"{moderator_content}\n\n---\n\n"
+                    )
+                break  # Only one moderator message per round
+
+        # After checking for moderator, now run responses from all bots
         for bot in self.bots:
             try:
                 # Use show_streaming_text to handle streaming response
@@ -144,53 +148,6 @@ class ConversationManager:
             # Add separator after complete response
             self.display_manager.show_text("\n\n---\n\n")
         logger.info("Round completed successfully")
-
-    def round_setup(self, round_num: int) -> None:
-        """
-        Perform setup actions before starting a new round.
-
-        Args:
-            round_num (int): Index of the current round.
-        """
-        postfix: str = ""
-        if round_num == 1:
-            postfix = self.config.first_round_postfix
-        elif round_num == self.config.rounds:
-            postfix = self.config.last_round_postfix
-
-        if round_num in (1, self.config.rounds):
-            for bot in self.bots:
-                self.suffix_manager.setup_round_suffix(bot, postfix)
-
-                # Log the adjusted system prompt for debugging
-                logger.debug(
-                    "Bot Class: %s, Bot Name: %s, Bot Index: %s, System Prompt: %s",
-                    bot.__class__.__name__,
-                    bot.name,
-                    bot.bot_index,
-                    bot.system_prompt,
-                )
-
-    def round_cleanup(self, round_num: int) -> None:
-        """
-        Perform cleanup actions after finishing a round.
-
-        Args:
-            round_num (int): Index of the current round.
-        """
-        # Post-round actions undoing system prompt adjustments
-        if round_num in (1, self.config.rounds):
-            for bot in self.bots:
-                self.suffix_manager.cleanup_round_suffix(bot)
-
-                # # Log the adjusted system prompt for debugging
-                # logger.debug(
-                #     "Bot Class: %s, Bot Name: %s, Bot Index: %s, System Prompt: %s",
-                #     bot.__class__.__name__,
-                #     bot.name,
-                #     bot.bot_index,
-                #     bot.system_prompt,
-                # )
 
     def clean_truncated_response(self, response: str) -> str:
         """
