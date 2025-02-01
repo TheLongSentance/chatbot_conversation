@@ -105,7 +105,7 @@ class ModeratorMessage(BaseModel):
         ..., min_length=1, description="Message content cannot be empty"
     )
     display_opt: bool = Field(
-        default=True,
+        default=False,
         description="Optional flag to control message display"
     )
 
