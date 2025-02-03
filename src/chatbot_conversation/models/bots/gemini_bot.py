@@ -127,11 +127,7 @@ class GeminiChatbot(ChatbotBase):
         # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
         google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
 
-        # initialise api here, but will be updated in _generate_response
-        # when system prompt is set or updated since it is not passed in
-        # the generate_content call for Gemini as either a parameter or
-        # part of the message history
-
+        # initialise api here
         self._initialize_model_api()
 
     @property
@@ -196,17 +192,6 @@ class GeminiChatbot(ChatbotBase):
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
-        # test if system prompt has changed and re-initialize API in order
-        # to reset the system prompt for Gemini API. This is not typical
-        # for other models as they include system prompt in either:
-        # - as a parameter in the api call (e.g. Claude)
-        # - or as part of the message history (e.g. OpenAI, Ollama)
-        # for Gemini, this will happen when the system prompt is first set
-        # and whenever it is updated (first round, after first round, before last)
-
-        if self.gemini_system_prompt_needs_update:
-            self._initialize_model_api()
-
         message = (
             self.model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
                 formatted_messages
@@ -259,7 +244,6 @@ class GeminiChatbot(ChatbotBase):
                 max_output_tokens=self.model_max_tokens,
             ),
         )
-        self.gemini_system_prompt_updated()
 
     def _get_text_from_chunk(self, chunk: Any) -> str:
         """
@@ -288,42 +272,7 @@ class GeminiChatbot(ChatbotBase):
         Returns:
             Iterator[Any]: Iterator yielding response chunks from Gemini's streaming API
         """
-        if self.gemini_system_prompt_needs_update:
-            self._initialize_model_api()
-
         return self.model_api.generate_content(  # type: ignore
             self._format_conv_for_gemini_api(conversation),
             stream=True,
         )
-
-    @ChatbotBase.system_prompt.setter  # type: ignore
-    def system_prompt(self, value: str) -> None:
-        """
-        Set the system prompt content.
-
-        Args:
-            value (str): The new system prompt content.
-
-        Raises:
-            ValueError: If the system prompt is empty or contains only whitespace
-        """
-        if not value or not value.strip():
-            raise ValueError("System prompt cannot be empty")
-        self._system_prompt = value
-        self._gemini_system_prompt_needs_update = True
-
-    @property
-    def gemini_system_prompt_needs_update(self) -> bool:
-        """
-        Check if the system prompt needs to be updated in the model.
-
-        Returns:
-            bool: True if the system prompt needs to be updated, False otherwise.
-        """
-        return self._gemini_system_prompt_needs_update
-
-    def gemini_system_prompt_updated(self) -> None:
-        """
-        Mark the model system prompt as updated.
-        """
-        self._gemini_system_prompt_needs_update = False

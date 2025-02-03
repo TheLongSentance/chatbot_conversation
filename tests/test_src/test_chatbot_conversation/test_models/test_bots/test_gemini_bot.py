@@ -91,35 +91,6 @@ class TestGeminiChatbot:
         assert gen_config.temperature == bot.model_temperature
         assert gen_config.max_output_tokens == bot.model_max_tokens
 
-    @patch("google.generativeai.GenerativeModel")
-    def test_system_prompt_reinit(
-        self,
-        mock_gemini_model: MagicMock,
-        gemini_config_for_tests: ChatbotConfig,
-    ) -> None:
-        """Test API reinitialization when system prompt changes"""
-        # Setup mock response
-        mock_response = MagicMock()
-        mock_response.text = "Test response"
-        mock_gemini_model.return_value.generate_content.return_value = mock_response
-
-        # Create bot
-        bot = GeminiChatbot(gemini_config_for_tests)
-        conversation: list[ConversationMessage] = [{"bot_index": 0, "content": "Hello"}]
-
-        # First call should initialize model
-        initial_prompt = bot.system_prompt
-        bot._generate_response(conversation)  # pyright: ignore[reportPrivateUsage]
-        assert mock_gemini_model.call_args[1]["system_instruction"] == initial_prompt
-
-        # Change system prompt
-        new_prompt = "You are now a different assistant"
-        bot.system_prompt = new_prompt
-
-        # Second call should reinitialize with new prompt
-        bot._generate_response(conversation)  # pyright: ignore[reportPrivateUsage]
-        assert mock_gemini_model.call_args[1]["system_instruction"] == new_prompt
-
     def test_format_conv_for_gemini_api(self, gemini_chatbot: GeminiChatbot) -> None:
         """Test conversation formatting for Gemini API"""
         # Create test conversation with mixed bot and user messages
@@ -146,20 +117,3 @@ class TestGeminiChatbot:
         assert formatted[1] == {"role": "model", "parts": conversation[1]["content"]}
         assert formatted[2] == {"role": "user", "parts": conversation[2]["content"]}
 
-
-class TestGeminiChatbotSystemPrompt:
-    """Test system prompt handling in GeminiChatbot"""
-
-    def test_update_system_prompt(
-        self,
-        gemini_config_for_tests: ChatbotConfig,
-    ) -> None:
-        """Test system prompt update functionality"""
-        bot = GeminiChatbot(gemini_config_for_tests)
-
-        new_prompt = "New system prompt"
-        bot.system_prompt = new_prompt
-        assert bot.system_prompt == new_prompt
-        assert bot.gemini_system_prompt_needs_update  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
-        bot.gemini_system_prompt_updated()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
-        assert not bot.gemini_system_prompt_needs_update  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
