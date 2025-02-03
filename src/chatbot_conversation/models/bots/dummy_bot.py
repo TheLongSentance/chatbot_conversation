@@ -14,7 +14,7 @@ Key Components:
 
 import random
 import re
-from typing import Any, ClassVar, Iterator, List
+from typing import Any, ClassVar, Iterator, List, Optional
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -68,6 +68,21 @@ class DummyChatbot(ChatbotBase):
         "Ask me anything, I'm here to help.",
         "What would you like to know today?",
     ]
+
+    @classmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
+
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if
+            versions are not applicable/available
+
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        # Dummy bot has no versions, so return None
+        return None
 
     @classmethod
     def _get_class_model_type(cls) -> str:

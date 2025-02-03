@@ -7,7 +7,7 @@ Fixtures:
     chatbot_factory: Creates an instance of ChatbotFactory.
 """
 
-from typing import List, Type
+from typing import List, Type, Optional
 
 import pytest
 
@@ -66,6 +66,11 @@ def dummy_bot_class() -> Type[ChatbotBase]:
 
     class DummyBot(ChatbotBase):
         """Minimal ChatbotBase implementation for testing."""
+
+        @classmethod
+        def available_versions(cls) -> Optional[List[str]]:
+            """Return list of valid versions for testing."""
+            return ["1.0", "2.0", "3.0"]
 
         @classmethod
         def _get_class_model_type(cls) -> str:

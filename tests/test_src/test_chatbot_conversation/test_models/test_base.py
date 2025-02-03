@@ -545,3 +545,70 @@ class TestRetryBehavior:
         # Verify the wrapped exception is ConnectionError
         assert isinstance(exc_info.value.last_attempt.exception(), ConnectionError)
         assert str(exc_info.value.last_attempt.exception()) == "Timeout error"
+
+
+@pytest.mark.parametrize("bot_class", bot_classes)
+class TestChatbotBaseVersionValidation:
+    """Test version validation in ChatbotBase"""
+
+    def test_valid_model_version(self, bot_class: type[ChatbotBase]) -> None:
+        """Test that valid model versions are accepted"""
+        versions = bot_class.available_versions()
+        if versions is not None:
+            config = ChatbotConfig(
+                name="ValidVersionBot",
+                system_prompt="test",
+                model=ChatbotModel(
+                    type=bot_class.__name__.replace("Chatbot", "").upper(),
+                    version=versions[0],  # Use first available version
+                ),
+            )
+            bot = bot_class(config)
+            assert bot.model_version == versions[0]
+
+    def test_invalid_model_version(self, bot_class: type[ChatbotBase]) -> None:
+        """Test that invalid model versions are rejected"""
+        versions = bot_class.available_versions()
+        if versions is not None:
+            with pytest.raises(ValueError, match="Invalid model version"):
+                config = ChatbotConfig(
+                    name="InvalidVersionBot",
+                    system_prompt="test",
+                    model=ChatbotModel(
+                        type=bot_class.__name__.replace("Chatbot", "").upper(),
+                        version="invalid_version",
+                    ),
+                )
+                bot_class(config)
+
+    def test_none_available_versions(self, bot_class: type[ChatbotBase], mocker: MockFixture) -> None:
+        """Test that None available_versions skips version validation"""
+        # Mock available_versions to return None
+        mocker.patch.object(bot_class, "available_versions", return_value=None)
+        
+        config = ChatbotConfig(
+            name="NoVersionValidationBot",
+            system_prompt="test",
+            model=ChatbotModel(
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="any_version",  # Should accept any version
+            ),
+        )
+        bot = bot_class(config)
+        assert bot.model_version == "any_version"
+
+    def test_empty_available_versions(self, bot_class: type[ChatbotBase], mocker: MockFixture) -> None:
+        """Test that empty available_versions list rejects all versions"""
+        # Mock available_versions to return empty list
+        mocker.patch.object(bot_class, "available_versions", return_value=[])
+        
+        with pytest.raises(ValueError, match="Invalid model version"):
+            config = ChatbotConfig(
+                name="EmptyVersionsBot",
+                system_prompt="test",
+                model=ChatbotModel(
+                    type=bot_class.__name__.replace("Chatbot", "").upper(),
+                    version="any_version",
+                ),
+            )
+            bot_class(config)
