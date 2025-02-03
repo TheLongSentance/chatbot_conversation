@@ -16,9 +16,9 @@ from chatbot_conversation.conversation import (
     ConversationConfig,
     ModeratorMessage,
 )
+from chatbot_conversation.conversation.manager import ConversationManager
 from chatbot_conversation.conversation.prompt import SuffixManager
 from chatbot_conversation.models import ChatbotBase, ConversationMessage
-from chatbot_conversation.conversation.manager import ConversationManager
 
 
 @pytest.fixture

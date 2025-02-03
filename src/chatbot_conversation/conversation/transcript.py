@@ -8,7 +8,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, TextIO, Set
+from typing import List, Set, TextIO
 
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.models.base import ConversationMessage

@@ -19,7 +19,8 @@ import json
 import re
 from collections import Counter
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field, ValidationError, field_validator, ValidationInfo
+
+from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator
 
 
 class ChatbotParamsOptData(BaseModel):

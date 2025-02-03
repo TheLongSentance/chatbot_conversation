@@ -4,10 +4,10 @@ Unit tests for the prompt management functionality in prompt.py.
 
 from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.prompt import (
-    add_suffix,
     BOT_NAME_VARIABLE_PLACEHOLDER,
-    construct_system_prompt,
     MAX_TOKENS_VARIABLE_PLACEHOLDER,
+    add_suffix,
+    construct_system_prompt,
     remove_suffix,
     replace_variables,
 )
