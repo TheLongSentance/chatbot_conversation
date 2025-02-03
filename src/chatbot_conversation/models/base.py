@@ -1,22 +1,17 @@
 """
 Core framework for building AI chatbot systems.
 
-Provides a comprehensive architecture for implementing AI chatbots with support for:
-- Multiple language model backends and APIs
-- Message format standardization and history management
-- Configurable system prompts and runtime parameters
-- Fault-tolerant API communication with retry logic
-- Bot instance uniqueness and validation
-- Streaming response capabilities
-- Temperature and token limit controls
+Provides architecture for implementing AI chatbots with:
+- Language model backends and APIs
+- Message history management
+- System prompts and runtime parameters
+- Fault-tolerant API communication
+- Bot instance uniqueness
+- Streaming responses
+- Temperature and token controls
 
-Key Components:
-- Message Classes: ChatMessage (API format) and ConversationMessage (internal format)
-- Configuration Classes: ChatbotTimeout, ChatbotParamsOpt, ChatbotModel, ChatbotConfig
-- Base Implementation: ChatbotBase abstract class with core functionality
-
-Usage:
-    Extend ChatbotBase to implement specific model backends:
+Implementation:
+    Extend ChatbotBase to implement model backends:
     ```python
     class MyModelBot(ChatbotBase):
         @property
@@ -95,14 +90,11 @@ logger = get_logger("models")
 
 class ChatMessage(TypedDict):
     """
-    Standardized message format for API communication.
-
-    Used to structure messages in a format compatible with common LLM APIs,
-    maintaining consistent role attribution and content formatting.
-
+    Message format for API communication.
+    
     Attributes:
-        role (str): Message source identifier ('system', 'user', 'assistant')
-        content (str): Actual message text content
+        role: Message source ('system', 'user', 'assistant')
+        content: Message text
     """
 
     role: str
@@ -112,13 +104,10 @@ class ChatMessage(TypedDict):
 class ConversationMessage(TypedDict):
     """
     Internal message format for conversation tracking.
-
-    Manages message history with bot attribution for multi-bot conversations.
-    Used for state management before converting to API-specific formats.
-
+    
     Attributes:
-        bot_index (int): Unique identifier of the source bot
-        content (str): Message text content
+        bot_index: Unique identifier of source bot
+        content: Message text
     """
 
     bot_index: int
@@ -128,18 +117,15 @@ class ConversationMessage(TypedDict):
 @dataclass
 class ChatbotTimeout:
     """
-    Configuration for API communication timeouts and retry behavior.
-
-    Manages timing parameters for reliable API operations with exponential
-    backoff retry logic for handling transient failures.
-
+    Configuration for API timeouts and retries.
+    
     Attributes:
-        total (int): Maximum total time in seconds for API operation completion
-        api_timeout (int): Timeout in seconds for individual API calls
-        max_retries (int): Maximum number of retry attempts
-        min_wait (int): Minimum delay in seconds between retries
-        max_wait (int): Maximum delay in seconds between retries
-        wait_multiplier (float): Exponential backoff multiplier for retry delays
+        total: Maximum total time for API operation (seconds)
+        api_timeout: Timeout for individual API calls (seconds)
+        max_retries: Maximum retry attempts
+        min_wait: Minimum delay between retries (seconds)
+        max_wait: Maximum delay between retries (seconds)
+        wait_multiplier: Exponential backoff multiplier
     """
 
     total: int = DEFAULT_TOTAL_TIMEOUT
@@ -153,11 +139,11 @@ class ChatbotTimeout:
 @dataclass
 class ChatbotParamsOpt:
     """
-    Runtime optional parameters for chatbot instances.
-
+    Optional runtime parameters.
+    
     Attributes:
-        temperature (Optional[float]): Temperature setting for response generation
-        max_tokens (Optional[int]): Maximum tokens for response generation
+        temperature: Response randomness (0.0-1.0)
+        max_tokens: Maximum response length
     """
 
     temperature: Optional[float] = None
@@ -167,12 +153,12 @@ class ChatbotParamsOpt:
 @dataclass
 class ChatbotModel:
     """
-    Runtime configuration for model information in chatbot instances.
-
+    Model configuration.
+    
     Attributes:
-        type (str): The type of the model
-        version (str): The version of the model
-        params_opt (ChatbotParamsOpt): Optional runtime parameters for the model
+        type: Model type identifier
+        version: Model version 
+        params_opt: Optional runtime parameters
     """
 
     type: str
@@ -183,13 +169,13 @@ class ChatbotModel:
 @dataclass
 class ChatbotConfig:
     """
-    Runtime configuration for chatbot instances.
-
+    Chatbot instance configuration.
+    
     Attributes:
-        name (str): The name of the bot
-        system_prompt (str): The system prompt for the bot
-        model (ChatbotModel): The model configuration for the bot
-        timeout (ChatbotTimeout): The timeout and retry configuration
+        name: Bot identifier
+        system_prompt: Initial system instructions
+        model: Model configuration
+        timeout: Timeout settings
     """
 
     name: str
@@ -223,48 +209,42 @@ class ChatbotBase(ABC):
     """
     Abstract base class for chatbot implementations.
 
-    Provides core functionality and structure for building model-specific chatbots:
+    Core Features:
     - Unique bot instance management
     - System prompt handling
-    - Conversation state tracking
-    - API communication with retry logic
-    - Response streaming capabilities
-    - Comprehensive error handling
-    - Temperature and token limit management
+    - Conversation tracking
+    - API communication with retries
+    - Response streaming
+    - Temperature and token management
 
-    Implementation Requirements:
-        Subclasses must implement:
-        - _get_class_model_type(): Define the model type identifier
-        - _generate_response(): Implement model-specific response generation
-        - _should_retry_on_exception(): Define retry logic for specific errors
-        - _get_text_from_chunk(): Extract text from streaming response chunks
-        - _generate_stream(): Implement model-specific response streaming
-        - model_min_temperature: Property defining minimum temperature value
-        - model_max_temperature: Property defining maximum temperature value
-        - model_default_temperature: Property defining default temperature value
+    Required Implementations:
+    - _get_class_model_type(): Model type identifier
+    - _generate_response(): Model-specific response generation
+    - _should_retry_on_exception(): Retry logic
+    - _get_text_from_chunk(): Stream chunk parsing
+    - _generate_stream(): Response streaming
+    - Temperature properties (min/max/default)
 
-    Class Attributes:
-        _total_count (int): Total number of bot instances created
-        _used_names (Set[str]): Tracking of assigned bot names
-
-    Instance Attributes:
-        name (str): Unique bot identifier
-        system_prompt (str): Current system instructions
-        model_type (str): Model backend identifier
-        model_version (str): Model version identifier
-        model_temperature (float): Response randomness setting (0.0 to 1.0)
-        model_max_tokens (int): Response length limit
-        bot_index (int): Unique numerical identifier
-        model_api (Any): API client instance reference
-        model_timeout (ChatbotTimeout): Timeout and retry configuration
+    Attributes:
+        name: Unique bot identifier
+        system_prompt: System instructions
+        model_type: Backend identifier
+        model_version: Version identifier
+        model_temperature: Response randomness (0.0-1.0)
+        model_max_tokens: Response length limit
+        bot_index: Unique numerical ID
+        _model_api: API client reference
+        model_timeout: Timeout configuration
 
     Raises:
-        ValueError: On invalid configuration (name conflicts, invalid parameters)
+        ValueError: On invalid configuration
     """
 
-    _total_count: ClassVar[int] = 0  # Class variable to track total instances
-    _used_names: ClassVar[Set[str]] = set()  # Class variable to track used names
+    # Class Variables
+    _total_count: ClassVar[int] = 0
+    _used_names: ClassVar[Set[str]] = set()
 
+    # Class Methods - Core
     @classmethod
     def get_total_bots(cls) -> int:
         """
@@ -286,6 +266,79 @@ class ChatbotBase(ABC):
         """
         pass  # pylint: disable=unnecessary-pass
 
+    @classmethod
+    @abstractmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
+        """
+        Bot-specific logic for which exceptions warrant retry.
+
+        Args:
+            exception (Exception): The exception to evaluate.
+
+        Returns:
+            bool: True if the exception warrants a retry, False otherwise.
+        """
+        pass  # pylint: disable=unnecessary-pass
+
+    # Class Methods - Model Configuration
+    @classmethod
+    @abstractmethod
+    def _get_model_min_temperature(cls) -> float:
+        """Get the minimum allowed temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @classmethod
+    @abstractmethod
+    def _get_model_max_temperature(cls) -> float:
+        """Get the maximum allowed temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @classmethod
+    @abstractmethod
+    def _get_model_default_temperature(cls) -> float:
+        """Get the default temperature value."""
+        pass  # pylint: disable=unnecessary-pass
+
+    @classmethod
+    def _get_model_default_max_tokens(cls) -> int:
+        """Get the default max tokens value."""
+        return DEFAULT_MAX_TOKENS
+
+    @classmethod
+    def _initialise_temperature(cls, config: ChatbotConfig) -> float:
+        """
+        Get the initial temperature value from config or default.
+
+        Args:
+            config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Returns:
+            float: The initial temperature value to use.
+        """
+        return (
+            config.model.params_opt.temperature
+            if config.model.params_opt.temperature is not None
+            else cls._get_model_default_temperature()
+        )
+
+    @classmethod
+    def _initialise_max_tokens(cls, config: ChatbotConfig) -> int:
+        """
+        Get the initial max tokens value from config or default.
+
+        Args:
+            config (ChatbotConfig): The configuration for the chatbot instance.
+
+        Returns:
+            int: The initial max tokens value to use.
+        """
+        return(
+            config.model.params_opt.max_tokens
+            if config.model.params_opt.max_tokens is not None
+            else cls._get_model_default_max_tokens()
+        )
+
+    # Class Methods - Validation
     @classmethod
     def _validate_name(cls, name: str) -> None:
         """
@@ -322,22 +375,24 @@ class ChatbotBase(ABC):
             raise ValueError(
                 f"Bot name '{name}' is already in use by another bot instance"
             )
+
     @classmethod
-    def _initialise_temperature(cls, config: ChatbotConfig) -> float:
+    def _validate_model_type(cls, config: ChatbotConfig) -> None:
         """
-        Get the initial temperature value from config or default.
+        Validate the model type against implementation.
 
         Args:
             config (ChatbotConfig): The configuration for the chatbot instance.
 
-        Returns:
-            float: The initial temperature value to use.
+        Raises:
+            ValueError: If model type doesn't match implementation
         """
-        return (
-            config.model.params_opt.temperature
-            if config.model.params_opt.temperature is not None
-            else cls._get_model_default_temperature()
-        )
+        expected_type = cls._get_class_model_type()
+        if config.model.type != expected_type:
+            raise ValueError(
+                f"Invalid model type for {cls.__name__}: "
+                f"got '{config.model.type}', expected '{expected_type}'"
+            )
 
     @classmethod
     def _validate_temperature(cls, temperature: float) -> None:
@@ -374,78 +429,7 @@ class ChatbotBase(ABC):
                 f"Max tokens for {cls.__name__} must be greater than 0"
             )
 
-    @classmethod
-    def _initialise_max_tokens(cls, config: ChatbotConfig) -> int:
-        """
-        Get the initial max tokens value from config or default.
-
-        Args:
-            config (ChatbotConfig): The configuration for the chatbot instance.
-
-        Returns:
-            int: The initial max tokens value to use.
-        """
-        return(
-            config.model.params_opt.max_tokens
-            if config.model.params_opt.max_tokens is not None
-            else cls._get_model_default_max_tokens()
-        )
-
-    @classmethod
-    def _validate_model_type(cls, config: ChatbotConfig) -> None:
-        """
-        Validate the model type against implementation.
-
-        Args:
-            config (ChatbotConfig): The configuration for the chatbot instance.
-
-        Raises:
-            ValueError: If model type doesn't match implementation
-        """
-        expected_type = cls._get_class_model_type()
-        if config.model.type != expected_type:
-            raise ValueError(
-                f"Invalid model type for {cls.__name__}: "
-                f"got '{config.model.type}', expected '{expected_type}'"
-            )
-
-    @classmethod
-    @abstractmethod
-    def _get_model_min_temperature(cls) -> float:
-        """Get the minimum allowed temperature value."""
-        pass  # pylint: disable=unnecessary-pass
-
-    @classmethod
-    @abstractmethod
-    def _get_model_max_temperature(cls) -> float:
-        """Get the maximum allowed temperature value."""
-        pass  # pylint: disable=unnecessary-pass
-
-    @classmethod
-    @abstractmethod
-    def _get_model_default_temperature(cls) -> float:
-        """Get the default temperature value."""
-        pass  # pylint: disable=unnecessary-pass
-
-    @classmethod
-    def _get_model_default_max_tokens(cls) -> int:
-        """Get the default max tokens value."""
-        return DEFAULT_MAX_TOKENS
-
-    @classmethod
-    @abstractmethod
-    def _should_retry_on_exception(cls, exception: Exception) -> bool:
-        """
-        Bot-specific logic for which exceptions warrant retry.
-
-        Args:
-            exception (Exception): The exception to evaluate.
-
-        Returns:
-            bool: True if the exception warrants a retry, False otherwise.
-        """
-        pass  # pylint: disable=unnecessary-pass
-
+    # Instance Initialization
     def __init__(
         self,
         config: ChatbotConfig,
@@ -470,9 +454,8 @@ class ChatbotBase(ABC):
         self._name: str = name
         self._used_names.add(self._name)
 
-        # Use the public setter for system prompt
-        # - will also validate and set update flag
-        self.system_prompt = config.system_prompt
+        # Set system prompt
+        self._system_prompt = config.system_prompt
 
         # Validate config model type against model implementation
         self._validate_model_type(config)
@@ -498,11 +481,28 @@ class ChatbotBase(ABC):
         ChatbotBase._total_count += 1
         self._bot_index: int = ChatbotBase._total_count
 
+    # Core Properties
     @property
     def name(self) -> str:
         """Get the name of the chatbot instance."""
         return self._name
 
+    @property
+    def system_prompt(self) -> str:
+        """
+        Get the current system prompt content.
+
+        Returns:
+            str: The current system prompt content.
+        """
+        return self._system_prompt
+
+    @property
+    def bot_index(self) -> int:
+        """Get the unique instance identifier."""
+        return self._bot_index
+
+    # Model Properties
     @property
     def model_type(self) -> str:
         """Get the model type identifier."""
@@ -512,6 +512,16 @@ class ChatbotBase(ABC):
     def model_version(self) -> str:
         """Get the model version identifier."""
         return self._model.version
+
+    @property
+    def _model_api(self) -> Any:
+        """Get the API client instance."""
+        return self._model.api
+
+    @_model_api.setter
+    def _model_api(self, value: Any) -> None:
+        """Set the API client instance."""
+        self._model.api = value
 
     @property
     def model_temperature(self) -> float:
@@ -534,60 +544,21 @@ class ChatbotBase(ABC):
         return self._get_model_default_temperature()
 
     @property
-    def model_default_max_tokens(self) -> int:
-        """Get the default max tokens value."""
-        return self._get_model_default_max_tokens()
-
-    @property
     def model_max_tokens(self) -> int:
         """Get the maximum tokens setting for response generation."""
         return self._model.max_tokens
+
+    @property
+    def model_default_max_tokens(self) -> int:
+        """Get the default max tokens value."""
+        return self._get_model_default_max_tokens()
 
     @property
     def model_timeout(self) -> ChatbotTimeout:
         """Get the timeout and retry configuration."""
         return self._model.timeout
 
-    @property
-    def bot_index(self) -> int:
-        """Get the unique instance identifier."""
-        return self._bot_index
-
-    @property
-    def model_api(self) -> Any:
-        """Get the API client instance."""
-        return self._model.api
-
-    @model_api.setter
-    def model_api(self, value: Any) -> None:
-        """Set the API client instance."""
-        self._model.api = value
-
-    @property
-    def system_prompt(self) -> str:
-        """
-        Get the current system prompt content.
-
-        Returns:
-            str: The current system prompt content.
-        """
-        return self._system_prompt
-
-    @system_prompt.setter
-    def system_prompt(self, value: str) -> None:
-        """
-        Set the system prompt content.
-
-        Args:
-            value (str): The new system prompt content.
-
-        Raises:
-            ValueError: If the system prompt is empty or contains only whitespace
-        """
-        if not value or not value.strip():
-            raise ValueError("System prompt cannot be empty")
-        self._system_prompt = value
-
+    # Core Instance Methods
     @abstractmethod
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -650,43 +621,6 @@ class ChatbotBase(ABC):
             raise ValueError(empty_response_error)
         return response_content
 
-    def _format_conv_for_api_util(
-        self, conversation: List[ConversationMessage], add_system_prompt: bool = True
-    ) -> List[ChatMessage]:
-        """
-        Format conversation history for API submission.
-
-        Converts the internal conversation format to the structure expected by
-        common chat APIs. Optionally includes the system prompt at the start
-        of the message list.
-
-        Args:
-            conversation (List[ConversationMessage]): List of conversation messages to format.
-            add_system_prompt (bool): Whether to include system prompt at the start.
-
-        Returns:
-            List[ChatMessage]: List of formatted messages ready for API submission.
-        """
-
-        messages: List[ChatMessage] = []
-        if add_system_prompt:
-            messages.append({"role": "system", "content": self.system_prompt})
-
-        for contribution in conversation:
-            role = (
-                "assistant" if contribution["bot_index"] == self.bot_index else "user"
-            )
-            messages.append({"role": role, "content": contribution["content"]})
-
-        self._log_debug(json.dumps(messages, indent=2))
-
-        return messages
-
-    @abstractmethod
-    def _get_text_from_chunk(self, chunk: Any) -> str:
-        """Extract text from a chunk in model-specific format"""
-        pass  # pylint: disable=unnecessary-pass
-
     @abstractmethod
     def _generate_stream(
         self, conversation: list[ConversationMessage]
@@ -737,6 +671,44 @@ class ChatbotBase(ABC):
                 yield self._get_text_from_chunk(chunk)
 
         yield from _inner_stream_response()
+
+    @abstractmethod
+    def _get_text_from_chunk(self, chunk: Any) -> str:
+        """Extract text from a chunk in model-specific format"""
+        pass  # pylint: disable=unnecessary-pass
+
+    # Utility Methods
+    def _format_conv_for_api_util(
+        self, conversation: List[ConversationMessage], add_system_prompt: bool = True
+    ) -> List[ChatMessage]:
+        """
+        Format conversation history for API submission.
+
+        Converts the internal conversation format to the structure expected by
+        common chat APIs. Optionally includes the system prompt at the start
+        of the message list.
+
+        Args:
+            conversation (List[ConversationMessage]): List of conversation messages to format.
+            add_system_prompt (bool): Whether to include system prompt at the start.
+
+        Returns:
+            List[ChatMessage]: List of formatted messages ready for API submission.
+        """
+
+        messages: List[ChatMessage] = []
+        if add_system_prompt:
+            messages.append({"role": "system", "content": self.system_prompt})
+
+        for contribution in conversation:
+            role = (
+                "assistant" if contribution["bot_index"] == self.bot_index else "user"
+            )
+            messages.append({"role": role, "content": contribution["content"]})
+
+        self._log_debug(json.dumps(messages, indent=2))
+
+        return messages
 
     def _log_error(self, error_text: str) -> None:
         """
