@@ -68,7 +68,7 @@ class GPTChatbot(ChatbotBase):
 
     Attributes:
         Inherits all attributes from ChatbotBase plus:
-        model_api (openai.OpenAI): Authenticated OpenAI API client
+        _model_api (openai.OpenAI): Authenticated OpenAI API client
 
     Notes:
         Requires OpenAI API key to be set in environment variables
@@ -133,7 +133,7 @@ class GPTChatbot(ChatbotBase):
         """
         super().__init__(config)
 
-        self.model_api = OpenAI()
+        self._model_api = OpenAI()
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -157,7 +157,7 @@ class GPTChatbot(ChatbotBase):
             TimeoutError: When the API call exceeds configured timeout
         """
         response_content: str = ""
-        completion = self.model_api.chat.completions.create(
+        completion = self._model_api.chat.completions.create(
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
             stream=False,
@@ -212,7 +212,7 @@ class GPTChatbot(ChatbotBase):
             - Each chunk contains partial response text
             - Use _get_text_from_chunk() to process individual chunks
         """
-        return self.model_api.chat.completions.create(  # type: ignore
+        return self._model_api.chat.completions.create(  # type: ignore
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
             stream=True,

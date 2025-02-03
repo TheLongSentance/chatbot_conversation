@@ -91,7 +91,7 @@ class GeminiChatbot(ChatbotBase):
             - timeout (int, optional): API request timeout in seconds
 
     Attributes:
-        model_api (google.generativeai.GenerativeModel): Active Gemini API client
+        _model_api (google.generativeai.GenerativeModel): Active Gemini API client
         system_prompt (str): Current system instructions
         model_temperature (float): Current temperature setting
 
@@ -194,7 +194,7 @@ class GeminiChatbot(ChatbotBase):
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
         message = (
-            self.model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
+            self._model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
                 formatted_messages
             )
         )
@@ -237,7 +237,7 @@ class GeminiChatbot(ChatbotBase):
         Note:
             Updates model_system_prompt_updated flag after initialization
         """
-        self.model_api = google.generativeai.GenerativeModel(
+        self._model_api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt,
             generation_config=google.generativeai.GenerationConfig(
@@ -273,7 +273,7 @@ class GeminiChatbot(ChatbotBase):
         Returns:
             Iterator[Any]: Iterator yielding response chunks from Gemini's streaming API
         """
-        return self.model_api.generate_content(  # type: ignore
+        return self._model_api.generate_content(  # type: ignore
             self._format_conv_for_gemini_api(conversation),
             stream=True,
         )

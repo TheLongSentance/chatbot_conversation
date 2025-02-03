@@ -56,7 +56,7 @@ class ClaudeChatbot(ChatbotBase):
 
     Attributes:
         Inherits all attributes from ChatbotBase plus:
-        model_api (anthropic.Anthropic): Authenticated Claude API client
+        _model_api (anthropic.Anthropic): Authenticated Claude API client
     """
 
     @classmethod
@@ -114,7 +114,7 @@ class ClaudeChatbot(ChatbotBase):
         super().__init__(config)
 
         # Initialise Claude API
-        self.model_api = anthropic.Anthropic()
+        self._model_api = anthropic.Anthropic()
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
@@ -135,7 +135,7 @@ class ClaudeChatbot(ChatbotBase):
             TimeoutError: When API call exceeds timeout
         """
         response_content: str = ""
-        message = self.model_api.messages.create(
+        message = self._model_api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
             messages=self._format_conv_for_api_util(
@@ -180,7 +180,7 @@ class ClaudeChatbot(ChatbotBase):
             RateLimitError: When API rate limits are exceeded
             TimeoutError: When API call exceeds timeout
         """
-        stream_manager = self.model_api.messages.stream(
+        stream_manager = self._model_api.messages.stream(
             model=self.model_version,
             system=self.system_prompt,
             messages=self._format_conv_for_api_util(

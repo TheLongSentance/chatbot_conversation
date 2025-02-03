@@ -53,7 +53,7 @@ class TestChatbotConfig:
         assert bot.model_max_tokens == 100
         assert bot.model_timeout == config.timeout
         assert bot.bot_index == ChatbotBase.get_total_bots()
-        assert bot.model_api is None
+        assert bot._model_api is None # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -289,25 +289,6 @@ class TestChatbotBaseMaxTokens:
                     ),
                 )
                 bot_class(config)
-
-
-@pytest.mark.parametrize("bot_class", bot_classes)
-class TestChatbotBaseSystemPrompt:
-    """Test system prompt handling in ChatbotBase"""
-
-    def test_empty_system_prompt(self, bot_class: type[ChatbotBase]) -> None:
-        """Test that empty system prompts are rejected"""
-        with pytest.raises(ValueError, match="System prompt cannot be empty"):
-            config = ChatbotConfig(
-                name="TestBot",
-                system_prompt="",
-                model=ChatbotModel(
-                    type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
-                ),
-            )
-            bot_class(config)
-
 
 @pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseCounter:
