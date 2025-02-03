@@ -79,6 +79,21 @@ class DummyChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
+    @classmethod
+    def _get_model_min_temperature(cls) -> float:
+        """Get the minimum allowed temperature value."""
+        return DUMMY_MINIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_max_temperature(cls) -> float:
+        """Get the maximum allowed temperature value."""
+        return DUMMY_MAXIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_default_temperature(cls) -> float:
+        """Get the default temperature value."""
+        return DUMMY_DEFAULT_TEMPERATURE
+
     # typically __init__ would be defined here with call to
     # super().__init__(config) to initialize the base class
     # and then specifics for the bot implementation
@@ -155,33 +170,3 @@ class DummyChatbot(ChatbotBase):
         tokens = re.findall(r"\S+(?:\s+)?", response)
 
         yield from tokens
-
-    @property
-    def model_min_temperature(self) -> float:
-        """
-        Get the minimum allowed temperature setting.
-
-        Returns:
-            float: The minimum valid temperature value (0.0)
-        """
-        return DUMMY_MINIMUM_TEMPERATURE
-
-    @property
-    def model_max_temperature(self) -> float:
-        """
-        Get the maximum allowed temperature setting.
-
-        Returns:
-            float: The maximum valid temperature value (1.0)
-        """
-        return DUMMY_MAXIMUM_TEMPERATURE
-
-    @property
-    def model_default_temperature(self) -> float:
-        """
-        Get the default temperature setting.
-
-        Returns:
-            float: The default temperature value (1.0)
-        """
-        return DUMMY_DEFAULT_TEMPERATURE

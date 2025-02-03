@@ -69,6 +69,21 @@ class ClaudeChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
+    @classmethod
+    def _get_model_min_temperature(cls) -> float:
+        """Get the minimum allowed temperature value."""
+        return CLAUDE_MINIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_max_temperature(cls) -> float:
+        """Get the maximum allowed temperature value."""
+        return CLAUDE_MAXIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_default_temperature(cls) -> float:
+        """Get the default temperature value."""
+        return CLAUDE_DEFAULT_TEMPERATURE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize Claude chatbot with specified configuration.
@@ -82,36 +97,6 @@ class ClaudeChatbot(ChatbotBase):
 
         # Initialise Claude API
         self.model_api = anthropic.Anthropic()
-
-    @property
-    def model_min_temperature(self) -> float:
-        """
-        Get the minimum allowed temperature value.
-
-        Returns:
-            float: Minimum temperature value (0.0)
-        """
-        return CLAUDE_MINIMUM_TEMPERATURE
-
-    @property
-    def model_max_temperature(self) -> float:
-        """
-        Get the maximum allowed temperature value.
-
-        Returns:
-            float: Maximum temperature value (1.0)
-        """
-        return CLAUDE_MAXIMUM_TEMPERATURE
-
-    @property
-    def model_default_temperature(self) -> float:
-        """
-        Get the default temperature value.
-
-        Returns:
-            float: Default temperature value (1.0)
-        """
-        return CLAUDE_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

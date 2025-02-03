@@ -112,6 +112,21 @@ class GeminiChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
+    @classmethod
+    def _get_model_min_temperature(cls) -> float:
+        """Get the minimum allowed temperature value."""
+        return GEMINI_MINIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_max_temperature(cls) -> float:
+        """Get the maximum allowed temperature value."""
+        return GEMINI_MAXIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_default_temperature(cls) -> float:
+        """Get the default temperature value."""
+        return GEMINI_DEFAULT_TEMPERATURE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize Gemini chatbot with specified configuration.
@@ -129,21 +144,6 @@ class GeminiChatbot(ChatbotBase):
 
         # initialise api here
         self._initialize_model_api()
-
-    @property
-    def model_min_temperature(self) -> float:
-        """Get the minimum allowed temperature value."""
-        return GEMINI_MINIMUM_TEMPERATURE
-
-    @property
-    def model_max_temperature(self) -> float:
-        """Get the maximum allowed temperature value."""
-        return GEMINI_MAXIMUM_TEMPERATURE
-
-    @property
-    def model_default_temperature(self) -> float:
-        """Get the default temperature value."""
-        return GEMINI_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """

@@ -79,18 +79,18 @@ class OllamaChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
-    @property
-    def model_min_temperature(self) -> float:
+    @classmethod
+    def _get_model_min_temperature(cls) -> float:
         """Get the minimum allowed temperature value."""
         return OLLAMA_MINIMUM_TEMPERATURE
 
-    @property
-    def model_max_temperature(self) -> float:
+    @classmethod
+    def _get_model_max_temperature(cls) -> float:
         """Get the maximum allowed temperature value."""
         return OLLAMA_MAXIMUM_TEMPERATURE
 
-    @property
-    def model_default_temperature(self) -> float:
+    @classmethod
+    def _get_model_default_temperature(cls) -> float:
         """Get the default temperature value."""
         return OLLAMA_DEFAULT_TEMPERATURE
 

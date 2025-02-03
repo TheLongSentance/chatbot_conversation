@@ -84,6 +84,21 @@ class GPTChatbot(ChatbotBase):
         """
         return MODEL_TYPE
 
+    @classmethod
+    def _get_model_min_temperature(cls) -> float:
+        """Get the minimum allowed temperature value."""
+        return GPT_MINIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_max_temperature(cls) -> float:
+        """Get the maximum allowed temperature value."""
+        return GPT_MAXIMUM_TEMPERATURE
+
+    @classmethod
+    def _get_model_default_temperature(cls) -> float:
+        """Get the default temperature value."""
+        return GPT_DEFAULT_TEMPERATURE
+
     def __init__(self, config: ChatbotConfig) -> None:
         """
         Initialize OpenAI chatbot with specified configuration.
@@ -97,21 +112,6 @@ class GPTChatbot(ChatbotBase):
         super().__init__(config)
 
         self.model_api = OpenAI()
-
-    @property
-    def model_min_temperature(self) -> float:
-        """Get the minimum allowed temperature value."""
-        return GPT_MINIMUM_TEMPERATURE
-
-    @property
-    def model_max_temperature(self) -> float:
-        """Get the maximum allowed temperature value."""
-        return GPT_MAXIMUM_TEMPERATURE
-
-    @property
-    def model_default_temperature(self) -> float:
-        """Get the default temperature value."""
-        return GPT_DEFAULT_TEMPERATURE
 
     def _should_retry_on_exception(self, exception: Exception) -> bool:
         """
