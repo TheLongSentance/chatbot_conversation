@@ -97,6 +97,7 @@ chatbot_conversation/
 │   │   ├── aliens.config.json
 │   │   ├── apocalypse.config.json
 │   │   ├── art.config.json
+│   │   ├── attention.config.json
 │   │   ├── caeser.config.json
 │   │   ├── chess.config.json
 │   │   ├── churchill.config.json
@@ -118,8 +119,6 @@ chatbot_conversation/
 │   └── logging.conf
 ├── output/
 │   ├── examples/
-│   │   ├── churchill.transcript_250112_110658.md
-│   │   ├── dummy.transcript_250112_111856.md
 │   │   └── tennis.transcript_250112_111705.md
 │   └── transcript_<yymmdd>_<hhmmss>.md
 ├── .gitignore
@@ -350,10 +349,20 @@ Edit `/config/config.json` to customize the conversation. Example configuration 
 {
     "author": "Brian Sentance",
     "conversation_seed": "I think Roger Federer is the GOAT!",
-    "rounds": 2,
-    "shared_prefix": "You are about to take part in a conversation...",
-    "first_round_postfix": "This is the first round of the conversation...",
-    "last_round_postfix": "This is now the last round of the conversation...",
+    "rounds": 4,
+    "core_prompt": "You are about to take part in a conversation...",
+        "moderator_messages_opt": [
+        {
+            "round_number": 1,
+            "content": "Please introduce yourselves and share...",
+            "display_opt": false
+        },
+        {
+            "round_number": 4,
+            "content": "We're now in the final round...",
+            "display_opt": true
+        }
+    ],
     "bots": [
         {
             "bot_name": "RogerFan",
@@ -389,14 +398,16 @@ Configuration parameters:
 - `author`: The author of the conversation configuration. Used in transcript.md for record keeping.
 - `conversation_seed`: The initial prompt to start the discussion.
 - `rounds`: Number of conversation rounds.
-- `shared_prefix`: Common instructions provided to all bots about conversation structure.
-- `first_round_postfix`: Instructions for first round only (e.g., bot introductions).
-- `last_round_postfix`: Instructions for last round only (e.g., concluding thoughts).
-  - Prefix and postfix all support template variable names:
+- `core_prompt`: Common/shared system_prompt instructions provided to all bots about conversation structure.
+  - both core_prompt and bot_prompt (below) support template variable names:
     - Supports template variable `{bot_name}` which gets replaced with each bot's name
     - Example: "You are {bot_name}. " becomes "You are RogerFan. " for the RogerFan bot
     - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model api
-    - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 400 tokens. " for a max_tokens parameter set to 600 - this is due to allow for bots not being good at counting their own token output. The value passed to the api is unadjusted at 600.
+    - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 400 tokens. " for a max_tokens parameter set to 400.
+- `moderator_message_opt`: Optional Array of moderator comments to guide the conversation, such as bringing it to a close.
+  - `round_number`: The round number to which the moderator comment should be applied at the start of the round.
+  - `content`: The moderator comment.
+  - `display_opt`: Optional flag to display the moderator comment to the user and save it to the transcript file. Default is false.
 - `bots`: Array of bot configurations:
   - `bot_name`: Display name for the bot (see template variable `{bot_name}` above)
   - `bot_type`: Model type (GPT, CLAUDE, GEMINI, OLLAMA)
@@ -408,12 +419,12 @@ Configuration parameters:
       - Some models override this range (e.g. Ollama 0.0 to 1.0)
       - Lower values: More focused, deterministic responses
       - Higher values: More creative, varied responses
+      - Typical (not all models!) default 1.0
       - Defaults to model-specific values if not specified
     - `max_tokens`: Maximum length of generated responses passed to api
-      - Defaults to 750 if not specified for use by api
-      - Value replaced by 2/3 that in prompts to allow for bots not being good at counting their own token output
+      - Defaults to 700 if not specified for use by api
       - Higher values allow longer responses but may use more API tokens
-      - Supported in prompting with the template variable `{max_tokens}` (see above)
+      - Supported in prompting with the template variable `{max_tokens}` (see core_prompt above)
 
 Important validation rules:
 
@@ -426,12 +437,10 @@ Important validation rules:
 
 The following strings support the `{bot_name}` and `{max_tokens}` template variables:
 
-- `shared_prefix`
-- `first_round_postfix`
-- `last_round_postfix`
+- `core_prompt`
 - `bot_prompt`
 
-These template variables allow for personalized system prompts and instructions for each bot at different stages of the conversation.
+These template variables allow for personalized system prompts and instructions for each bot.
 
 ## Usage
 
