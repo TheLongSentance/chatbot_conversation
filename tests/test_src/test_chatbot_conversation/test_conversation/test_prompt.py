@@ -4,11 +4,9 @@ Unit tests for the prompt management functionality in prompt.py.
 
 from chatbot_conversation.conversation import ConversationConfig
 from chatbot_conversation.conversation.prompt import (
-    SuffixManager,
     add_suffix,
     BOT_NAME_VARIABLE_PLACEHOLDER,
     construct_system_prompt,
-    max_tokens_for_prompt,
     MAX_TOKENS_VARIABLE_PLACEHOLDER,
     remove_suffix,
     replace_variables,
@@ -72,41 +70,3 @@ def test_construct_system_prompt(
     result = construct_system_prompt(shared_prefix, bot_config)
     expected_prompt = "Shared prefix: You are Bot1, an example bot."
     assert result == expected_prompt
-
-
-def test_suffix_manager_setup_round_suffix(mock_bot: ChatbotBase) -> None:
-    """
-    Test the setup_round_suffix method of SuffixManager.
-
-    This test ensures that the suffix is correctly calculated and appended to the bot's system prompt.
-    """
-    suffix_manager = SuffixManager()
-    suffix_template = (
-        f" Suffix for {{{BOT_NAME_VARIABLE_PLACEHOLDER}}} "
-        f"with max tokens {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
-    )
-    suffix_manager.setup_round_suffix(mock_bot, suffix_template)
-    expected_suffix = (
-        f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
-    )
-    assert mock_bot.system_prompt.endswith(expected_suffix)
-
-
-def test_suffix_manager_cleanup_round_suffix(mock_bot: ChatbotBase) -> None:
-    """
-    Test the cleanup_round_suffix method of SuffixManager.
-
-    This test ensures that the suffix is correctly removed from the bot's system prompt.
-    """
-    suffix_manager = SuffixManager()
-    suffix_template = (
-        f" Suffix for {{{BOT_NAME_VARIABLE_PLACEHOLDER}}} "
-        f"with max tokens {{{MAX_TOKENS_VARIABLE_PLACEHOLDER}}}."
-    )
-    suffix_manager.setup_round_suffix(mock_bot, suffix_template)
-    expected_suffix = (
-        f" Suffix for TestBot with max tokens {max_tokens_for_prompt(100)}."
-    )
-    assert mock_bot.system_prompt.endswith(expected_suffix)
-    suffix_manager.cleanup_round_suffix(mock_bot)
-    assert not mock_bot.system_prompt.endswith(expected_suffix)
