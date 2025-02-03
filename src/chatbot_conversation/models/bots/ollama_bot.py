@@ -94,7 +94,8 @@ class OllamaChatbot(ChatbotBase):
         """Get the default temperature value."""
         return OLLAMA_DEFAULT_TEMPERATURE
 
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    @classmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
         """
         Determine if an API call should be retried based on Ollama-specific exceptions.
 

@@ -432,6 +432,20 @@ class ChatbotBase(ABC):
         """Get the default max tokens value."""
         return DEFAULT_MAX_TOKENS
 
+    @classmethod
+    @abstractmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
+        """
+        Bot-specific logic for which exceptions warrant retry.
+
+        Args:
+            exception (Exception): The exception to evaluate.
+
+        Returns:
+            bool: True if the exception warrants a retry, False otherwise.
+        """
+        pass  # pylint: disable=unnecessary-pass
+
     def __init__(
         self,
         config: ChatbotConfig,
@@ -573,19 +587,6 @@ class ChatbotBase(ABC):
         if not value or not value.strip():
             raise ValueError("System prompt cannot be empty")
         self._system_prompt = value
-
-    @abstractmethod
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
-        """
-        Bot-specific logic for which exceptions warrant retry.
-
-        Args:
-            exception (Exception): The exception to evaluate.
-
-        Returns:
-            bool: True if the exception warrants a retry, False otherwise.
-        """
-        pass  # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:

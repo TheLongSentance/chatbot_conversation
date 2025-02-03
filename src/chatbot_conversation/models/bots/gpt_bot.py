@@ -99,21 +99,8 @@ class GPTChatbot(ChatbotBase):
         """Get the default temperature value."""
         return GPT_DEFAULT_TEMPERATURE
 
-    def __init__(self, config: ChatbotConfig) -> None:
-        """
-        Initialize OpenAI chatbot with specified configuration.
-
-        Validates configuration and sets up OpenAI API client.
-        API key must be available in environment variables.
-
-        Args:
-            config (ChatbotConfig): Complete bot configuration
-        """
-        super().__init__(config)
-
-        self.model_api = OpenAI()
-
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    @classmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
         """
         Determine if an API call should be retried based on the exception type.
 
@@ -133,6 +120,20 @@ class GPTChatbot(ChatbotBase):
             - RateLimitError: API quota or rate limit exceeded
         """
         return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
+
+    def __init__(self, config: ChatbotConfig) -> None:
+        """
+        Initialize OpenAI chatbot with specified configuration.
+
+        Validates configuration and sets up OpenAI API client.
+        API key must be available in environment variables.
+
+        Args:
+            config (ChatbotConfig): Complete bot configuration
+        """
+        super().__init__(config)
+
+        self.model_api = OpenAI()
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """

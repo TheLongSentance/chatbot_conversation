@@ -127,25 +127,8 @@ class GeminiChatbot(ChatbotBase):
         """Get the default temperature value."""
         return GEMINI_DEFAULT_TEMPERATURE
 
-    def __init__(self, config: ChatbotConfig) -> None:
-        """
-        Initialize Gemini chatbot with specified configuration.
-
-        Validates configuration and sets up Gemini API client with system prompt
-        and temperature settings.
-
-        Args:
-            config (ChatbotConfig): Complete bot configuration
-        """
-        super().__init__(config)
-
-        # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
-        google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
-
-        # initialise api here
-        self._initialize_model_api()
-
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    @classmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
         """
         Determine if an API call should be retried based on the exception type.
 
@@ -170,6 +153,24 @@ class GeminiChatbot(ChatbotBase):
                 google.api_core.exceptions.ServiceUnavailable,
             ),
         )
+
+    def __init__(self, config: ChatbotConfig) -> None:
+        """
+        Initialize Gemini chatbot with specified configuration.
+
+        Validates configuration and sets up Gemini API client with system prompt
+        and temperature settings.
+
+        Args:
+            config (ChatbotConfig): Complete bot configuration
+        """
+        super().__init__(config)
+
+        # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
+        google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
+
+        # initialise api here
+        self._initialize_model_api()
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """

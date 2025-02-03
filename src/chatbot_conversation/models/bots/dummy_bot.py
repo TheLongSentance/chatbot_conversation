@@ -94,11 +94,8 @@ class DummyChatbot(ChatbotBase):
         """Get the default temperature value."""
         return DUMMY_DEFAULT_TEMPERATURE
 
-    # typically __init__ would be defined here with call to
-    # super().__init__(config) to initialize the base class
-    # and then specifics for the bot implementation
-
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    @classmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
         """
         Determine if a failed operation should be retried.
 
@@ -112,6 +109,10 @@ class DummyChatbot(ChatbotBase):
             bool: True if the operation should be retried, False otherwise
         """
         return isinstance(exception, (ConnectionError))
+
+    # typically __init__ would be defined here with call to
+    # super().__init__(config) to initialize the base class
+    # and then specifics for the bot implementation
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """

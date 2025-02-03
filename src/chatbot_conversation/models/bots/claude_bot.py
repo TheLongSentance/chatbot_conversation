@@ -84,21 +84,8 @@ class ClaudeChatbot(ChatbotBase):
         """Get the default temperature value."""
         return CLAUDE_DEFAULT_TEMPERATURE
 
-    def __init__(self, config: ChatbotConfig) -> None:
-        """
-        Initialize Claude chatbot with specified configuration.
-
-        Validates configuration and sets up Claude API client.
-
-        Args:
-            config (ChatbotConfig): Complete bot configuration
-        """
-        super().__init__(config)
-
-        # Initialise Claude API
-        self.model_api = anthropic.Anthropic()
-
-    def _should_retry_on_exception(self, exception: Exception) -> bool:
+    @classmethod
+    def _should_retry_on_exception(cls, exception: Exception) -> bool:
         """
         Determine if an API call should be retried based on Claude-specific exceptions.
 
@@ -114,6 +101,20 @@ class ClaudeChatbot(ChatbotBase):
             bool: True if retry is recommended, False otherwise
         """
         return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
+
+    def __init__(self, config: ChatbotConfig) -> None:
+        """
+        Initialize Claude chatbot with specified configuration.
+
+        Validates configuration and sets up Claude API client.
+
+        Args:
+            config (ChatbotConfig): Complete bot configuration
+        """
+        super().__init__(config)
+
+        # Initialise Claude API
+        self.model_api = anthropic.Anthropic()
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
