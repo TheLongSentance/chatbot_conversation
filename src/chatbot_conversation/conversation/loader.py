@@ -22,10 +22,30 @@ import re
 from collections import Counter
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, ValidationError, ValidationInfo, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+)
 
+BOT_NAME_PATTERN = r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$"
+MIN_TEMPERATURE = 0.0
+MAX_TEMPERATURE = 2.0
+ALLOWED_TEMPLATE_VARS = {"bot_name", "max_tokens"}
+TEMPLATE_VARS_PATTERN = r"\{([^}]+)\}"
 
-class ChatbotParamsOptData(BaseModel):
+class BaseConfigModel(BaseModel):
+    """Base configuration model with strict validation."""
+    model_config = ConfigDict(
+        extra='forbid',  # Prevent unknown fields
+        str_strip_whitespace=True,  # Strip whitespace from strings
+        frozen=True  # Make configs immutable after creation
+    )
+
+class ChatbotParamsOptData(BaseConfigModel):
     """Optional parameters for bot configuration.
 
     Attributes:
@@ -36,8 +56,9 @@ class ChatbotParamsOptData(BaseModel):
     temperature: Optional[float] = Field(
         default=None,
         description="Temperature parameter for response randomness",
-        ge=0.0,
-        le=2.0,
+        ge=MIN_TEMPERATURE,
+        le=MAX_TEMPERATURE,
+        examples=[0.0, 0.5, 1.0, 1.5, 2.0],
     )
     max_tokens: Optional[int] = Field(
         default=None,
@@ -46,7 +67,7 @@ class ChatbotParamsOptData(BaseModel):
     )
 
 
-class ChatbotConfigData(BaseModel):
+class ChatbotConfigData(BaseConfigModel):
     """Configuration model for a single bot participant in the conversation.
 
     Attributes:
@@ -85,7 +106,7 @@ class ChatbotConfigData(BaseModel):
         if v.count("{") != v.count("}"):
             raise ValueError("Mismatched template variable braces in bot_prompt")
 
-        allowed_vars = {"bot_name", "max_tokens"}
+        allowed_vars = ALLOWED_TEMPLATE_VARS
         template_vars = re.findall(r"\{([^}]+)\}", v)
         invalid_vars = set(template_vars) - allowed_vars
         if invalid_vars:
@@ -95,7 +116,7 @@ class ChatbotConfigData(BaseModel):
         return v
 
 
-class ModeratorMessage(BaseModel):
+class ModeratorMessage(BaseConfigModel):
     """Configuration model for moderator messages at specific rounds.
 
     Attributes:
@@ -113,7 +134,7 @@ class ModeratorMessage(BaseModel):
     )
 
 
-class ConversationConfig(BaseModel):
+class ConversationConfig(BaseConfigModel):
     """Configuration model for managing a multi-bot conversation.
 
     Attributes:
@@ -158,7 +179,7 @@ class ConversationConfig(BaseModel):
             raise ValueError("Mismatched template variable braces in core_prompt")
 
         allowed_vars = {"bot_name", "max_tokens"}
-        template_vars = re.findall(r"\{([^}]+)\}", v)
+        template_vars = re.findall(TEMPLATE_VARS_PATTERN, v)
         invalid_vars = set(template_vars) - allowed_vars
         if invalid_vars:
             raise ValueError(f"Invalid template variables found: {invalid_vars}")
@@ -180,7 +201,7 @@ class ConversationConfig(BaseModel):
         Raises:
             ValueError: If duplicate or invalid bot names are found
         """
-        bot_name_pattern = re.compile(r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$")
+        bot_name_pattern = re.compile(BOT_NAME_PATTERN)
 
         # Check for invalid name formats
         invalid_names = [
@@ -252,19 +273,12 @@ class ConversationConfig(BaseModel):
 
 def load_conversation_config(config_path: str) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
-
+    
     Args:
-        config_path (str): Path to the JSON configuration file
-
-    Returns:
-        ConversationConfig: Validated configuration object
-
-    Raises:
-        FileNotFoundError: If the configuration file doesn't exist
-        json.JSONDecodeError: If the JSON is invalid
-        ValueError: If the configuration data fails validation
-        RuntimeError: For other unexpected errors during loading
+        config_path: Must be a .json file
     """
+    if not config_path.endswith('.json'):
+        raise ValueError("Configuration file must be a .json file")
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = json.load(f)

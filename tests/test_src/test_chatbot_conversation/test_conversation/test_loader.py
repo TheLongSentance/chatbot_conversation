@@ -11,11 +11,13 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import pytest
+from pydantic import ValidationError
 
 from chatbot_conversation.conversation.loader import (
     ChatbotConfigData,
     ChatbotParamsOptData,
     ConversationConfig,
+    ModeratorMessage,
     load_conversation_config,
 )
 
@@ -299,3 +301,86 @@ def test_empty_bots_list() -> None:
     }
     with pytest.raises(ValueError):
         ConversationConfig(**config_data)
+
+
+def test_reject_unknown_fields() -> None:
+    """Test that unknown fields in configurations are rejected.
+
+    Tests the 'extra=forbid' setting in BaseConfigModel.
+    """
+    unknown_bot_params: Dict[str, Any] = {"temperature": 1.0, "unknown_field": "value"}
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):
+        ChatbotParamsOptData(**unknown_bot_params)
+
+    # Test ModeratorMessage unknown field rejection
+    unknown_moderator_msg: Dict[str, Any] = {
+        "round_number": 1,
+        "content": "test message",
+        "unknown_field": "should fail",
+    }
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):
+        ModeratorMessage(**unknown_moderator_msg)
+
+    unknown_bot_config: Dict[str, Any] = {
+        "bot_name": "test_bot",
+        "bot_prompt": "test",
+        "bot_type": "test",
+        "bot_version": "v1",
+        "invalid_field": True,
+    }
+    with pytest.raises(ValueError, match="Extra inputs are not permitted"):
+        ChatbotConfigData(**unknown_bot_config)
+
+
+def test_string_whitespace_stripping() -> None:
+    """Test that whitespace is stripped from string fields.
+
+    Tests the 'str_strip_whitespace=True' setting in BaseConfigModel.
+    """
+    bot: ChatbotConfigData = ChatbotConfigData(
+        bot_name="  test_bot  ",
+        bot_prompt=" test prompt ",
+        bot_type=" test ",
+        bot_version=" v1 ",
+    )
+
+    assert bot.bot_name == "test_bot"
+    assert bot.bot_prompt == "test prompt"
+    assert bot.bot_type == "test"
+    assert bot.bot_version == "v1"
+
+
+def test_config_immutability() -> None:
+    """Test that configuration objects are immutable after creation.
+
+    Tests the 'frozen=True' setting in BaseConfigModel.
+    """
+    # Test ChatbotParamsOptData immutability
+    bot_params: ChatbotParamsOptData = ChatbotParamsOptData(
+        temperature=1.0, max_tokens=100
+    )
+    with pytest.raises(ValidationError, match="Instance is frozen"):
+        bot_params.temperature = 0.5
+
+    # Test ModeratorMessage immutability
+    moderator_msg: ModeratorMessage = ModeratorMessage(round_number=1, content="test")
+    with pytest.raises(ValidationError, match="Instance is frozen"):
+        moderator_msg.content = "new content"
+
+    # Test ChatbotConfigData immutability
+    bot: ChatbotConfigData = ChatbotConfigData(
+        bot_name="test_bot", bot_prompt="test", bot_type="test", bot_version="v1"
+    )
+    with pytest.raises(ValidationError, match="Instance is frozen"):
+        bot.bot_name = "new_name"
+
+    # Test ConversationConfig immutability
+    config: ConversationConfig = ConversationConfig(
+        author="Test Author",
+        conversation_seed="Test seed",
+        rounds=1,
+        core_prompt="Test prompt",
+        bots=[bot],
+    )
+    with pytest.raises(ValidationError, match="Instance is frozen"):
+        config.author = "New Author"
