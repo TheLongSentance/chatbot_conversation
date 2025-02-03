@@ -1,5 +1,5 @@
 """
-This module contains classes for loading and validating conversation configurations from JSON files.
+This module contains classes and functions for loading and validating conversation configurations from JSON files.
 
 The module provides a robust configuration system that validates:
 - Bot configuration parameters (name format, uniqueness, etc.)
@@ -12,6 +12,9 @@ Classes:
     ChatbotConfigData: Configuration model for a single bot participant
     ModeratorMessage: Configuration model for round-specific moderator messages
     ConversationConfig: Configuration model for the entire conversation
+
+Functions:
+    load_conversation_config: Load and validate a conversation configuration from a JSON file
 """
 
 import json
@@ -26,8 +29,8 @@ class ChatbotParamsOptData(BaseModel):
     """Optional parameters for bot configuration.
 
     Attributes:
-        temperature: Controls response randomness (0.0 to 2.0)
-        max_tokens: Maximum tokens for response generation
+        temperature (Optional[float]): Controls response randomness (0.0 to 2.0)
+        max_tokens (Optional[int]): Maximum tokens for response generation
     """
 
     temperature: Optional[float] = Field(
@@ -47,11 +50,11 @@ class ChatbotConfigData(BaseModel):
     """Configuration model for a single bot participant in the conversation.
 
     Attributes:
-        bot_name: Unique identifier for the bot
-        bot_prompt: Role-specific instructions for the bot
-        bot_type: Type of model to use (e.g., "GPT", "CLAUDE")
-        bot_version: Specific model version identifier
-        bot_params_opt: Optional configuration parameters
+        bot_name (str): Unique identifier for the bot
+        bot_prompt (str): Role-specific instructions for the bot
+        bot_type (str): Type of model to use (e.g., "GPT", "CLAUDE")
+        bot_version (str): Specific model version identifier
+        bot_params_opt (ChatbotParamsOptData): Optional configuration parameters
     """
 
     bot_name: str = Field(..., min_length=1, description="Bot name cannot be empty")
@@ -71,7 +74,7 @@ class ChatbotConfigData(BaseModel):
         """Validate template variables in bot prompts.
 
         Args:
-            v: The bot prompt string to validate
+            v (str): The bot prompt string to validate
 
         Returns:
             str: The validated bot prompt
@@ -96,8 +99,9 @@ class ModeratorMessage(BaseModel):
     """Configuration model for moderator messages at specific rounds.
 
     Attributes:
-        round_number: The conversation round this message applies to
-        content: The message content to be displayed
+        round_number (int): The conversation round this message applies to
+        content (str): The message content to be displayed
+        display_opt (bool): Optional flag to control message display
     """
 
     round_number: int = Field(gt=0, description="Round number must be positive")
@@ -113,13 +117,12 @@ class ConversationConfig(BaseModel):
     """Configuration model for managing a multi-bot conversation.
 
     Attributes:
-        author: Name of the configuration author
-        conversation_seed: Initial prompt to start the discussion
-        rounds: Number of conversation rounds
-        core_prompt: Base instructions provided to all bots
-        moderator_messages: Optional list of round-specific moderator messages
-        bots: List of bot configurations
-
+        author (str): Name of the configuration author
+        conversation_seed (str): Initial prompt to start the discussion
+        rounds (int): Number of conversation rounds
+        core_prompt (str): Base instructions provided to all bots
+        moderator_messages_opt (List[ModeratorMessage]): Optional list of round-specific moderator messages
+        bots (List[ChatbotConfigData]): List of bot configurations
     """
 
     author: str = Field(..., min_length=1, description="Author name cannot be empty")
@@ -143,7 +146,7 @@ class ConversationConfig(BaseModel):
         """Validate that template variables in core_prompt are properly formatted.
 
         Args:
-            v: The core_prompt string to validate
+            v (str): The core_prompt string to validate
 
         Returns:
             str: The validated core_prompt string
@@ -169,7 +172,7 @@ class ConversationConfig(BaseModel):
         """Validate that bot names are unique and properly formatted.
 
         Args:
-            v: List of bot configurations to validate
+            v (List[ChatbotConfigData]): List of bot configurations to validate
 
         Returns:
             List[ChatbotConfigData]: The validated list of bot configurations
@@ -209,8 +212,8 @@ class ConversationConfig(BaseModel):
         """Validate moderator messages round numbers if present.
 
         Args:
-            v: List of moderator messages to validate
-            info: Validation context containing other field values
+            v (List[ModeratorMessage]): List of moderator messages to validate
+            info (ValidationInfo): Validation context containing other field values
 
         Returns:
             List[ModeratorMessage]: The validated list of moderator messages
@@ -251,7 +254,7 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
 
     Args:
-        config_path: Path to the JSON configuration file
+        config_path (str): Path to the JSON configuration file
 
     Returns:
         ConversationConfig: Validated configuration object
