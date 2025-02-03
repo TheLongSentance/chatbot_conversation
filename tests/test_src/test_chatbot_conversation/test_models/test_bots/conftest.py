@@ -154,3 +154,11 @@ def real_bot_classes() -> list[type[ChatbotBase]]:
 def mock_api_error() -> Exception:
     """Generic API error for testing retries."""
     return Exception("API Error")
+
+
+@pytest.fixture(autouse=True)
+def clear_version_cache():
+    """Clear the version cache before each test"""
+    ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
+    yield
+    ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]

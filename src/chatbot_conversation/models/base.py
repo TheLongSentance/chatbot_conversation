@@ -85,9 +85,6 @@ DEFAULT_WAIT_MULTIPLIER: Final[float] = 1.5
 #
 DEFAULT_MAX_TOKENS: Final[int] = 700
 
-logger = get_logger("models")
-
-
 class ChatMessage(TypedDict):
     """
     Message format for API communication.
@@ -243,8 +240,26 @@ class ChatbotBase(ABC):
     # Class Variables
     _total_count: ClassVar[int] = 0
     _used_names: ClassVar[Set[str]] = set()
+    _available_versions_cache: ClassVar[Optional[List[str]]] = None
+
+    _logger = get_logger("models")
 
     # Class Methods - Core
+    @classmethod
+    @abstractmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
+        
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if 
+            versions are not applicable/available
+        
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        pass # pylint: disable=unnecessary-pass
+
     @classmethod
     def get_total_bots(cls) -> int:
         """
@@ -394,6 +409,25 @@ class ChatbotBase(ABC):
                 f"got '{config.model.type}', expected '{expected_type}'"
             )
 
+
+    @classmethod
+    def _validate_model_version(cls, config: ChatbotConfig) -> None:
+        """
+        Validate that the configured model version is available.
+
+        Args:
+            config: Configuration to validate
+
+        Raises:
+            ValueError: If version validation fails
+        """
+        versions = cls.available_versions()
+        if versions is not None and config.model.version not in versions:
+            raise ValueError(
+                f"Invalid model version '{config.model.version}' for {cls.__name__}. "
+                f"Available versions: {', '.join(versions)}"
+            )
+
     @classmethod
     def _validate_temperature(cls, temperature: float) -> None:
         """
@@ -459,6 +493,9 @@ class ChatbotBase(ABC):
 
         # Validate config model type against model implementation
         self._validate_model_type(config)
+
+        # Validate model version
+        self._validate_model_version(config)
 
         # Validate temperature and set to default if not provided
         temperature = self._initialise_temperature(config)
@@ -717,7 +754,7 @@ class ChatbotBase(ABC):
         Args:
             error_text (str): The content of the response to log.
         """
-        logger.error(
+        self._logger.error(
             "Bot Class: %s, Bot Name: %s, Bot Index: %s, %s",
             self.__class__.__name__,
             self.name,
@@ -732,7 +769,7 @@ class ChatbotBase(ABC):
         Args:
             debug_text (str): The content of the response to log.
         """
-        logger.debug(
+        self._logger.debug(
             "Bot Class: %s, Bot Name: %s, Bot Index: %s, %s",
             self.__class__.__name__,
             self.name,

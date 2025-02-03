@@ -1,11 +1,10 @@
 """Tests specific to ClaudeChatbot implementation"""
 
 from unittest.mock import MagicMock, patch
-
 import pytest
 from anthropic import APIConnectionError, APIError, RateLimitError
 
-from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
+from chatbot_conversation.models.base import ChatbotConfig, ChatbotModel, ConversationMessage
 from chatbot_conversation.models.bots.claude_bot import MODEL_TYPE, ClaudeChatbot
 
 
@@ -96,3 +95,38 @@ class TestClaudeChatbot:
 
         with pytest.raises(ValueError, match="Model returned an empty response"):
             bot.generate_response(conversation)
+
+    def test_available_versions_live(self):
+        """Test retrieving available model versions using live API"""
+        versions = ClaudeChatbot.available_versions()
+        assert versions is not None
+        assert len(versions) > 0
+        # Verify some known Claude models are present
+        assert any("claude" in version for version in versions)
+
+    def test_valid_model_version_live(self):
+        """Test initialization with valid model version using live API"""
+        versions = ClaudeChatbot.available_versions()
+        assert versions is not None
+        valid_version = next(v for v in versions if "claude-3" in v)
+        
+        config = ChatbotConfig(
+            name="TestBot",
+            system_prompt="Test prompt",
+            model=ChatbotModel(type="CLAUDE", version=valid_version)
+        )
+        
+        # Should not raise any exceptions
+        bot = ClaudeChatbot(config)
+        assert bot.model_version == valid_version
+
+    def test_invalid_model_version_live(self):
+        """Test initialization fails with invalid model version using live API"""
+        config = ChatbotConfig(
+            name="TestBot",
+            system_prompt="Test prompt",
+            model=ChatbotModel(type="CLAUDE", version="invalid-version")
+        )
+        
+        with pytest.raises(ValueError, match="Invalid model version"):
+            ClaudeChatbot(config)

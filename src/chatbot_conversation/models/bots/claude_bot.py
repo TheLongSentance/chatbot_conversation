@@ -9,7 +9,7 @@ Major Classes:
     ClaudeChatbot: Claude-specific chatbot implementation
 """
 
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Optional
 
 import anthropic
 from anthropic import APIConnectionError, APIError, RateLimitError
@@ -58,7 +58,29 @@ class ClaudeChatbot(ChatbotBase):
         Inherits all attributes from ChatbotBase plus:
         _model_api (anthropic.Anthropic): Authenticated Claude API client
     """
+    @classmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
 
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if
+            versions are not applicable/available
+
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        if cls._available_versions_cache is None:
+            try:
+                client = anthropic.Anthropic()
+                models = client.models.list()
+                cls._available_versions_cache = [model.id for model in models]
+            except (anthropic.APIError, anthropic.APIConnectionError) as e:
+                error_message = f"Failed to retrieve model versions: {e}"
+                cls._logger.error(error_message)
+                raise 
+        return cls._available_versions_cache
+    
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
