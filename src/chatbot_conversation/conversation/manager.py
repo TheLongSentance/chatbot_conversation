@@ -16,7 +16,7 @@ from typing import List
 
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
-from chatbot_conversation.conversation.loader import ConfigurationLoader
+from chatbot_conversation.conversation.loader import load_conversation_config
 from chatbot_conversation.conversation.prompt import SuffixManager
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
@@ -38,7 +38,7 @@ class ConversationManager:
         logger.info("Initializing conversation manager")
 
         self.config_path = config_path
-        self.config = ConfigurationLoader.load_config(config_path)
+        self.config = load_conversation_config(config_path)
         self.bots: List[ChatbotBase] = []
 
         # This is the seed message with the bot index set to a dummy bot index value of 0

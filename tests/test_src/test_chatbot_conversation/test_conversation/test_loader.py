@@ -15,8 +15,8 @@ import pytest
 from chatbot_conversation.conversation.loader import (
     ChatbotConfigData,
     ChatbotParamsOptData,
-    ConfigurationLoader,
     ConversationConfig,
+    load_conversation_config,
 )
 
 
@@ -26,7 +26,7 @@ def test_load_valid_config(test_config_path: str) -> None:
     Args:
         test_config_path: Path to a valid test configuration file
     """
-    config: ConversationConfig = ConfigurationLoader.load_config(test_config_path)
+    config: ConversationConfig = load_conversation_config(test_config_path)
     assert isinstance(config, ConversationConfig)
     assert config.author == "Brian Sentance"
     assert config.rounds == 5
@@ -42,7 +42,7 @@ def test_load_nonexistent_config(invalid_config_path: str) -> None:
         invalid_config_path: Path to a nonexistent configuration file
     """
     with pytest.raises(FileNotFoundError):
-        ConfigurationLoader.load_config(invalid_config_path)
+        load_conversation_config(invalid_config_path)
 
 
 def test_empty_config_validation(test_config_empty_path: str) -> None:
@@ -52,7 +52,7 @@ def test_empty_config_validation(test_config_empty_path: str) -> None:
         test_config_empty_path: Path to an empty configuration file
     """
     with pytest.raises(ValueError):
-        ConfigurationLoader.load_config(test_config_empty_path)
+        load_conversation_config(test_config_empty_path)
 
 
 def test_duplicate_bot_names() -> None:
@@ -263,7 +263,7 @@ def test_invalid_json_format(tmp_path: Path) -> None:
         f.write("{invalid json")
 
     with pytest.raises(json.JSONDecodeError):
-        ConfigurationLoader.load_config(str(invalid_json_path))
+        load_conversation_config(str(invalid_json_path))
 
 
 def test_zero_rounds() -> None:

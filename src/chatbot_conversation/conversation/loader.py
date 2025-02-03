@@ -12,7 +12,6 @@ Classes:
     ChatbotConfigData: Configuration model for a single bot participant
     ModeratorMessage: Configuration model for round-specific moderator messages
     ConversationConfig: Configuration model for the entire conversation
-    ConfigurationLoader: Loads and validates conversation configurations
 """
 
 import json
@@ -234,59 +233,51 @@ class ConversationConfig(BaseModel):
         ]
         if duplicates:
             raise ValueError(
-                f"Duplicate round numbers found in moderator messages: {', '.join(map(str, duplicates))}"
+                "Duplicate round numbers found in moderator messages: "
+                f"{', '.join(map(str, duplicates))}"
             )
 
         # Check round numbers don't exceed total rounds
         invalid_rounds: List[int] = [num for num in round_nums if num > total_rounds]
         if invalid_rounds:
             raise ValueError(
-                f"Round numbers exceed total rounds ({total_rounds}): {', '.join(map(str, invalid_rounds))}"
+                "Round numbers exceed total rounds ({total_rounds}): "
+                f"{', '.join(map(str, invalid_rounds))}"
             )
 
         return v
 
+def load_conversation_config(config_path: str) -> ConversationConfig:
+    """Load and validate a conversation configuration from a JSON file.
 
-class ConfigurationLoader:
-    """Handles loading and validation of conversation configurations from JSON files.
+    Args:
+        config_path: Path to the JSON configuration file
 
-    This class provides static methods to safely load and parse JSON configuration files,
-    with proper error handling for file operations and data validation. All loaded
-    configurations are validated against the defined schema and constraints.
+    Returns:
+        ConversationConfig: Validated configuration object
+
+    Raises:
+        FileNotFoundError: If the configuration file doesn't exist
+        json.JSONDecodeError: If the JSON is invalid
+        ValueError: If the configuration data fails validation
+        RuntimeError: For other unexpected errors during loading
     """
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError as e:
+        raise FileNotFoundError(
+            f"Configuration file not found: {config_path}"
+        ) from e
+    except json.JSONDecodeError as e:
+        raise json.JSONDecodeError(
+            f"Invalid JSON in configuration file: {str(e)}", e.doc, e.pos
+        ) from e
+    except Exception as e:
+        raise RuntimeError(f"Error reading configuration: {str(e)}") from e
 
-    @staticmethod
-    def load_config(config_path: str) -> ConversationConfig:
-        """Load and validate a conversation configuration from a JSON file.
-
-        Args:
-            config_path: Path to the JSON configuration file
-
-        Returns:
-            ConversationConfig: Validated configuration object
-
-        Raises:
-            FileNotFoundError: If the configuration file doesn't exist
-            json.JSONDecodeError: If the JSON is invalid
-            ValueError: If the configuration data fails validation
-            RuntimeError: For other unexpected errors during loading
-        """
-        try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"Configuration file not found: {config_path}"
-            ) from e
-        except json.JSONDecodeError as e:
-            raise json.JSONDecodeError(
-                f"Invalid JSON in configuration file: {str(e)}", e.doc, e.pos
-            ) from e
-        except Exception as e:
-            raise RuntimeError(f"Error reading configuration: {str(e)}") from e
-
-        try:
-            config = ConversationConfig(**data)
-            return config
-        except ValidationError as e:
-            raise ValueError(f"Configuration validation failed: {str(e)}") from e
+    try:
+        config = ConversationConfig(**data)
+        return config
+    except ValidationError as e:
+        raise ValueError(f"Configuration validation failed: {str(e)}") from e
