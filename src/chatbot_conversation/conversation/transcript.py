@@ -87,20 +87,24 @@ class TranscriptManager:
                 announce_round = True
                 for message in conversation[1:]:
 
-                    if announce_round: # if new round
+                    if announce_round:  # if new round
                         file.write(f"## Round {round_num} of {num_rounds}\n\n")
-                        announce_round = False # reset announcement flag
+                        announce_round = False  # reset announcement flag
 
-                    if message["bot_index"] != 0: # if a bot not moderator
+                    if message["bot_index"] != 0:  # if a bot not moderator
 
                         # Write bot message
                         file.write(f"{message['content']}\n\n---\n\n")
 
-                        bot_round_count += 1 # count bots in round so far
-                        if bot_round_count == num_bots: # if all bots have responded in round
+                        bot_round_count += 1  # count bots in round so far
+                        if (
+                            bot_round_count == num_bots
+                        ):  # if all bots have responded in round
                             round_num += 1  # increment round number
-                            announce_round = True # announce this new round in next iteration
-                            bot_round_count = 0 # reset bot count
+                            announce_round = (
+                                True  # announce this new round in next iteration
+                            )
+                            bot_round_count = 0  # reset bot count
 
                     # else must be a moderator message so immediately test whether to display
                     elif round_num not in hidden_moderator_rounds:

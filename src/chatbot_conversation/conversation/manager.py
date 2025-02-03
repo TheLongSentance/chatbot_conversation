@@ -94,14 +94,10 @@ class ConversationManager:
             if moderator_msg.round_number == round_num:
                 moderator_content = f"**Moderator**: {moderator_msg.content}"
                 # Always add to conversation history
-                self.conversation.append(
-                    {"bot_index": 0, "content": moderator_content}
-                )
+                self.conversation.append({"bot_index": 0, "content": moderator_content})
                 # Only display if display_opt is True
                 if moderator_msg.display_opt:
-                    self.display_manager.show_text(
-                        f"{moderator_content}\n\n---\n\n"
-                    )
+                    self.display_manager.show_text(f"{moderator_content}\n\n---\n\n")
                 break  # Only one moderator message per round
 
         # After checking for moderator, now run responses from all bots

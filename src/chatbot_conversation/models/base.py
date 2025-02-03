@@ -67,25 +67,25 @@ DEFAULT_WAIT_MULTIPLIER: Final[float] = 1.5
 
 # Default maximum tokens for response generation to prevent excessive response
 # length. This is more of a hard limit to prevent runaway responses rather than
-# something that models can be prompted to adhere to. 
-# 
-# Practical experience with shows that they may try to adhere at first if their 
-# system prompt tells them to stay well within their max_tokens limit, but:
-# 
-# 1) They are not very good at counting the number of tokens in their response.
-#  
-# 2) Few-shot learning from more recent responses seems to dominate over system
-# prompt instructions and they often adopt a concensus response length that is 
-# similar to recent responses in the conversation. 
+# something that models can be prompted to adhere to.
 #
-# Truncation with low max_tokens values (say below 300) # are particularly 
-# problematic as they can cut off the response mid-sentence, however if 
-# the initial system prompts are explicit (e.g. "Generate one paragraph on 
-# the topic of...") and moderator comments are used to remind the bots of the 
+# Practical experience with shows that they may try to adhere at first if their
+# system prompt tells them to stay well within their max_tokens limit, but:
+#
+# 1) They are not very good at counting the number of tokens in their response.
+#
+# 2) Few-shot learning from more recent responses seems to dominate over system
+# prompt instructions and they often adopt a concensus response length that is
+# similar to recent responses in the conversation.
+#
+# Truncation with low max_tokens values (say below 300) # are particularly
+# problematic as they can cut off the response mid-sentence, however if
+# the initial system prompts are explicit (e.g. "Generate one paragraph on
+# the topic of...") and moderator comments are used to remind the bots of the
 # token limit, they can be effective in keeping the response length down.
-#  
-# Typically one page of writing contains around 300-400 words (in a word doc), 
-# so approximately 400 x 1.3 = 520 tokens. So add a further 30%+ buffer to this 
+#
+# Typically one page of writing contains around 300-400 words (in a word doc),
+# so approximately 400 x 1.3 = 520 tokens. So add a further 30%+ buffer to this
 # to get to approximately 700 tokens.
 #
 DEFAULT_MAX_TOKENS: Final[int] = 700

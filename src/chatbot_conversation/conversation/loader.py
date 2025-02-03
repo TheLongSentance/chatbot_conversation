@@ -106,9 +106,9 @@ class ModeratorMessage(BaseModel):
         ..., min_length=1, description="Message content cannot be empty"
     )
     display_opt: bool = Field(
-        default=False,
-        description="Optional flag to control message display"
+        default=False, description="Optional flag to control message display"
     )
+
 
 class ConversationConfig(BaseModel):
     """Configuration model for managing a multi-bot conversation.
