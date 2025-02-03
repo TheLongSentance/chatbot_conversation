@@ -25,7 +25,7 @@ Classes:
 """
 
 import json
-from typing import Any, Iterator, List, TypedDict
+from typing import Any, Iterator, List, Optional, TypedDict
 
 import google.api_core.exceptions
 
@@ -38,7 +38,6 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
-from chatbot_conversation.utils import get_logger
 
 # Gemini 1.5 models default temperature (others may vary)
 GEMINI_MINIMUM_TEMPERATURE = 0.0
@@ -59,9 +58,6 @@ class _GeminiMessage(TypedDict):
 
     role: str
     parts: str
-
-
-logger = get_logger("models")
 
 
 @register_bot(MODEL_TYPE)
@@ -101,6 +97,29 @@ class GeminiChatbot(ChatbotBase):
         whenever the system prompt changes, which is handled automatically by
         this implementation.
     """
+
+    @classmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
+
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if
+            versions are not applicable/available
+
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        if cls._available_versions_cache is None:
+            try:
+                google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
+                models = google.generativeai.list_models()  # type: ignore
+                cls._available_versions_cache = [model.display_name for model in models] # type: ignore
+            except () as e:
+                error_message = f"Failed to retrieve model versions: {e}"
+                cls._logger.error(error_message)
+                raise
+        return cls._available_versions_cache
 
     @classmethod
     def _get_class_model_type(cls) -> str:

@@ -117,3 +117,40 @@ class TestGeminiChatbot:
         assert formatted[1] == {"role": "model", "parts": conversation[1]["content"]}
         assert formatted[2] == {"role": "user", "parts": conversation[2]["content"]}
 
+    def test_available_versions_returns_valid_list(self) -> None:
+        """Test that available_versions returns non-empty list of model versions"""
+        versions = GeminiChatbot.available_versions()
+        assert versions is not None
+        assert len(versions) > 0
+        assert isinstance(versions, list)
+        assert all(isinstance(v, str) for v in versions)
+
+    def test_bot_creation_with_valid_version(self, gemini_config_for_tests: ChatbotConfig) -> None:
+        """Test that bot creation with valid version succeeds"""
+        # Use the first available version from the API
+        versions = GeminiChatbot.available_versions()
+        assert versions is not None
+        gemini_config_for_tests.model.version = versions[0]
+        bot = GeminiChatbot(gemini_config_for_tests)
+        assert bot.model_version == versions[0]
+
+    def test_bot_creation_with_invalid_version(self, gemini_config_for_tests: ChatbotConfig) -> None:
+        """Test that bot creation with invalid version fails"""
+        gemini_config_for_tests.model.version = "invalid-model-version"
+        with pytest.raises(ValueError, match="Invalid model version"):
+            GeminiChatbot(gemini_config_for_tests)
+
+    def test_version_caching(self) -> None:
+        """Test that available versions are cached"""
+        # Clear cache first
+        GeminiChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
+        
+        # First call should hit API
+        versions1 = GeminiChatbot.available_versions()
+        
+        # Second call should use cache
+        versions2 = GeminiChatbot.available_versions()
+        
+        assert versions1 == versions2
+        assert GeminiChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]
+

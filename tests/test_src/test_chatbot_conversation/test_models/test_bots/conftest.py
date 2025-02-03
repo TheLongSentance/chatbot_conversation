@@ -99,12 +99,17 @@ def ollama_config_for_tests() -> ChatbotConfig:
 @pytest.fixture
 def gemini_chatbot() -> GeminiChatbot:
     """Fixture to create an instance of GeminiChatbot."""
+    # Get first available version from API
+    versions = GeminiChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     config = ChatbotConfig(
         name="GeminiTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="GEMINI",
-            version="gemini-1.5-flash",
+            version=version,
         ),
     )
     return GeminiChatbot(config)
@@ -112,11 +117,16 @@ def gemini_chatbot() -> GeminiChatbot:
 
 @pytest.fixture
 def gemini_config_for_tests() -> ChatbotConfig:
-    """Basic config fixture for Ollama-specific tests"""
+    """Basic config fixture for Gemini-specific tests"""
+    # Get first available version from API
+    versions = GeminiChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     return ChatbotConfig(
         name="TestGeminiBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="GEMINI", version="gemini-1.5-flash"),
+        model=ChatbotModel(type="GEMINI", version=version),
     )
 
 
