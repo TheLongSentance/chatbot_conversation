@@ -27,12 +27,17 @@ from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 @pytest.fixture
 def gpt_chatbot() -> GPTChatbot:
     """Fixture to create an instance of GPTChatbot."""
+    # Get first available version from API
+    versions = GPTChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     config = ChatbotConfig(
         name="GPTTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="GPT",
-            version="gpt-4o-mini",
+            version=version,
         ),
     )
     return GPTChatbot(config)
@@ -41,10 +46,15 @@ def gpt_chatbot() -> GPTChatbot:
 @pytest.fixture
 def gpt_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for GPT-specific tests"""
+    # Get first available version from API
+    versions = GPTChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     return ChatbotConfig(
         name="TestGPTBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="GPT", version="gpt-4o-mini"),
+        model=ChatbotModel(type="GPT", version=version),
     )
 
 
@@ -170,5 +180,7 @@ def mock_api_error() -> Exception:
 def clear_version_cache():
     """Clear the version cache before each test"""
     ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
+    GPTChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
     yield
     ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
+    GPTChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]

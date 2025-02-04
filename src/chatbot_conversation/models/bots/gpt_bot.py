@@ -24,7 +24,7 @@ Dependencies:
     - ChatbotBase: Base class for chatbot implementations
 """
 
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Optional
 
 from openai import APIConnectionError, APIError, OpenAI, RateLimitError
 
@@ -73,6 +73,31 @@ class GPTChatbot(ChatbotBase):
     Notes:
         Requires OpenAI API key to be set in environment variables
     """
+    @classmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
+
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if
+            versions are not applicable/available
+
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        if cls._available_versions_cache is None:
+            try:
+                api = OpenAI()
+                models = api.models.list()
+                cls._available_versions_cache = [model.id for model in models]
+            except (
+                APIConnectionError,
+                APIError,
+            ) as e:
+                error_message = f"Failed to retrieve model versions: {e}"
+                cls._logger.error(error_message)
+                raise
+        return cls._available_versions_cache
 
     @classmethod
     def _get_class_model_type(cls) -> str:
