@@ -6,7 +6,7 @@ for Chatbot instances.
 from typing import Final
 
 from chatbot_conversation.conversation.loader import ChatbotConfigData
-from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ChatbotBase
+from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS
 
 BOT_NAME_VARIABLE_PLACEHOLDER: Final[str] = "bot_name"
 MAX_TOKENS_VARIABLE_PLACEHOLDER: Final[str] = "max_tokens"
@@ -33,43 +33,6 @@ def replace_variables(text: str, variables: dict[str, str]) -> str:
         placeholder = f"{{{key}}}"
         text = text.replace(placeholder, str(value))
     return text
-
-
-def add_suffix(bot: ChatbotBase, additional_prompt: str) -> None:
-    """
-    Append additional text to the system prompt.
-
-    Args:
-        bot (ChatbotBase): The chatbot instance whose system prompt will be modified.
-        additional_prompt (str): The text to append.
-
-    Example:
-        >>> bot = ChatbotBase(system_prompt="Hello")
-        >>> add_suffix(bot, ", world!")
-        >>> bot.system_prompt
-        'Hello, world!'
-    """
-    if additional_prompt:
-        bot.system_prompt += additional_prompt
-
-
-def remove_suffix(bot: ChatbotBase, text_to_remove: str) -> None:
-    """
-    Remove specific text from the end of the system prompt.
-
-    Args:
-        bot (ChatbotBase): The chatbot instance whose system prompt will be modified.
-        text_to_remove (str): The text to remove.
-
-    Example:
-        >>> bot = ChatbotBase(system_prompt="Hello, world!")
-        >>> remove_suffix(bot, ", world!")
-        >>> bot.system_prompt
-        'Hello'
-    """
-    if text_to_remove and bot.system_prompt.endswith(text_to_remove):
-        bot.system_prompt = bot.system_prompt[: -len(text_to_remove)]
-
 
 def construct_system_prompt(core_prompt: str, bot_config: ChatbotConfigData) -> str:
     """
@@ -102,40 +65,3 @@ def construct_system_prompt(core_prompt: str, bot_config: ChatbotConfigData) -> 
     )
 
     return bot_system_prompt
-
-
-class SuffixManager:
-    """Manages temporary suffixes for bot system prompts during conversation rounds."""
-
-    def __init__(self) -> None:
-        self._bot_suffixes: dict[ChatbotBase, str] = {}
-
-    def setup_round_suffix(self, bot: ChatbotBase, suffix_template: str) -> None:
-        """
-        Calculate and apply a round-specific suffix to a bot's system prompt.
-
-        Args:
-            bot: The bot to setup the suffix for
-            suffix_template: Template string containing {bot_name} and {max_tokens} placeholders
-        """
-
-        suffix = replace_variables(
-            suffix_template,
-            {
-                BOT_NAME_VARIABLE_PLACEHOLDER: bot.name,
-                MAX_TOKENS_VARIABLE_PLACEHOLDER: str(bot.model_max_tokens),
-            },
-        )
-        self._bot_suffixes[bot] = suffix
-        add_suffix(bot, suffix)
-
-    def cleanup_round_suffix(self, bot: ChatbotBase) -> None:
-        """
-        Remove the stored suffix from a bot's system prompt.
-
-        Args:
-            bot: The bot to remove the suffix from
-        """
-        if bot in self._bot_suffixes:
-            remove_suffix(bot, self._bot_suffixes[bot])
-            del self._bot_suffixes[bot]

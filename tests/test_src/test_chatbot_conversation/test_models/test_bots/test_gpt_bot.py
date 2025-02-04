@@ -6,7 +6,7 @@ import pytest
 from openai import APIConnectionError, APIError, RateLimitError
 
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
-from chatbot_conversation.models.bots.gpt_bot import MODEL_TYPE, GPTChatbot
+from chatbot_conversation.models.bots.gpt_bot import GPT_MODEL_TYPE, GPTChatbot
 
 
 class TestGPTChatbot:
@@ -17,9 +17,9 @@ class TestGPTChatbot:
         bot = GPTChatbot(gpt_config_for_tests)
         assert (
             bot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == MODEL_TYPE
+            == GPT_MODEL_TYPE
         )
-        assert bot.model_type == MODEL_TYPE
+        assert bot.model_type == GPT_MODEL_TYPE
 
     @pytest.mark.parametrize(
         "exception,should_retry",

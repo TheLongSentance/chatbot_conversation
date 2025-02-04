@@ -17,7 +17,6 @@ from typing import List
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import load_conversation_config
-from chatbot_conversation.conversation.prompt import SuffixManager
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils.logging_util import get_logger
@@ -50,7 +49,6 @@ class ConversationManager:
         self.bots = bots_initializer.initialize_bots(self.config)
 
         self.display_manager = create_display()  # Use create_display for display
-        self.suffix_manager = SuffixManager()
 
     def run_conversation(self) -> None:
         """

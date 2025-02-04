@@ -10,7 +10,7 @@ from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import (
     _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
 )
-from chatbot_conversation.models.bots.gemini_bot import MODEL_TYPE, GeminiChatbot
+from chatbot_conversation.models.bots.gemini_bot import GEMINI_MODEL_TYPE, GeminiChatbot
 
 
 class TestGeminiChatbot:
@@ -20,9 +20,9 @@ class TestGeminiChatbot:
         """Test that Gemini model type constant is correctly used"""
         assert (
             gemini_chatbot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == MODEL_TYPE
+            == GEMINI_MODEL_TYPE
         )
-        assert gemini_chatbot.model_type == MODEL_TYPE
+        assert gemini_chatbot.model_type == GEMINI_MODEL_TYPE
 
     @pytest.mark.parametrize(
         "exception,should_retry",

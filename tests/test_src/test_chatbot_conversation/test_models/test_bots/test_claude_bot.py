@@ -101,7 +101,7 @@ class TestClaudeChatbot:
         with pytest.raises(ValueError, match="Model returned an empty response"):
             bot.generate_response(conversation)
 
-    def test_available_versions_live(self):
+    def test_available_versions_live(self) -> None:
         """Test retrieving available model versions using live API"""
         versions = ClaudeChatbot.available_versions()
         assert versions is not None
@@ -109,7 +109,7 @@ class TestClaudeChatbot:
         # Verify some known Claude models are present
         assert any("claude" in version for version in versions)
 
-    def test_valid_model_version_live(self):
+    def test_valid_model_version_live(self) -> None:
         """Test initialization with valid model version using live API"""
         versions = ClaudeChatbot.available_versions()
         assert versions is not None
@@ -125,7 +125,7 @@ class TestClaudeChatbot:
         bot = ClaudeChatbot(config)
         assert bot.model_version == valid_version
 
-    def test_invalid_model_version_live(self):
+    def test_invalid_model_version_live(self) -> None:
         """Test initialization fails with invalid model version using live API"""
         config = ChatbotConfig(
             name="TestBot",

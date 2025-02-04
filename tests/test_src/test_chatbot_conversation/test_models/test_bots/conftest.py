@@ -12,6 +12,8 @@ Fixtures:
 
 import pytest
 
+from typing import Generator
+
 from chatbot_conversation.models import (  # BotRegistry,; ChatbotFactory,
     ChatbotBase,
     ChatbotConfig,
@@ -161,7 +163,7 @@ def mock_api_error() -> Exception:
 
 
 @pytest.fixture(autouse=True)
-def clear_version_cache():
+def clear_version_cache() -> Generator[None, None, None]:
     """Clear the version cache before each test"""
     ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
     GPTChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]

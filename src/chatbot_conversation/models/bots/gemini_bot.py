@@ -112,11 +112,11 @@ class GeminiChatbot(ChatbotBase):
         """
         if cls._available_versions_cache is None:
             try:
-                google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
-                models = google.generativeai.list_models()  # type: ignore
+                google.generativeai.configure()  # pyright: ignore
+                models = google.generativeai.list_models()  # pyright: ignore
                 # extract version from model name "models/gemini-1.5-pro"
                 cls._available_versions_cache = \
-                    [model.name.split("/")[-1] for model in models]  # type: ignore
+                    [model.name.split("/")[-1] for model in models]  # pyright: ignore
             except google.api_core.exceptions.GoogleAPIError as e:
                 error_message = f"Failed to retrieve model versions: {e}"
                 cls._logger.error(error_message)
