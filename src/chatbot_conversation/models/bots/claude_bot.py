@@ -27,10 +27,10 @@ CLAUDE_MINIMUM_TEMPERATURE = 0.0
 CLAUDE_MAXIMUM_TEMPERATURE = 1.0
 CLAUDE_DEFAULT_TEMPERATURE = 1.0
 
-MODEL_TYPE = "CLAUDE"
+CLAUDE_MODEL_TYPE = "CLAUDE"
 
 
-@register_bot(MODEL_TYPE)
+@register_bot(CLAUDE_MODEL_TYPE)
 class ClaudeChatbot(ChatbotBase):
     """
     Chatbot implementation using Anthropic's Claude API.
@@ -90,7 +90,7 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             str: "CLAUDE" as the model type identifier
         """
-        return MODEL_TYPE
+        return CLAUDE_MODEL_TYPE
 
     @classmethod
     def _get_model_min_temperature(cls) -> float:

@@ -10,7 +10,7 @@ from chatbot_conversation.models.base import (
     ChatbotModel,
     ConversationMessage,
 )
-from chatbot_conversation.models.bots.claude_bot import MODEL_TYPE, ClaudeChatbot
+from chatbot_conversation.models.bots.claude_bot import CLAUDE_MODEL_TYPE, ClaudeChatbot
 
 
 class TestClaudeChatbot:
@@ -21,9 +21,9 @@ class TestClaudeChatbot:
         bot = ClaudeChatbot(claude_config_for_tests)
         assert (
             bot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == MODEL_TYPE
+            == CLAUDE_MODEL_TYPE
         )
-        assert bot.model_type == MODEL_TYPE
+        assert bot.model_type == CLAUDE_MODEL_TYPE
 
     @pytest.mark.parametrize(
         "exception,should_retry",

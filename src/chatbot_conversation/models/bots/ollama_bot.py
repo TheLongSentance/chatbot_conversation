@@ -31,10 +31,10 @@ OLLAMA_MINIMUM_TEMPERATURE = 0.0
 OLLAMA_MAXIMUM_TEMPERATURE = 1.0
 OLLAMA_DEFAULT_TEMPERATURE = 0.8
 
-MODEL_TYPE = "OLLAMA"
+OLLAMA_MODEL_TYPE = "OLLAMA"
 
 
-@register_bot(MODEL_TYPE)
+@register_bot(OLLAMA_MODEL_TYPE)
 class OllamaChatbot(ChatbotBase):
     """
     Chatbot implementation using Ollama's local API service.
@@ -84,9 +84,11 @@ class OllamaChatbot(ChatbotBase):
         if cls._available_versions_cache is None:
             try:
                 response = ollama.list()
+                models = getattr(response, "models", [])
                 # strip off colon so for example: "llama3.2:latest" becomes "llama3.2"
                 cls._available_versions_cache = [
-                    str(model.model).split(":")[0] for model in response.models
+                    str(model.model).split(":", maxsplit=1)[0] \
+                        for model in models
                 ]
             except Exception as e:
                 error_message = f"Failed to retrieve model versions: {e}"
@@ -102,7 +104,7 @@ class OllamaChatbot(ChatbotBase):
         Returns:
             str: "OLLAMA" as the model type identifier
         """
-        return MODEL_TYPE
+        return OLLAMA_MODEL_TYPE
 
     @classmethod
     def _get_model_min_temperature(cls) -> float:

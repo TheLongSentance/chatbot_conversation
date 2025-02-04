@@ -40,10 +40,10 @@ GPT_MINIMUM_TEMPERATURE = 0.0
 GPT_MAXIMUM_TEMPERATURE = 2.0
 GPT_DEFAULT_TEMPERATURE = 1.0
 
-MODEL_TYPE = "GPT"
+GPT_MODEL_TYPE = "GPT"
 
 
-@register_bot("GPT")
+@register_bot(GPT_MODEL_TYPE)
 class GPTChatbot(ChatbotBase):
     """
     Chatbot implementation using OpenAI's GPT API service.
@@ -108,7 +108,7 @@ class GPTChatbot(ChatbotBase):
         Returns:
             str: "GPT" as the model type identifier
         """
-        return MODEL_TYPE
+        return GPT_MODEL_TYPE
 
     @classmethod
     def _get_model_min_temperature(cls) -> float:

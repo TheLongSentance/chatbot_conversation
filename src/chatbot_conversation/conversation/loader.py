@@ -1,5 +1,6 @@
 """
-This module contains classes and functions for loading and validating conversation configurations from JSON files.
+This module contains classes and functions for loading and validating conversation 
+configurations from JSON files.
 
 The module provides a robust configuration system that validates:
 - Bot configuration parameters (name format, uniqueness, etc.)
@@ -145,7 +146,8 @@ class ConversationConfig(BaseConfigModel):
         conversation_seed (str): Initial prompt to start the discussion
         rounds (int): Number of conversation rounds
         core_prompt (str): Base instructions provided to all bots
-        moderator_messages_opt (List[ModeratorMessage]): Optional list of round-specific moderator messages
+        moderator_messages_opt (List[ModeratorMessage]): Optional list of 
+            round-specific moderator messages
         bots (List[ChatbotConfigData]): List of bot configurations
     """
 

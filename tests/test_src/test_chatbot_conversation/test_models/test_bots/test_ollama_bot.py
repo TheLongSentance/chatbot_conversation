@@ -12,7 +12,7 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bots.ollama_bot import (
-    MODEL_TYPE,
+    OLLAMA_MODEL_TYPE,
     OLLAMA_MAXIMUM_TEMPERATURE,
     OLLAMA_MINIMUM_TEMPERATURE,
     OllamaChatbot,
@@ -25,7 +25,7 @@ class TestOllamaChatbot:
     def test_model_type(self, ollama_config_for_tests: ChatbotConfig) -> None:
         """Test that Ollama model type constant is correctly used"""
         bot = OllamaChatbot(ollama_config_for_tests)
-        assert bot.model_type == MODEL_TYPE
+        assert bot.model_type == OLLAMA_MODEL_TYPE
 
     def test_temperature_bounds(self) -> None:
         """Test that temperature settings respect Ollama's specific bounds"""

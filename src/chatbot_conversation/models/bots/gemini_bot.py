@@ -44,7 +44,7 @@ GEMINI_MINIMUM_TEMPERATURE = 0.0
 GEMINI_MAXIMUM_TEMPERATURE = 2.0
 GEMINI_DEFAULT_TEMPERATURE = 1.0
 
-MODEL_TYPE = "GEMINI"
+GEMINI_MODEL_TYPE = "GEMINI"
 
 
 class _GeminiMessage(TypedDict):
@@ -60,7 +60,7 @@ class _GeminiMessage(TypedDict):
     parts: str
 
 
-@register_bot(MODEL_TYPE)
+@register_bot(GEMINI_MODEL_TYPE)
 class GeminiChatbot(ChatbotBase):
     """
     Gemini-specific chatbot implementation using Google's AI models.
@@ -115,7 +115,8 @@ class GeminiChatbot(ChatbotBase):
                 google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
                 models = google.generativeai.list_models()  # type: ignore
                 # extract version from model name "models/gemini-1.5-pro"
-                cls._available_versions_cache = [model.name.split("/")[-1] for model in models]  # type: ignore
+                cls._available_versions_cache = \
+                    [model.name.split("/")[-1] for model in models]  # type: ignore
             except google.api_core.exceptions.GoogleAPIError as e:
                 error_message = f"Failed to retrieve model versions: {e}"
                 cls._logger.error(error_message)
@@ -130,7 +131,7 @@ class GeminiChatbot(ChatbotBase):
         Returns:
             str: "GPT" as the model type identifier
         """
-        return MODEL_TYPE
+        return GEMINI_MODEL_TYPE
 
     @classmethod
     def _get_model_min_temperature(cls) -> float:
