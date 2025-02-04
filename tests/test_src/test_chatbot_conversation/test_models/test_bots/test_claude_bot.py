@@ -1,10 +1,15 @@
 """Tests specific to ClaudeChatbot implementation"""
 
 from unittest.mock import MagicMock, patch
+
 import pytest
 from anthropic import APIConnectionError, APIError, RateLimitError
 
-from chatbot_conversation.models.base import ChatbotConfig, ChatbotModel, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotConfig,
+    ChatbotModel,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bots.claude_bot import MODEL_TYPE, ClaudeChatbot
 
 

@@ -7,7 +7,7 @@ Fixtures:
     chatbot_factory: Creates an instance of ChatbotFactory.
 """
 
-from typing import List, Type, Optional
+from typing import List, Optional, Type
 
 import pytest
 
