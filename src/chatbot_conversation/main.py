@@ -9,6 +9,8 @@ import sys
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.utils import APIConfig
 
+os.environ["GRPC_VERBOSITY"] = "ERROR"  # Suppress gRPC warnings
+
 logger = logging.getLogger("root")
 
 
