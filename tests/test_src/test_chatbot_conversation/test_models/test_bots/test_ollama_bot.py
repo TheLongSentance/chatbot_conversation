@@ -33,7 +33,7 @@ class TestOllamaChatbot:
         config = ChatbotConfig(
             name="TestBot1",
             system_prompt="Test prompt",
-            model=ChatbotModel(type="OLLAMA", version="llama2"),
+            model=ChatbotModel(type="OLLAMA", version="llama3.2"),
         )
         bot = OllamaChatbot(config)
         assert bot.model_temperature == bot.model_default_temperature
@@ -44,7 +44,7 @@ class TestOllamaChatbot:
             system_prompt="Test prompt",
             model=ChatbotModel(
                 type="OLLAMA",
-                version="llama2",
+                version="llama3.2",
                 params_opt=ChatbotParamsOpt(temperature=0.5),
             ),
         )
@@ -58,7 +58,7 @@ class TestOllamaChatbot:
                 system_prompt="Test prompt",
                 model=ChatbotModel(
                     type="OLLAMA",
-                    version="llama2",
+                    version="llama3.2",
                     params_opt=ChatbotParamsOpt(
                         temperature=OLLAMA_MAXIMUM_TEMPERATURE + 0.1
                     ),
@@ -73,7 +73,7 @@ class TestOllamaChatbot:
                 system_prompt="Test prompt",
                 model=ChatbotModel(
                     type="OLLAMA",
-                    version="llama2",
+                    version="llama3.2",
                     params_opt=ChatbotParamsOpt(
                         temperature=OLLAMA_MINIMUM_TEMPERATURE - 0.1
                     ),

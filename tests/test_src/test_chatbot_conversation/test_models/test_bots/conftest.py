@@ -27,17 +27,12 @@ from chatbot_conversation.models.bots.ollama_bot import OllamaChatbot
 @pytest.fixture
 def gpt_chatbot() -> GPTChatbot:
     """Fixture to create an instance of GPTChatbot."""
-    # Get first available version from API
-    versions = GPTChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
-    
     config = ChatbotConfig(
         name="GPTTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="GPT",
-            version=version,
+            version="gpt-4o-mini",
         ),
     )
     return GPTChatbot(config)
@@ -46,15 +41,11 @@ def gpt_chatbot() -> GPTChatbot:
 @pytest.fixture
 def gpt_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for GPT-specific tests"""
-    # Get first available version from API
-    versions = GPTChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
     
     return ChatbotConfig(
         name="TestGPTBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="GPT", version=version),
+        model=ChatbotModel(type="GPT", version="gpt-4o-mini"),
     )
 
 
@@ -86,16 +77,12 @@ def claude_config_for_tests() -> ChatbotConfig:
 def ollama_chatbot() -> OllamaChatbot:
     """Fixture to create an instance of OllamaChatbot."""
     # Get first available version from API
-    versions = OllamaChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
-    
     config = ChatbotConfig(
         name="OllamaTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="OLLAMA",
-            version=version,
+            version="llama3.2",
         ),
     )
     return OllamaChatbot(config)
@@ -105,14 +92,10 @@ def ollama_chatbot() -> OllamaChatbot:
 def ollama_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for Ollama-specific tests"""
     # Get first available version from API
-    versions = OllamaChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
-    
     return ChatbotConfig(
         name="TestOllamaBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="OLLAMA", version=version),
+        model=ChatbotModel(type="OLLAMA", version="llama3.2"),
     )
 
 
@@ -120,16 +103,12 @@ def ollama_config_for_tests() -> ChatbotConfig:
 def gemini_chatbot() -> GeminiChatbot:
     """Fixture to create an instance of GeminiChatbot."""
     # Get first available version from API
-    versions = GeminiChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
-    
     config = ChatbotConfig(
         name="GeminiTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="GEMINI",
-            version=version,
+            version="gemini-1.5-flash",
         ),
     )
     return GeminiChatbot(config)
@@ -138,15 +117,10 @@ def gemini_chatbot() -> GeminiChatbot:
 @pytest.fixture
 def gemini_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for Gemini-specific tests"""
-    # Get first available version from API
-    versions = GeminiChatbot.available_versions()
-    assert versions is not None
-    version = versions[0]
-    
     return ChatbotConfig(
         name="TestGeminiBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="GEMINI", version=version),
+        model=ChatbotModel(type="GEMINI", version="gemini-1.5-flash"),
     )
 
 
