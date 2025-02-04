@@ -213,10 +213,8 @@ class GeminiChatbot(ChatbotBase):
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
-        message = (
-            self._model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
-                formatted_messages
-            )
+        message = self._model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
+            formatted_messages
         )
         response: str = message.text
         return response

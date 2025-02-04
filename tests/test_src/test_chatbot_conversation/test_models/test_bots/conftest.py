@@ -41,7 +41,7 @@ def gpt_chatbot() -> GPTChatbot:
 @pytest.fixture
 def gpt_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for GPT-specific tests"""
-    
+
     return ChatbotConfig(
         name="TestGPTBot",
         system_prompt="You are a test assistant.",

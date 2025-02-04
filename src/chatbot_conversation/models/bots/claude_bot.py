@@ -58,6 +58,7 @@ class ClaudeChatbot(ChatbotBase):
         Inherits all attributes from ChatbotBase plus:
         _model_api (anthropic.Anthropic): Authenticated Claude API client
     """
+
     @classmethod
     def available_versions(cls) -> Optional[List[str]]:
         """
@@ -78,9 +79,9 @@ class ClaudeChatbot(ChatbotBase):
             except (anthropic.APIError, anthropic.APIConnectionError) as e:
                 error_message = f"Failed to retrieve model versions: {e}"
                 cls._logger.error(error_message)
-                raise 
+                raise
         return cls._available_versions_cache
-    
+
     @classmethod
     def _get_class_model_type(cls) -> str:
         """

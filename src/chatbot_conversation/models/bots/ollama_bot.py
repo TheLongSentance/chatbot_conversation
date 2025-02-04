@@ -91,7 +91,7 @@ class OllamaChatbot(ChatbotBase):
             except Exception as e:
                 error_message = f"Failed to retrieve model versions: {e}"
                 cls._logger.error(error_message)
-                raise 
+                raise
         return cls._available_versions_cache
 
     @classmethod

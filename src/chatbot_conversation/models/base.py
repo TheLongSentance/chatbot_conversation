@@ -85,10 +85,11 @@ DEFAULT_WAIT_MULTIPLIER: Final[float] = 1.5
 #
 DEFAULT_MAX_TOKENS: Final[int] = 700
 
+
 class ChatMessage(TypedDict):
     """
     Message format for API communication.
-    
+
     Attributes:
         role: Message source ('system', 'user', 'assistant')
         content: Message text
@@ -101,7 +102,7 @@ class ChatMessage(TypedDict):
 class ConversationMessage(TypedDict):
     """
     Internal message format for conversation tracking.
-    
+
     Attributes:
         bot_index: Unique identifier of source bot
         content: Message text
@@ -115,7 +116,7 @@ class ConversationMessage(TypedDict):
 class ChatbotTimeout:
     """
     Configuration for API timeouts and retries.
-    
+
     Attributes:
         total: Maximum total time for API operation (seconds)
         api_timeout: Timeout for individual API calls (seconds)
@@ -137,7 +138,7 @@ class ChatbotTimeout:
 class ChatbotParamsOpt:
     """
     Optional runtime parameters.
-    
+
     Attributes:
         temperature: Response randomness (0.0-1.0)
         max_tokens: Maximum response length
@@ -151,10 +152,10 @@ class ChatbotParamsOpt:
 class ChatbotModel:
     """
     Model configuration.
-    
+
     Attributes:
         type: Model type identifier
-        version: Model version 
+        version: Model version
         params_opt: Optional runtime parameters
     """
 
@@ -167,7 +168,7 @@ class ChatbotModel:
 class ChatbotConfig:
     """
     Chatbot instance configuration.
-    
+
     Attributes:
         name: Bot identifier
         system_prompt: Initial system instructions
@@ -250,15 +251,15 @@ class ChatbotBase(ABC):
     def available_versions(cls) -> Optional[List[str]]:
         """
         Get available model versions for this bot type.
-        
+
         Returns:
-            Optional[List[str]]: List of valid model versions, or None if 
+            Optional[List[str]]: List of valid model versions, or None if
             versions are not applicable/available
-        
+
         Raises:
             APIError: If API call to retrieve versions fails
         """
-        pass # pylint: disable=unnecessary-pass
+        pass  # pylint: disable=unnecessary-pass
 
     @classmethod
     def get_total_bots(cls) -> int:
@@ -347,7 +348,7 @@ class ChatbotBase(ABC):
         Returns:
             int: The initial max tokens value to use.
         """
-        return(
+        return (
             config.model.params_opt.max_tokens
             if config.model.params_opt.max_tokens is not None
             else cls._get_model_default_max_tokens()
@@ -409,7 +410,6 @@ class ChatbotBase(ABC):
                 f"got '{config.model.type}', expected '{expected_type}'"
             )
 
-
     @classmethod
     def _validate_model_version(cls, config: ChatbotConfig) -> None:
         """
@@ -459,9 +459,7 @@ class ChatbotBase(ABC):
             ValueError: If max tokens is less than 1
         """
         if max_tokens < 1:
-            raise ValueError(
-                f"Max tokens for {cls.__name__} must be greater than 0"
-            )
+            raise ValueError(f"Max tokens for {cls.__name__} must be greater than 0")
 
     # Instance Initialization
     def __init__(

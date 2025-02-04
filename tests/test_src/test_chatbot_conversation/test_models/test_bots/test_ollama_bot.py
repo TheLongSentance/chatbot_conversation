@@ -178,7 +178,9 @@ class TestOllamaChatbot:
         assert isinstance(versions, list)
         assert all(isinstance(v, str) for v in versions)
 
-    def test_bot_creation_with_valid_version(self, ollama_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_valid_version(
+        self, ollama_config_for_tests: ChatbotConfig
+    ) -> None:
         """
         Test that bot creation with valid version succeeds.
 
@@ -191,7 +193,9 @@ class TestOllamaChatbot:
         bot = OllamaChatbot(ollama_config_for_tests)
         assert bot.model_version == versions[0]
 
-    def test_bot_creation_with_invalid_version(self, ollama_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_invalid_version(
+        self, ollama_config_for_tests: ChatbotConfig
+    ) -> None:
         """
         Test that bot creation with invalid version fails.
 
@@ -204,7 +208,7 @@ class TestOllamaChatbot:
     def test_version_caching(self) -> None:
         """
         Test that available versions are cached.
-        
+
         Verifies that:
         1. Cache is initially empty
         2. First call retrieves versions
@@ -216,9 +220,9 @@ class TestOllamaChatbot:
         
         # First call should hit API
         versions1 = OllamaChatbot.available_versions()
-        
+
         # Second call should use cache
         versions2 = OllamaChatbot.available_versions()
-        
+
         assert versions1 == versions2
         assert OllamaChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]

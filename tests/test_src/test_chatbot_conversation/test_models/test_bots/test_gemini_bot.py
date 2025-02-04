@@ -125,7 +125,9 @@ class TestGeminiChatbot:
         assert isinstance(versions, list)
         assert all(isinstance(v, str) for v in versions)
 
-    def test_bot_creation_with_valid_version(self, gemini_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_valid_version(
+        self, gemini_config_for_tests: ChatbotConfig
+    ) -> None:
         """Test that bot creation with valid version succeeds"""
         # Use the first available version from the API
         versions = GeminiChatbot.available_versions()
@@ -134,7 +136,9 @@ class TestGeminiChatbot:
         bot = GeminiChatbot(gemini_config_for_tests)
         assert bot.model_version == versions[0]
 
-    def test_bot_creation_with_invalid_version(self, gemini_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_invalid_version(
+        self, gemini_config_for_tests: ChatbotConfig
+    ) -> None:
         """Test that bot creation with invalid version fails"""
         gemini_config_for_tests.model.version = "invalid-model-version"
         with pytest.raises(ValueError, match="Invalid model version"):
@@ -147,10 +151,10 @@ class TestGeminiChatbot:
         
         # First call should hit API
         versions1 = GeminiChatbot.available_versions()
-        
+
         # Second call should use cache
         versions2 = GeminiChatbot.available_versions()
-        
+
         assert versions1 == versions2
         assert GeminiChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]
 

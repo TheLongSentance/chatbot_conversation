@@ -53,7 +53,7 @@ class TestChatbotConfig:
         assert bot.model_max_tokens == 100
         assert bot.model_timeout == config.timeout
         assert bot.bot_index == ChatbotBase.get_total_bots()
-        assert bot._model_api is None # pyright: ignore[reportPrivateUsage]
+        assert bot._model_api is None  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -289,6 +289,7 @@ class TestChatbotBaseMaxTokens:
                     ),
                 )
                 bot_class(config)
+
 
 @pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseCounter:
@@ -581,11 +582,13 @@ class TestChatbotBaseVersionValidation:
                 )
                 bot_class(config)
 
-    def test_none_available_versions(self, bot_class: type[ChatbotBase], mocker: MockFixture) -> None:
+    def test_none_available_versions(
+        self, bot_class: type[ChatbotBase], mocker: MockFixture
+    ) -> None:
         """Test that None available_versions skips version validation"""
         # Mock available_versions to return None
         mocker.patch.object(bot_class, "available_versions", return_value=None)
-        
+
         config = ChatbotConfig(
             name="NoVersionValidationBot",
             system_prompt="test",
@@ -597,11 +600,13 @@ class TestChatbotBaseVersionValidation:
         bot = bot_class(config)
         assert bot.model_version == "any_version"
 
-    def test_empty_available_versions(self, bot_class: type[ChatbotBase], mocker: MockFixture) -> None:
+    def test_empty_available_versions(
+        self, bot_class: type[ChatbotBase], mocker: MockFixture
+    ) -> None:
         """Test that empty available_versions list rejects all versions"""
         # Mock available_versions to return empty list
         mocker.patch.object(bot_class, "available_versions", return_value=[])
-        
+
         with pytest.raises(ValueError, match="Invalid model version"):
             config = ChatbotConfig(
                 name="EmptyVersionsBot",

@@ -109,17 +109,21 @@ class TestGPTChatbot:
         assert any("gpt-4" in v for v in versions)
         assert any("gpt-3.5" in v for v in versions)
 
-    def test_bot_creation_with_valid_version(self, gpt_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_valid_version(
+        self, gpt_config_for_tests: ChatbotConfig
+    ) -> None:
         """Test that bot creation with valid version succeeds"""
         # Use first available version from API
         versions = GPTChatbot.available_versions()
         assert versions is not None
         gpt_config_for_tests.model.version = versions[0]
-        
+
         bot = GPTChatbot(gpt_config_for_tests)
         assert bot.model_version == versions[0]
 
-    def test_bot_creation_with_invalid_version(self, gpt_config_for_tests: ChatbotConfig) -> None:
+    def test_bot_creation_with_invalid_version(
+        self, gpt_config_for_tests: ChatbotConfig
+    ) -> None:
         """Test that bot creation with invalid version fails"""
         gpt_config_for_tests.model.version = "invalid-model-version"
         with pytest.raises(ValueError, match="Invalid model version"):
@@ -132,9 +136,9 @@ class TestGPTChatbot:
         
         # First call should hit API
         versions1 = GPTChatbot.available_versions()
-        
+
         # Second call should use cache
         versions2 = GPTChatbot.available_versions()
-        
+
         assert versions1 == versions2
         assert GPTChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]

@@ -73,6 +73,7 @@ class GPTChatbot(ChatbotBase):
     Notes:
         Requires OpenAI API key to be set in environment variables
     """
+
     @classmethod
     def available_versions(cls) -> Optional[List[str]]:
         """

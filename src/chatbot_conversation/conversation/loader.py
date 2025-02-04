@@ -37,13 +37,16 @@ MAX_TEMPERATURE = 2.0
 ALLOWED_TEMPLATE_VARS = {"bot_name", "max_tokens"}
 TEMPLATE_VARS_PATTERN = r"\{([^}]+)\}"
 
+
 class BaseConfigModel(BaseModel):
     """Base configuration model with strict validation."""
+
     model_config = ConfigDict(
-        extra='forbid',  # Prevent unknown fields
+        extra="forbid",  # Prevent unknown fields
         str_strip_whitespace=True,  # Strip whitespace from strings
-        frozen=True  # Make configs immutable after creation
+        frozen=True,  # Make configs immutable after creation
     )
+
 
 class ChatbotParamsOptData(BaseConfigModel):
     """Optional parameters for bot configuration.
@@ -271,21 +274,20 @@ class ConversationConfig(BaseConfigModel):
 
         return v
 
+
 def load_conversation_config(config_path: str) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
-    
+
     Args:
         config_path: Must be a .json file
     """
-    if not config_path.endswith('.json'):
+    if not config_path.endswith(".json"):
         raise ValueError("Configuration file must be a .json file")
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError as e:
-        raise FileNotFoundError(
-            f"Configuration file not found: {config_path}"
-        ) from e
+        raise FileNotFoundError(f"Configuration file not found: {config_path}") from e
     except json.JSONDecodeError as e:
         raise json.JSONDecodeError(
             f"Invalid JSON in configuration file: {str(e)}", e.doc, e.pos

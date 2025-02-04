@@ -114,13 +114,13 @@ class TestClaudeChatbot:
         versions = ClaudeChatbot.available_versions()
         assert versions is not None
         valid_version = next(v for v in versions if "claude-3" in v)
-        
+
         config = ChatbotConfig(
             name="TestBot",
             system_prompt="Test prompt",
-            model=ChatbotModel(type="CLAUDE", version=valid_version)
+            model=ChatbotModel(type="CLAUDE", version=valid_version),
         )
-        
+
         # Should not raise any exceptions
         bot = ClaudeChatbot(config)
         assert bot.model_version == valid_version
@@ -130,8 +130,8 @@ class TestClaudeChatbot:
         config = ChatbotConfig(
             name="TestBot",
             system_prompt="Test prompt",
-            model=ChatbotModel(type="CLAUDE", version="invalid-version")
+            model=ChatbotModel(type="CLAUDE", version="invalid-version"),
         )
-        
+
         with pytest.raises(ValueError, match="Invalid model version"):
             ClaudeChatbot(config)
