@@ -162,3 +162,63 @@ class TestOllamaChatbot:
 
         with pytest.raises(ValueError, match="Model returned an empty response"):
             bot.generate_response(conversation)
+
+    def test_available_versions_returns_valid_list(self) -> None:
+        """
+        Test that available_versions returns non-empty list of model versions.
+
+        Verifies that:
+        1. Method returns a list
+        2. List is not empty
+        3. All entries are strings
+        """
+        versions = OllamaChatbot.available_versions()
+        assert versions is not None
+        assert len(versions) > 0
+        assert isinstance(versions, list)
+        assert all(isinstance(v, str) for v in versions)
+
+    def test_bot_creation_with_valid_version(self, ollama_config_for_tests: ChatbotConfig) -> None:
+        """
+        Test that bot creation with valid version succeeds.
+
+        Uses first available version from API to ensure test uses valid version.
+        """
+        # Use the first available version from the API
+        versions = OllamaChatbot.available_versions()
+        assert versions is not None
+        ollama_config_for_tests.model.version = versions[0]
+        bot = OllamaChatbot(ollama_config_for_tests)
+        assert bot.model_version == versions[0]
+
+    def test_bot_creation_with_invalid_version(self, ollama_config_for_tests: ChatbotConfig) -> None:
+        """
+        Test that bot creation with invalid version fails.
+
+        Uses a known invalid version string to verify error handling.
+        """
+        ollama_config_for_tests.model.version = "invalid-model-version"
+        with pytest.raises(ValueError, match="Invalid model version"):
+            OllamaChatbot(ollama_config_for_tests)
+
+    def test_version_caching(self) -> None:
+        """
+        Test that available versions are cached.
+        
+        Verifies that:
+        1. Cache is initially empty
+        2. First call retrieves versions
+        3. Second call uses cached versions
+        4. Cache contains expected values
+        """
+        # Clear cache first
+        OllamaChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
+        
+        # First call should hit API
+        versions1 = OllamaChatbot.available_versions()
+        
+        # Second call should use cache
+        versions2 = OllamaChatbot.available_versions()
+        
+        assert versions1 == versions2
+        assert OllamaChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]

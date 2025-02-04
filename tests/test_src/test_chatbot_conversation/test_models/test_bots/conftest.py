@@ -85,12 +85,17 @@ def claude_config_for_tests() -> ChatbotConfig:
 @pytest.fixture
 def ollama_chatbot() -> OllamaChatbot:
     """Fixture to create an instance of OllamaChatbot."""
+    # Get first available version from API
+    versions = OllamaChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     config = ChatbotConfig(
         name="OllamaTestBot1",
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="OLLAMA",
-            version="llama3.2",
+            version=version,
         ),
     )
     return OllamaChatbot(config)
@@ -99,10 +104,15 @@ def ollama_chatbot() -> OllamaChatbot:
 @pytest.fixture
 def ollama_config_for_tests() -> ChatbotConfig:
     """Basic config fixture for Ollama-specific tests"""
+    # Get first available version from API
+    versions = OllamaChatbot.available_versions()
+    assert versions is not None
+    version = versions[0]
+    
     return ChatbotConfig(
         name="TestOllamaBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="OLLAMA", version="llama2"),
+        model=ChatbotModel(type="OLLAMA", version=version),
     )
 
 

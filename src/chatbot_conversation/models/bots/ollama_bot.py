@@ -17,7 +17,7 @@ Note:
     other implementations that typically use 0.0-2.0.
 """
 
-from typing import Any, Iterator, List
+from typing import Any, Iterator, List, Optional
 
 import httpx
 import ollama
@@ -68,6 +68,31 @@ class OllamaChatbot(ChatbotBase):
 
     # no __init__() method needed, OllamaChatbot uses the base class __init__()
     # which is automatically called when creating an instance of this class
+
+    @classmethod
+    def available_versions(cls) -> Optional[List[str]]:
+        """
+        Get available model versions for this bot type.
+
+        Returns:
+            Optional[List[str]]: List of valid model versions, or None if
+            versions are not applicable/available
+
+        Raises:
+            APIError: If API call to retrieve versions fails
+        """
+        if cls._available_versions_cache is None:
+            try:
+                response = ollama.list()
+                # strip off colon so for example: "llama3.2:latest" becomes "llama3.2"
+                cls._available_versions_cache = [
+                    str(model.model).split(":")[0] for model in response.models
+                ]
+            except Exception as e:
+                error_message = f"Failed to retrieve model versions: {e}"
+                cls._logger.error(error_message)
+                raise 
+        return cls._available_versions_cache
 
     @classmethod
     def _get_class_model_type(cls) -> str:
