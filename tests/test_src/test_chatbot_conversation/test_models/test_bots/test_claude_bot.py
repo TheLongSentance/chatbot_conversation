@@ -55,6 +55,11 @@ class TestClaudeChatbot:
         self, mock_anthropic: MagicMock, claude_config_for_tests: ChatbotConfig
     ) -> None:
         """Test Claude API call parameter formatting"""
+        # Mock models list
+        mock_model = MagicMock()
+        mock_model.id = "claude-3-haiku-20240307"
+        mock_anthropic.return_value.models.list.return_value = [mock_model]
+
         # Create a mock response
         mock_message = MagicMock()
         mock_message.content[0].text = "Test response"
@@ -91,6 +96,12 @@ class TestClaudeChatbot:
         self, mock_anthropic: MagicMock, claude_config_for_tests: ChatbotConfig
     ) -> None:
         """Test handling of empty responses from Claude API"""
+        # Mock models list
+        mock_model = MagicMock()
+        mock_model.id = "claude-3-haiku-20240307"
+        mock_anthropic.return_value.models.list.return_value = [mock_model]
+
+        # Mock empty response
         mock_message = MagicMock()
         mock_message.content[0].text = ""
         mock_anthropic.return_value.messages.create.return_value = mock_message

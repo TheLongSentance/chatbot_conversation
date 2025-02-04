@@ -51,6 +51,11 @@ class TestGPTChatbot:
         self, mock_openai: MagicMock, gpt_config_for_tests: ChatbotConfig
     ) -> None:
         """Test OpenAI API call parameter formatting"""
+        # Mock models list
+        mock_model = MagicMock()
+        mock_model.id = "gpt-4o-mini"
+        mock_openai.return_value.models.list.return_value = [mock_model]
+
         # Create a mock response
         mock_completion = MagicMock()
         mock_completion.choices[0].message.content = "Test response"
@@ -87,6 +92,11 @@ class TestGPTChatbot:
     def test_empty_response_handling(
         self, mock_openai: MagicMock, gpt_config_for_tests: ChatbotConfig
     ) -> None:
+        # Mock models list
+        mock_model = MagicMock()
+        mock_model.id = "gpt-4o-mini"
+        mock_openai.return_value.models.list.return_value = [mock_model]
+
         """Test handling of empty responses from OpenAI API"""
         mock_completion = MagicMock()
         mock_completion.choices[0].message.content = ""
@@ -133,7 +143,7 @@ class TestGPTChatbot:
         """Test that available versions are cached"""
         # Clear cache first
         GPTChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
-        
+
         # First call should hit API
         versions1 = GPTChatbot.available_versions()
 

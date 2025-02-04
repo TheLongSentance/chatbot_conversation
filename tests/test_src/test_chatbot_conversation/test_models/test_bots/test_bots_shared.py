@@ -14,20 +14,19 @@ from chatbot_conversation.models.base import (
 
 
 @pytest.mark.parametrize(
-    "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot"]
-)
-class TestSharedBotBehavior:
-    """Test behavior common to all bot implementations"""
-
-
-@pytest.mark.parametrize(
-    "bot_class", ["GPTChatbot", "ClaudeChatbot", "OllamaChatbot", "GeminiChatbot"]
+    "bot_class, model_version",
+    [
+        ("GPTChatbot", "gpt-4o-mini"),
+        ("ClaudeChatbot", "claude-3-haiku-20240307"),
+        ("OllamaChatbot", "llama3.2"),
+        ("GeminiChatbot", "gemini-1.5-flash"),
+    ],
 )
 class TestSharedBotParameters:
     """Test parameter handling common to all bot implementations"""
 
     def test_temperature_initialization(
-        self, bot_class: str, real_bot_classes: list[type[ChatbotBase]]
+        self, bot_class: str, model_version: str, real_bot_classes: list[type[ChatbotBase]]
     ) -> None:
         """Test that each bot initializes with its default temperature"""
         # Find the bot class from the list
@@ -39,7 +38,7 @@ class TestSharedBotParameters:
             system_prompt="Test prompt",
             model=ChatbotModel(
                 type=bot_class_obj._get_class_model_type(),  # pyright: ignore[reportPrivateUsage]
-                version="test-version",
+                version=model_version,
             ),
         )
         bot = bot_class_obj(config)
@@ -51,7 +50,7 @@ class TestSharedBotParameters:
         )
 
     def test_max_tokens_initialization(
-        self, bot_class: str, real_bot_classes: list[type[ChatbotBase]]
+        self, bot_class: str, model_version: str, real_bot_classes: list[type[ChatbotBase]]
     ) -> None:
         """Test that each bot initializes with correct max tokens"""
         # Find the bot class from the list
@@ -64,7 +63,7 @@ class TestSharedBotParameters:
             system_prompt="Test prompt",
             model=ChatbotModel(
                 type=bot_class_obj._get_class_model_type(),  # pyright: ignore[reportPrivateUsage]
-                version="test-version",
+                version=model_version,
                 params_opt=ChatbotParamsOpt(max_tokens=test_tokens),
             ),
         )
