@@ -17,7 +17,7 @@ Note:
     other implementations that typically use 0.0-2.0.
 """
 
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, List, Optional, Type
 
 import httpx
 import ollama
@@ -128,20 +128,12 @@ class OllamaChatbot(ChatbotBase):
         return OLLAMA_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Determine if an API call should be retried based on Ollama-specific exceptions.
-
-        Handles common Ollama API errors that warrant retry attempts:
-        - TimeoutException: Connection or read timeout
-        - NetworkError: General network connectivity issues
-        - HTTPStatusError: Server errors (5xx) or rate limits
-
-        Args:
-            exception: The caught exception
+        Returns tuple of Claude-specific retryable exception types.
 
         Returns:
-            bool: True if retry is recommended, False otherwise
+            tuple: Exception types that warrant retry attempts
         """
         retryable_types = (
             APIException,
@@ -149,19 +141,9 @@ class OllamaChatbot(ChatbotBase):
             httpx.TimeoutException,
             httpx.NetworkError,
             httpx.HTTPStatusError,
+            TimeoutError,
         )
-        # Logic below needed for potential nested exceptions
-        if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return True
-            elif exception.original_error:  # checked wrapped exception
-                return isinstance(exception.original_error, retryable_types)
-            else:
-                return False
-        else:
-            return isinstance(exception, retryable_types)
+        return retryable_types
 
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """

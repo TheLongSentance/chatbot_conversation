@@ -39,7 +39,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, TypedDict
+from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, TypedDict, Type
 
 from tenacity import (
     RetryError,
@@ -319,17 +319,44 @@ class ChatbotBase(ABC):
 
     @classmethod
     @abstractmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Bot-specific logic for which exceptions warrant retry.
-
-        Args:
-            exception (Exception): The exception to evaluate.
-
+        Returns tuple of exception types that should trigger a retry.
+        
         Returns:
-            bool: True if the exception warrants a retry, False otherwise.
+            tuple: Exception types that warrant retry attempts
         """
         pass  # pylint: disable=unnecessary-pass
+
+    @classmethod
+    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+        """
+        Determine if an API call should be retried based on Claude-specific exceptions.
+
+        Handles common Claude API errors that warrant retry attempts:
+        - APIError: General API communication failures
+        - APIConnectionError: Network connectivity issues
+        - RateLimitError: API quota/throughput limits
+
+        Args:
+            exception: The caught exception
+
+        Returns:
+            bool: True if retry is recommended, False otherwise
+        """
+
+        # Check both direct and wrapped exceptions against retryable types
+        retryable_types = cls._retryable_exceptions()
+        # Logic below needed for potential nested exceptions
+        if isinstance(exception, APIException):
+            if isinstance(
+                exception, retryable_types
+            ):  # pyright: ignore[reportUnnecessaryIsInstance]
+                return True
+            if exception.original_error:  # checked wrapped exception
+                return isinstance(exception.original_error, retryable_types)
+            return False
+        return isinstance(exception, retryable_types)
 
     # Class Methods - Model Configuration
     @classmethod

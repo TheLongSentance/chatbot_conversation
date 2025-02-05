@@ -9,10 +9,9 @@ Major Classes:
     ClaudeChatbot: Claude-specific chatbot implementation
 """
 
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, List, Optional, Type
 
 import anthropic
-from anthropic import APIConnectionError, APIError, RateLimitError
 
 from chatbot_conversation.models.base import (
     ChatbotBase,
@@ -113,42 +112,22 @@ class ClaudeChatbot(ChatbotBase):
         return CLAUDE_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Determine if an API call should be retried based on Claude-specific exceptions.
-
-        Handles common Claude API errors that warrant retry attempts:
-        - APIError: General API communication failures
-        - APIConnectionError: Network connectivity issues
-        - RateLimitError: API quota/throughput limits
-
-        Args:
-            exception: The caught exception
+        Returns tuple of Claude-specific retryable exception types.
 
         Returns:
-            bool: True if retry is recommended, False otherwise
+            tuple: Exception types that warrant retry attempts
         """
-
-        """Check both direct and wrapped exceptions against retryable types"""
         retryable_types = (
-            APIError,
+            anthropic.APIError,
             APIException,
-            APIConnectionError,
-            RateLimitError,
+            anthropic.APIConnectionError,
+            anthropic.RateLimitError,
             ConnectionError,
+            TimeoutError,
         )
-        # Logic below needed for potential nested exceptions
-        if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return True
-            elif exception.original_error:  # checked wrapped exception
-                return isinstance(exception.original_error, retryable_types)
-            else:
-                return False
-        else:
-            return isinstance(exception, retryable_types)
+        return retryable_types
 
     def __init__(self, config: ChatbotConfig) -> None:
         """

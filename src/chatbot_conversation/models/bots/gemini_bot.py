@@ -25,7 +25,7 @@ Classes:
 """
 
 import json
-from typing import Any, Iterator, List, Optional, TypedDict
+from typing import Any, Iterator, List, Optional, TypedDict, Type
 
 import google.api_core.exceptions
 
@@ -154,42 +154,21 @@ class GeminiChatbot(ChatbotBase):
         return GEMINI_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Determine if an API call should be retried based on the exception type.
-
-        Evaluates Gemini-specific API exceptions to decide if a retry attempt
-        is appropriate based on the error condition.
-
-        Args:
-            exception (Exception): The caught exception from the API call
+        Returns tuple of Claude-specific retryable exception types.
 
         Returns:
-            bool: True if the error is transient and retry is recommended,
-                 False for permanent failures
-
-        Supported retry cases:
-            - DeadlineExceeded: Timeout errors that may resolve
-            - ServiceUnavailable: Temporary API availability issues
+            tuple: Exception types that warrant retry attempts
         """
         retryable_types = (
             APIException,
             ConnectionError,
             google.api_core.exceptions.DeadlineExceeded,
             google.api_core.exceptions.ServiceUnavailable,
+            TimeoutError,
         )
-        # Logic below needed for potential nested exceptions
-        if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return True
-            elif exception.original_error:  # checked wrapped exception
-                return isinstance(exception.original_error, retryable_types)
-            else:
-                return False
-        else:
-            return isinstance(exception, retryable_types)
+        return retryable_types
 
     def __init__(self, config: ChatbotConfig) -> None:
         """

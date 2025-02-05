@@ -77,7 +77,7 @@ def dummy_bot_class() -> Type[ChatbotBase]:
             return "DUMMY"
 
         @classmethod
-        def _should_retry_on_exception(cls, exception: Exception) -> bool:
+        def _should_retry_on_exception(cls, exception: BaseException) -> bool:
             return False
 
         def _generate_response(self, conversation: List[ConversationMessage]) -> str:

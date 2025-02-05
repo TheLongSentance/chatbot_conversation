@@ -24,9 +24,10 @@ Dependencies:
     - ChatbotBase: Base class for chatbot implementations
 """
 
-from typing import Any, Iterator, List, Optional
+from typing import Any, Iterator, List, Optional, Type
 
-from openai import APIConnectionError, APIError, OpenAI, RateLimitError
+import openai
+from openai import OpenAI
 
 from chatbot_conversation.models.base import (
     ChatbotBase,
@@ -93,8 +94,8 @@ class GPTChatbot(ChatbotBase):
                 models = api.models.list()
                 cls._available_versions_cache = [model.id for model in models]
             except (
-                APIConnectionError,
-                APIError,
+                openai.APIConnectionError,
+                openai.APIError,
             ) as e:
                 error_msg = f"Failed to retrieve model versions: {e}"
                 raise APIException(
@@ -132,44 +133,22 @@ class GPTChatbot(ChatbotBase):
         return GPT_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Determine if an API call should be retried based on the exception type.
-
-        Evaluates common OpenAI API exceptions to determine if a retry attempt
-        would be appropriate. Retries are recommended for transient issues
-        like network errors or rate limits.
-
-        Args:
-            exception (Exception): The exception that occurred during the API call
+        Returns tuple of Claude-specific retryable exception types.
 
         Returns:
-            bool: True if the operation should be retried, False otherwise
-
-        Supported retry cases:
-            - APIError: General API communication failures
-            - APIConnectionError: Network connectivity issues
-            - RateLimitError: API quota or rate limit exceeded
+            tuple: Exception types that warrant retry attempts
         """
         retryable_types = (
-            APIError,
+            openai.APIError,
             APIException,
-            APIConnectionError,
-            RateLimitError,
+            openai.APIConnectionError,
+            openai.RateLimitError,
             ConnectionError,
+            TimeoutError,
         )
-        # Logic below needed for potential nested exceptions
-        if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return True
-            elif exception.original_error:  # checked wrapped exception
-                return isinstance(exception.original_error, retryable_types)
-            else:
-                return False
-        else:
-            return isinstance(exception, retryable_types)
+        return retryable_types
 
     def __init__(self, config: ChatbotConfig) -> None:
         """

@@ -4,13 +4,9 @@ This module initializes and runs the chatbot conversation.
 
 # Set gRPC environment variables before imports
 import os
-
-os.environ["GRPC_VERBOSITY"] = "ERROR"
-os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "false"
-os.environ["GRPC_POLL_STRATEGY"] = "epoll1"
-
 import logging
 import sys
+
 
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.error import handle_error

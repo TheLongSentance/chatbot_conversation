@@ -14,7 +14,7 @@ Key Components:
 
 import random
 import re
-from typing import Any, ClassVar, Iterator, List, Optional
+from typing import Any, ClassVar, Iterator, List, Optional, Type
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
@@ -111,33 +111,14 @@ class DummyChatbot(ChatbotBase):
         return DUMMY_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
+    def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Determine if a failed operation should be retried.
-
-        Implements a simple retry strategy that only retries on ConnectionError,
-        primarily for demonstration purposes.
-
-        Args:
-            exception (Exception): The exception that occurred during operation
+        Returns tuple of Claude-specific retryable exception types.
 
         Returns:
-            bool: True if the operation should be retried, False otherwise
+            tuple: Exception types that warrant retry attempts
         """
-        retryable_types = (APIException, ConnectionError)
-
-        # Logic below needed for potential nested exceptions
-        if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
-                return True
-            elif exception.original_error:  # checked wrapped exception
-                return isinstance(exception.original_error, retryable_types)
-            else:
-                return False
-        else:
-            return isinstance(exception, retryable_types)
+        return (APIException, ConnectionError, TimeoutError)
 
     # typically __init__ would be defined here with call to
     # super().__init__(config) to initialize the base class
