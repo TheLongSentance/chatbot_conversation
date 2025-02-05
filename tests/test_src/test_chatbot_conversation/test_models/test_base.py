@@ -468,7 +468,7 @@ class TestRetryBehavior:
         conversation: list[ConversationMessage] = [
             {"bot_index": 0, "content": "test message"}
         ]
-        with pytest.raises(ValueError):
+        with pytest.raises(APIException):
             bot.generate_response(conversation)
 
     def test_max_retries_exceeded(

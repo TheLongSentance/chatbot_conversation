@@ -18,6 +18,7 @@ from typing import Any, ClassVar, Iterator, List, Optional
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
+from chatbot_conversation.utils import APIException
 
 # Default temperature values for Dummy models
 DUMMY_MINIMUM_TEMPERATURE = 0.0
@@ -110,7 +111,7 @@ class DummyChatbot(ChatbotBase):
         return DUMMY_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: Exception) -> bool:
+    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
         """
         Determine if a failed operation should be retried.
 
@@ -123,7 +124,20 @@ class DummyChatbot(ChatbotBase):
         Returns:
             bool: True if the operation should be retried, False otherwise
         """
-        return isinstance(exception, ConnectionError)
+        retryable_types = (APIException, ConnectionError)
+
+        # Logic below needed for potential nested exceptions
+        if isinstance(exception, APIException):
+            if isinstance(
+                exception, retryable_types
+            ):  # pyright: ignore[reportUnnecessaryIsInstance]
+                return True
+            elif exception.original_error:  # checked wrapped exception
+                return isinstance(exception.original_error, retryable_types)
+            else:
+                return False
+        else:
+            return isinstance(exception, retryable_types)
 
     # typically __init__ would be defined here with call to
     # super().__init__(config) to initialize the base class

@@ -14,7 +14,7 @@ import sys
 
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.error import handle_error
-from chatbot_conversation.utils import APIConfig, LOGNAME_ROOT
+from chatbot_conversation.utils import LOGNAME_ROOT, APIConfig
 
 logger = logging.getLogger(LOGNAME_ROOT)
 

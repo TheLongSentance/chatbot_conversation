@@ -319,7 +319,7 @@ class ChatbotBase(ABC):
 
     @classmethod
     @abstractmethod
-    def _should_retry_on_exception(cls, exception: Exception) -> bool:
+    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
         """
         Bot-specific logic for which exceptions warrant retry.
 
@@ -711,13 +711,7 @@ class ChatbotBase(ABC):
                 min=self.model_timeout.min_wait,
                 max=self.model_timeout.max_wait,
             ),
-            retry=retry_if_exception(
-                lambda e: (
-                    self._should_retry_on_exception(e)
-                    if isinstance(e, Exception)
-                    else False
-                )
-            ),
+            retry=retry_if_exception(self._should_retry_on_exception),
         )
         def _inner_generate_response() -> str:
             try:
@@ -761,7 +755,7 @@ class ChatbotBase(ABC):
                     severity=ErrorSeverity.ERROR,
                     original_error=e,
                 ) from e
-            raise ModelException(
+            raise APIException(
                 message=(
                     f"Max retries ({self.model_timeout.max_retries}) "
                     "exceeded during response generation"
@@ -828,13 +822,7 @@ class ChatbotBase(ABC):
                 min=self.model_timeout.min_wait,
                 max=self.model_timeout.max_wait,
             ),
-            retry=retry_if_exception(
-                lambda e: (
-                    self._should_retry_on_exception(e)
-                    if isinstance(e, Exception)
-                    else False
-                )
-            ),
+            retry=retry_if_exception(self._should_retry_on_exception),
         )
         def _inner_stream_response() -> Iterator[str]:
             try:
@@ -870,7 +858,7 @@ class ChatbotBase(ABC):
                     severity=ErrorSeverity.ERROR,
                     original_error=e,
                 ) from e
-            raise ModelException(
+            raise APIException(
                 message=(
                     f"Max retries ({self.model_timeout.max_retries})"
                     "exceeded during stream generation"

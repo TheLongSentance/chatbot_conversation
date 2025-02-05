@@ -113,7 +113,7 @@ class ClaudeChatbot(ChatbotBase):
         return CLAUDE_DEFAULT_TEMPERATURE
 
     @classmethod
-    def _should_retry_on_exception(cls, exception: Exception) -> bool:
+    def _should_retry_on_exception(cls, exception: BaseException) -> bool:
         """
         Determine if an API call should be retried based on Claude-specific exceptions.
 
@@ -128,7 +128,27 @@ class ClaudeChatbot(ChatbotBase):
         Returns:
             bool: True if retry is recommended, False otherwise
         """
-        return isinstance(exception, (APIError, APIConnectionError, RateLimitError))
+
+        """Check both direct and wrapped exceptions against retryable types"""
+        retryable_types = (
+            APIError, 
+            APIException, 
+            APIConnectionError, 
+            RateLimitError, 
+            ConnectionError,
+        )
+        # Logic below needed for potential nested exceptions
+        if isinstance(exception, APIException):
+            if isinstance(
+                exception, retryable_types
+            ):  # pyright: ignore[reportUnnecessaryIsInstance]
+                return True
+            elif exception.original_error:  # checked wrapped exception
+                return isinstance(exception.original_error, retryable_types)
+            else:
+                return False
+        else:
+            return isinstance(exception, retryable_types)
 
     def __init__(self, config: ChatbotConfig) -> None:
         """
