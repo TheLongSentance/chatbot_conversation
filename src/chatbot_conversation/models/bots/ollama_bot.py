@@ -98,9 +98,8 @@ class OllamaChatbot(ChatbotBase):
                     message=error_msg,
                     user_message="Failed to retrieve installed model versions from Ollama API",
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
-                )
+                ) from e
         return cls._available_versions_cache
 
     @classmethod

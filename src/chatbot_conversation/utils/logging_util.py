@@ -21,10 +21,10 @@ LOGNAME_VALIDATION = "validation"
 LOGNAME_ROOT = "root"
 
 
-def _validate_logger_config(config_path: str) -> None:
+def _validate_logger_config(config_file_path: str) -> None:
     """Validate that all LOGNAME constants have corresponding config sections."""
     parser = configparser.ConfigParser()
-    parser.read(config_path)
+    parser.read(config_file_path)
 
     configured_loggers = parser.get("loggers", "keys").split(",")
     logger_constants = [
@@ -42,7 +42,6 @@ def _validate_logger_config(config_path: str) -> None:
                 message=f"Logger {logger_name} not configured in logging.conf",
                 user_message="System configuration error",
                 severity=ErrorSeverity.FATAL,
-                retry_allowed=False,
             )
 
 

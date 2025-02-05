@@ -120,7 +120,6 @@ class ChatbotConfigData(BaseConfigModel):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         allowed_vars = ALLOWED_TEMPLATE_VARS
@@ -134,7 +133,6 @@ class ChatbotConfigData(BaseConfigModel):
                     f"{invalid_vars}, please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         return v
@@ -208,7 +206,6 @@ class ConversationConfig(BaseConfigModel):
                     "please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -223,7 +220,6 @@ class ConversationConfig(BaseConfigModel):
                     ", please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         return v
@@ -259,7 +255,6 @@ class ConversationConfig(BaseConfigModel):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -277,7 +272,6 @@ class ConversationConfig(BaseConfigModel):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         return v
@@ -309,7 +303,6 @@ class ConversationConfig(BaseConfigModel):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         # Check round numbers are unique
@@ -323,13 +316,15 @@ class ConversationConfig(BaseConfigModel):
                 "Duplicate round numbers found in moderator messages: "
                 f"{', '.join(map(str, duplicates))}"
             )
+            # Just before the specific duplicated section:
+            # pylint: disable=duplicate-code
             raise ValidationException(
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
+            # pylint: enable=duplicate-code
         # Check round numbers don't exceed total rounds
         invalid_rounds: List[int] = [num for num in round_nums if num > total_rounds]
         if invalid_rounds:
@@ -337,13 +332,15 @@ class ConversationConfig(BaseConfigModel):
                 "Round numbers exceed total rounds ({total_rounds}): "
                 f"{', '.join(map(str, invalid_rounds))}"
             )
+            # Just before the specific duplicated section:
+            # pylint: disable=duplicate-code
             raise ValidationException(
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
+            # pylint: enable=duplicate-code
 
         return v
 
@@ -360,7 +357,6 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             message=error_msg,
             user_message=f"{error_msg}, please review file name and format",
             severity=ErrorSeverity.FATAL,
-            retry_allowed=False,
             original_error=None,
         )
     try:
@@ -371,15 +367,13 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             message=f"Configuration file not found: {config_path}",
             user_message="The configuration file could not be found. Please check the file path.",
             severity=ErrorSeverity.FATAL,
-            retry_allowed=False,
             original_error=e,
         ) from e
     except json.JSONDecodeError as e:
         raise ConfigurationException(
             message=f"Invalid JSON in configuration file: {str(e)} at position {e.pos}",
-            user_message="The configuration file contains invalid JSON. Please check the file format.",
+            user_message="The configuration file contains invalid JSON.",
             severity=ErrorSeverity.FATAL,
-            retry_allowed=False,
             original_error=e,
         ) from e
     except Exception as e:
@@ -387,7 +381,6 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             message=f"Error reading configuration: {str(e)}",
             user_message="An unexpected error occurred while reading the configuration.",
             severity=ErrorSeverity.FATAL,
-            retry_allowed=False,
             original_error=e,
         ) from e
 
@@ -397,8 +390,10 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
     except ValidationError as e:
         raise ValidationException(
             message="Failed to validate conversation configuration",
-            user_message="The conversation configuration is invalid. Please check all required fields are present and have valid values.",
+            user_message=(
+                "The conversation configuration is invalid. "
+                "Please check all required fields are present and have valid values."
+            ),
             severity=ErrorSeverity.FATAL,
-            retry_allowed=False,
             original_error=e,
         ) from e

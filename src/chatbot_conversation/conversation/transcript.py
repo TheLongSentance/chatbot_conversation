@@ -120,9 +120,11 @@ class TranscriptManager:
         except IOError as e:
             raise SystemException(
                 message=f"Failed to write conversation transcript: {str(e)}",
-                user_message="Unable to save the conversation. Please check if you have write permissions for the output directory.",
+                user_message=(
+                    "Unable to save the conversation. "
+                    "Please check if you have write permissions for the output directory."
+                ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=e,
             ) from e
 

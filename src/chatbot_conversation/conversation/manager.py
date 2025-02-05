@@ -121,11 +121,13 @@ class ConversationManager:
                 # Handle data/validation errors
                 raise ModelException(
                     message=f"Data error in bot response: {str(e)}",
-                    user_message=f"**{bot.name}**: I'm sorry, I can't think of a response right now. The values in my head are all over the place.",
+                    user_message=(
+                        f"{bot.name}: an data error occurred, "
+                        "please check the logs for more information."
+                    ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
-                )
+                ) from e
 
             # Store the complete response in conversation history
             self.conversation.append({"bot_index": bot.bot_index, "content": response})

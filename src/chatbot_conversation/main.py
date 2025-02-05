@@ -36,7 +36,7 @@ def main() -> None:
         # Run conversation
         manager.run_conversation()
         sys.exit(0)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         sys.exit(handle_error(e))
 
 

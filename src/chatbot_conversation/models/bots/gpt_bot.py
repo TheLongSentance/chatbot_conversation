@@ -101,9 +101,8 @@ class GPTChatbot(ChatbotBase):
                     message=error_msg,
                     user_message="Failed to retrieve available model versions from GPT API",
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
-                )
+                ) from e
 
         return cls._available_versions_cache
 

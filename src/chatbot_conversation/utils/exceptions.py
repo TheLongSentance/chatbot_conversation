@@ -19,7 +19,6 @@ Example:
         )
     except ChatbotError as e:
         print(f"Severity: {e.severity}")
-        print(f"Can retry: {e.retry_allowed}")
         print(f"User message: {e.user_message}")
 """
 
@@ -44,14 +43,12 @@ class ChatbotException(Exception):
         message: Technical error message for logging
         user_message: User-friendly error message
         severity: Classification of error severity
-        retry_allowed: Whether the operation can be retried
         original_error: Original exception that caused this error
     """
 
     message: str
     user_message: str
     severity: ErrorSeverity
-    retry_allowed: bool
     original_error: Optional[Exception] = None
 
     def __str__(self) -> str:
@@ -75,12 +72,14 @@ class APIException(ChatbotException):
     def __init__(
         self,
         message: str,
-        user_message: str = "There was a problem communicating with the AI service. Please try again in a few moments.",
+        user_message: str = (
+            "There was a problem communicating with the AI service. "
+            "Please try again in a few moments."
+        ),
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        retry_allowed: bool = True,
         original_error: Optional[Exception] = None,
     ):
-        super().__init__(message, user_message, severity, retry_allowed, original_error)
+        super().__init__(message, user_message, severity, original_error)
 
 
 @dataclass
@@ -98,10 +97,9 @@ class ConfigurationException(ChatbotException):
         message: str,
         user_message: str = "There is a problem with the system configuration.",
         severity: ErrorSeverity = ErrorSeverity.FATAL,
-        retry_allowed: bool = False,
         original_error: Optional[Exception] = None,
     ):
-        super().__init__(message, user_message, severity, retry_allowed, original_error)
+        super().__init__(message, user_message, severity, original_error)
 
 
 @dataclass
@@ -119,10 +117,9 @@ class ModelException(ChatbotException):
         message: str,
         user_message: str = "The AI model encountered a limitation. Try simplifying your request.",
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        retry_allowed: bool = True,
         original_error: Optional[Exception] = None,
     ):
-        super().__init__(message, user_message, severity, retry_allowed, original_error)
+        super().__init__(message, user_message, severity, original_error)
 
 
 @dataclass
@@ -140,10 +137,9 @@ class SystemException(ChatbotException):
         message: str,
         user_message: str = "A critical system error has occurred.",
         severity: ErrorSeverity = ErrorSeverity.FATAL,
-        retry_allowed: bool = False,
         original_error: Optional[Exception] = None,
     ):
-        super().__init__(message, user_message, severity, retry_allowed, original_error)
+        super().__init__(message, user_message, severity, original_error)
 
 
 @dataclass
@@ -161,7 +157,6 @@ class ValidationException(ChatbotException):
         message: str,
         user_message: str = "The provided data does not meet the required format or constraints.",
         severity: ErrorSeverity = ErrorSeverity.ERROR,
-        retry_allowed: bool = False,
         original_error: Optional[Exception] = None,
     ):
-        super().__init__(message, user_message, severity, retry_allowed, original_error)
+        super().__init__(message, user_message, severity, original_error)

@@ -61,6 +61,8 @@ from chatbot_conversation.utils import (
     get_logger,
 )
 
+# pylint: disable=duplicate-code
+
 # Timeout constants (in seconds)
 DEFAULT_TOTAL_TIMEOUT: Final[int] = 90  # Maximum time for total trip through API
 DEFAULT_API_TIMEOUT: Final[int] = 30  # Timeout for individual API calls
@@ -214,7 +216,6 @@ class _Model:
                     "please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         if not self.version or not self.version.strip():
@@ -225,7 +226,6 @@ class _Model:
                     "please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -412,7 +412,6 @@ class ChatbotBase(ABC):
                     "please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         # Regex to match to reject special characters
@@ -430,7 +429,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
         # Validate bot name uniqueness
@@ -440,7 +438,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -465,7 +462,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -490,7 +486,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -516,7 +511,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -537,7 +531,6 @@ class ChatbotBase(ABC):
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=None,
             )
 
@@ -739,7 +732,6 @@ class ChatbotBase(ABC):
                         "try again later."
                     ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
                 ) from e
 
@@ -754,7 +746,6 @@ class ChatbotBase(ABC):
                         "please review the application log for more information."
                     ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                 )
             return response_content
 
@@ -767,17 +758,18 @@ class ChatbotBase(ABC):
                         "please review the application log for more information."
                     ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
                 ) from e
             raise ModelException(
-                message=f"Max retries ({self.model_timeout.max_retries}) exceeded during response generation",
+                message=(
+                    f"Max retries ({self.model_timeout.max_retries}) "
+                    "exceeded during response generation"
+                ),
                 user_message=(
                     "A model failed to generate a response after multiple attempts, "
                     "please review the application log for more information."
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=e,
             ) from e
         except Exception as e:
@@ -790,7 +782,6 @@ class ChatbotBase(ABC):
                     "please review the application log for more information."
                 ),
                 severity=ErrorSeverity.FATAL,
-                retry_allowed=False,
                 original_error=e,
             ) from e
 
@@ -861,7 +852,6 @@ class ChatbotBase(ABC):
                         "try again later."
                     ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=True,
                     original_error=e,
                 ) from e
 
@@ -877,17 +867,18 @@ class ChatbotBase(ABC):
                         "please review the application log for more information."
                     ),
                     severity=ErrorSeverity.ERROR,
-                    retry_allowed=False,
                     original_error=e,
                 ) from e
             raise ModelException(
-                message=f"Max retries ({self.model_timeout.max_retries}) exceeded during stream generation",
+                message=(
+                    f"Max retries ({self.model_timeout.max_retries})"
+                    "exceeded during stream generation"
+                ),
                 user_message=(
                     "The model stream failed after multiple attempts, "
                     "please review the application log for more information."
                 ),
                 severity=ErrorSeverity.ERROR,
-                retry_allowed=False,
                 original_error=e,
             ) from e
         except Exception as e:
@@ -900,7 +891,6 @@ class ChatbotBase(ABC):
                     "please review the application log for more information."
                 ),
                 severity=ErrorSeverity.FATAL,
-                retry_allowed=False,
                 original_error=e,
             ) from e
 

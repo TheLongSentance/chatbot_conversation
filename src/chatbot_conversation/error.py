@@ -1,3 +1,4 @@
+""" Error management for the chatbot conversation main function. """
 from typing import Dict, Type
 
 from chatbot_conversation.utils import (
@@ -61,9 +62,7 @@ def handle_error(error: Exception) -> int:
             "Error occurred: %s", error.message, exc_info=error.original_error or error
         )
 
-        # # Display user-friendly message with retry information
-        # retry_msg = " You may try the operation again." if error.retry_allowed else ""
-        # print(f"\nError: {error.user_message}{retry_msg}")
+        # # Display user-friendly message
         print(f"\nError: {error.user_message}")
 
         # Exit with appropriate code based on severity
@@ -73,11 +72,11 @@ def handle_error(error: Exception) -> int:
             ErrorSeverity.FATAL: 3,
         }
         return exit_codes[error.severity]
-    else:
-        # Unexpected error - log full details
-        logger.error("An unexpected error occurred: %s", str(error), exc_info=True)
-        print(
-            "\nAn unexpected error occurred please review the application "
-            "logs for more information."
-        )
-        return 4
+
+    # Unexpected error - log full details
+    logger.error("An unexpected error occurred: %s", str(error), exc_info=True)
+    print(
+        "\nAn unexpected error occurred please review the application "
+        "logs for more information."
+    )
+    return 4
