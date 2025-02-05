@@ -2,17 +2,21 @@
 This module initializes and runs the chatbot conversation.
 """
 
-import logging
+# Set gRPC environment variables before imports
 import os
+
+os.environ["GRPC_VERBOSITY"] = "ERROR"
+os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "false"
+os.environ["GRPC_POLL_STRATEGY"] = "epoll1"
+
+import logging
 import sys
 
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.error import handle_error
-from chatbot_conversation.utils import APIConfig
+from chatbot_conversation.utils import APIConfig, LOGNAME_ROOT
 
-os.environ["GRPC_VERBOSITY"] = "ERROR"  # Suppress gRPC warnings
-
-logger = logging.getLogger("root")
+logger = logging.getLogger(LOGNAME_ROOT)
 
 
 def main() -> None:
