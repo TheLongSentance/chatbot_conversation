@@ -1,4 +1,5 @@
 """ Error management for the chatbot conversation main function. """
+
 from typing import Dict, Type
 
 from chatbot_conversation.utils import (

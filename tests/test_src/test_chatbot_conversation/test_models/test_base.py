@@ -277,7 +277,9 @@ class TestChatbotBaseMaxTokens:
         """Test that invalid max token values are rejected"""
         invalid_tokens = [0, -1, -100]
         for tokens in invalid_tokens:
-            with pytest.raises(ValidationException, match="Max tokens.*must be greater than 0"):
+            with pytest.raises(
+                ValidationException, match="Max tokens.*must be greater than 0"
+            ):
                 config = ChatbotConfig(
                     name=f"TokenBot{str(tokens).replace('-', 'neg')}",
                     system_prompt="test",
@@ -468,7 +470,6 @@ class TestRetryBehavior:
         ]
         with pytest.raises(ValueError):
             bot.generate_response(conversation)
-
 
     def test_max_retries_exceeded(
         self, bot_class: type[ChatbotBase], mocker: MockFixture

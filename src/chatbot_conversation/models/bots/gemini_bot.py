@@ -261,8 +261,8 @@ class GeminiChatbot(ChatbotBase):
         Note:
             Updates model_system_prompt_updated flag after initialization
         """
-        if hasattr(self, '_model_api'):
-            if hasattr(self._model_api, '_channel'):
+        if hasattr(self, "_model_api"):
+            if hasattr(self._model_api, "_channel"):
                 self._model_api._channel.close()
 
         self._model_api = google.generativeai.GenerativeModel(

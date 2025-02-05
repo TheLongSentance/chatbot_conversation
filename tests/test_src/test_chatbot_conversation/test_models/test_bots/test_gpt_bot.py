@@ -106,7 +106,9 @@ class TestGPTChatbot:
         bot = GPTChatbot(gpt_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(ModelException, match="Model returned an empty string response"):
+        with pytest.raises(
+            ModelException, match="Model returned an empty string response"
+        ):
             bot.generate_response(conversation)
 
     def test_available_versions_returns_valid_list(self) -> None:

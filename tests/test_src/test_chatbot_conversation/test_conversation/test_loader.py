@@ -90,6 +90,7 @@ def test_duplicate_bot_names() -> None:
     ):
         ConversationConfig(**config_data)
 
+
 def test_template_variables_validation() -> None:
     """Test validation of template variables in core_prompt and bot_prompt."""
     # Test invalid variable in core_prompt
@@ -109,8 +110,7 @@ def test_template_variables_validation() -> None:
         ],
     }
     with pytest.raises(
-        ValidationException, 
-        match="Invalid template variables found: {'variable'}"
+        ValidationException, match="Invalid template variables found: {'variable'}"
     ):
         ConversationConfig(**config_data)
 
@@ -183,6 +183,7 @@ def test_moderator_messages_validation() -> None:
     ]
     with pytest.raises(ValidationException, match="Round numbers exceed total rounds"):
         ConversationConfig(**config_data)
+
 
 def test_moderator_message_display_opt() -> None:
     """Test moderator message display_opt configurations."""
@@ -270,8 +271,7 @@ def test_invalid_json_format(tmp_path: Path) -> None:
         f.write("{invalid json")
 
     with pytest.raises(
-        ConfigurationException, 
-        match="Invalid JSON in configuration file:"
+        ConfigurationException, match="Invalid JSON in configuration file:"
     ):
         load_conversation_config(str(invalid_json_path))
 
