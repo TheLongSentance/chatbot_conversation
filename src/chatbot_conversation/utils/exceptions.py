@@ -60,7 +60,10 @@ def handle_pydantic_validation_errors(f: Callable[..., T]) -> Callable[..., T]:
 
             raise ValidationException(
                 message=f"Validation failed: {error_msg}",
-                user_message="The provided data failed validation checks. Please verify all fields meet the requirements.",
+                user_message=(
+                    "The provided data failed validation checks. "
+                    "Please verify all fields meet the requirements."
+                ),
                 severity=ErrorSeverity.ERROR,
                 original_error=e,
             ) from e

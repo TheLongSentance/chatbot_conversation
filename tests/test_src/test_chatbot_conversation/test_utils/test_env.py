@@ -8,7 +8,8 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 
-from chatbot_conversation.utils.env import APIConfig, ConfigurationException
+from chatbot_conversation.utils.env import APIConfig
+from chatbot_conversation.utils.exceptions import ConfigurationException
 
 
 def test_setup_env_missing_file(monkeypatch: MonkeyPatch) -> None:

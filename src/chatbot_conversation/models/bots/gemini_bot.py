@@ -263,7 +263,7 @@ class GeminiChatbot(ChatbotBase):
         """
         if hasattr(self, "_model_api"):
             if hasattr(self._model_api, "_channel"):
-                self._model_api._channel.close()
+                self._model_api._channel.close()  # pylint: disable=protected-access
 
         self._model_api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
