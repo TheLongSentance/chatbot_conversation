@@ -34,6 +34,7 @@ def replace_variables(text: str, variables: dict[str, str]) -> str:
         text = text.replace(placeholder, str(value))
     return text
 
+
 def construct_system_prompt(core_prompt: str, bot_config: ChatbotConfigData) -> str:
     """
     Construct the system prompt for a bot based on the shared prefix and bot configuration.

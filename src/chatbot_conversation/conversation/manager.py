@@ -125,7 +125,7 @@ class ConversationManager:
                     severity=ErrorSeverity.ERROR,
                     retry_allowed=False,
                     original_error=e,
-            )
+                )
 
             # Store the complete response in conversation history
             self.conversation.append({"bot_index": bot.bot_index, "content": response})

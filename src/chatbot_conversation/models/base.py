@@ -229,6 +229,7 @@ class _Model:
                 original_error=None,
             )
 
+
 class ChatbotBase(ABC):
     """
     Abstract base class for building AI chatbot implementations.
@@ -238,7 +239,7 @@ class ChatbotBase(ABC):
 
     Core Features:
         - Unique bot instance tracking and naming validation
-        - System prompt and message history management  
+        - System prompt and message history management
         - Fault-tolerant API communication with configurable retries
         - Response streaming capabilities
         - Temperature and token limit controls
@@ -739,7 +740,7 @@ class ChatbotBase(ABC):
                     ),
                     severity=ErrorSeverity.ERROR,
                     retry_allowed=False,
-                    original_error=e
+                    original_error=e,
                 ) from e
 
         try:
@@ -928,7 +929,7 @@ class ChatbotBase(ABC):
         """
 
         messages: List[ChatMessage] = []
-        if (add_system_prompt):
+        if add_system_prompt:
             messages.append({"role": "system", "content": self.system_prompt})
 
         for contribution in conversation:

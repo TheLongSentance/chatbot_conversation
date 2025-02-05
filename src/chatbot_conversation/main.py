@@ -14,6 +14,7 @@ os.environ["GRPC_VERBOSITY"] = "ERROR"  # Suppress gRPC warnings
 
 logger = logging.getLogger("root")
 
+
 def main() -> None:
     """
     Main function to set up environment variables, load configuration,

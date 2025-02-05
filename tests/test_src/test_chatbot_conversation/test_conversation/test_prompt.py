@@ -26,6 +26,7 @@ def test_replace_variables() -> None:
     result = replace_variables(text, variables)
     assert result == "Hello, GPT-4! Your max tokens are 100."
 
+
 def test_construct_system_prompt(
     sample_conversation_config: ConversationConfig,
 ) -> None:

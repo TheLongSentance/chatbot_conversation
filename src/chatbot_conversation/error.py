@@ -25,6 +25,7 @@ LOGGER_MAPPING: Dict[Type[Exception], str] = {
     ValidationException: LOGNAME_VALIDATION,
 }
 
+
 def handle_error(error: Exception) -> int:
     """
     Handle errors by logging them and providing user-friendly messages.
@@ -33,7 +34,7 @@ def handle_error(error: Exception) -> int:
     the exit status code based on the error severity.
 
     Args:
-        error (Exception): The exception to be handled. Can be a ChatbotException 
+        error (Exception): The exception to be handled. Can be a ChatbotException
             or any other Exception type.
 
     Returns:
@@ -45,7 +46,7 @@ def handle_error(error: Exception) -> int:
             - 4: Unexpected errors (system/unknown errors)
 
     Note:
-        For ChatbotException types, the function logs both technical details and 
+        For ChatbotException types, the function logs both technical details and
         user-friendly messages. For unexpected errors, it logs full stack traces
         and provides a generic user message.
     """

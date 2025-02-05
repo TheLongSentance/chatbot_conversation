@@ -88,11 +88,12 @@ class OllamaChatbot(ChatbotBase):
                 models = getattr(response, "models", [])
                 # strip off colon so for example: "llama3.2:latest" becomes "llama3.2"
                 cls._available_versions_cache = [
-                    str(model.model).split(":", maxsplit=1)[0] \
-                        for model in models
+                    str(model.model).split(":", maxsplit=1)[0] for model in models
                 ]
             except Exception as e:
-                error_msg = f"Failed to retrieve installed model versions for Ollama: {e}"
+                error_msg = (
+                    f"Failed to retrieve installed model versions for Ollama: {e}"
+                )
                 raise APIException(
                     message=error_msg,
                     user_message="Failed to retrieve installed model versions from Ollama API",

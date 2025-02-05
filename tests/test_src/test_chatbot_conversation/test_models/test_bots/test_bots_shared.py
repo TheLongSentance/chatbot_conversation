@@ -26,7 +26,10 @@ class TestSharedBotParameters:
     """Test parameter handling common to all bot implementations"""
 
     def test_temperature_initialization(
-        self, bot_class: str, model_version: str, real_bot_classes: list[type[ChatbotBase]]
+        self,
+        bot_class: str,
+        model_version: str,
+        real_bot_classes: list[type[ChatbotBase]],
     ) -> None:
         """Test that each bot initializes with its default temperature"""
         # Find the bot class from the list
@@ -50,7 +53,10 @@ class TestSharedBotParameters:
         )
 
     def test_max_tokens_initialization(
-        self, bot_class: str, model_version: str, real_bot_classes: list[type[ChatbotBase]]
+        self,
+        bot_class: str,
+        model_version: str,
+        real_bot_classes: list[type[ChatbotBase]],
     ) -> None:
         """Test that each bot initializes with correct max tokens"""
         # Find the bot class from the list

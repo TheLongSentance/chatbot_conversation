@@ -60,6 +60,7 @@ class ChatbotException(Exception):
             return f"{self.message} (caused by: {self.original_error})"
         return self.message
 
+
 @dataclass
 class APIException(ChatbotException):
     """Errors related to external API communication.
@@ -81,6 +82,7 @@ class APIException(ChatbotException):
     ):
         super().__init__(message, user_message, severity, retry_allowed, original_error)
 
+
 @dataclass
 class ConfigurationException(ChatbotException):
     """Errors related to system configuration.
@@ -100,6 +102,7 @@ class ConfigurationException(ChatbotException):
         original_error: Optional[Exception] = None,
     ):
         super().__init__(message, user_message, severity, retry_allowed, original_error)
+
 
 @dataclass
 class ModelException(ChatbotException):
@@ -121,6 +124,7 @@ class ModelException(ChatbotException):
     ):
         super().__init__(message, user_message, severity, retry_allowed, original_error)
 
+
 @dataclass
 class SystemException(ChatbotException):
     """Critical system-level errors.
@@ -140,6 +144,7 @@ class SystemException(ChatbotException):
         original_error: Optional[Exception] = None,
     ):
         super().__init__(message, user_message, severity, retry_allowed, original_error)
+
 
 @dataclass
 class ValidationException(ChatbotException):

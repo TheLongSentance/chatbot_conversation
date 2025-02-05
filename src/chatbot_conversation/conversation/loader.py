@@ -166,7 +166,7 @@ class ConversationConfig(BaseConfigModel):
         conversation_seed (str): Initial prompt to start the discussion
         rounds (int): Number of conversation rounds
         core_prompt (str): Base instructions provided to all bots
-        moderator_messages_opt (List[ModeratorMessage]): Optional list of 
+        moderator_messages_opt (List[ModeratorMessage]): Optional list of
             round-specific moderator messages
         bots (List[ChatbotConfigData]): List of bot configurations
     """
@@ -270,7 +270,9 @@ class ConversationConfig(BaseConfigModel):
             name for name, count in name_counts.items() if count > 1
         ]
         if duplicates:
-            error_msg = f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
+            error_msg = (
+                f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
+            )
             raise ValidationException(
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
@@ -317,7 +319,7 @@ class ConversationConfig(BaseConfigModel):
             num for num, count in round_counts.items() if count > 1
         ]
         if duplicates:
-            error_msg =(
+            error_msg = (
                 "Duplicate round numbers found in moderator messages: "
                 f"{', '.join(map(str, duplicates))}"
             )
@@ -370,7 +372,7 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             user_message="The configuration file could not be found. Please check the file path.",
             severity=ErrorSeverity.FATAL,
             retry_allowed=False,
-            original_error=e
+            original_error=e,
         ) from e
     except json.JSONDecodeError as e:
         raise ConfigurationException(
@@ -378,7 +380,7 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             user_message="The configuration file contains invalid JSON. Please check the file format.",
             severity=ErrorSeverity.FATAL,
             retry_allowed=False,
-            original_error=e
+            original_error=e,
         ) from e
     except Exception as e:
         raise SystemException(
@@ -386,7 +388,7 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             user_message="An unexpected error occurred while reading the configuration.",
             severity=ErrorSeverity.FATAL,
             retry_allowed=False,
-            original_error=e
+            original_error=e,
         ) from e
 
     try:

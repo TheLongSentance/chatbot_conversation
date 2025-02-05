@@ -123,7 +123,7 @@ class TranscriptManager:
                 user_message="Unable to save the conversation. Please check if you have write permissions for the output directory.",
                 severity=ErrorSeverity.ERROR,
                 retry_allowed=False,
-                original_error=e
+                original_error=e,
             ) from e
 
     @staticmethod
