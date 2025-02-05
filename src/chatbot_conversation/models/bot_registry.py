@@ -17,7 +17,7 @@ import os
 from typing import Callable, Dict, List, Type
 
 from chatbot_conversation.models.base import ChatbotBase
-from chatbot_conversation.utils import get_logger
+from chatbot_conversation.utils import ErrorSeverity, ValidationException, get_logger
 
 logger = get_logger("models")
 
@@ -66,7 +66,14 @@ class BotRegistry:
         """
         bot_class = self._bot_classes.get(bot_type_name.upper())
         if not bot_class:
-            raise ValueError(f"Unknown bot type: {bot_type_name}")
+            error_msg = f"Unknown bot type: {bot_type_name}"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         return bot_class
 
     def import_bot_modules(self) -> None:

@@ -6,12 +6,49 @@ and retrieve named logger instances. It uses Python's built-in logging module
 and supports configuration via a logging.conf file.
 """
 
+import configparser
 import logging
 import logging.config
 import os
 
+from chatbot_conversation.utils.exceptions import ConfigurationException, ErrorSeverity
+
+LOGNAME_API = "api"
+LOGNAME_CONFIG = "config"
+LOGNAME_MODEL = "model"
+LOGNAME_SYSTEM = "system"
+LOGNAME_VALIDATION = "validation"
+LOGNAME_ROOT = "root"
+
+
+def _validate_logger_config(config_path: str) -> None:
+    """Validate that all LOGNAME constants have corresponding config sections."""
+    parser = configparser.ConfigParser()
+    parser.read(config_path)
+
+    configured_loggers = parser.get("loggers", "keys").split(",")
+    logger_constants = [
+        LOGNAME_API,
+        LOGNAME_CONFIG,
+        LOGNAME_MODEL,
+        LOGNAME_SYSTEM,
+        LOGNAME_VALIDATION,
+        LOGNAME_ROOT,
+    ]
+
+    for logger_name in logger_constants:
+        if logger_name not in configured_loggers:
+            raise ConfigurationException(
+                message=f"Logger {logger_name} not configured in logging.conf",
+                user_message="System configuration error",
+                severity=ErrorSeverity.FATAL,
+                retry_allowed=False,
+            )
+
+
 # Set up logging from config file
 config_path = os.path.join(os.path.dirname(__file__), "../../../config/logging.conf")
+_validate_logger_config(config_path)
 logging.config.fileConfig(config_path)
 
 

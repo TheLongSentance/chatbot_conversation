@@ -42,6 +42,7 @@ from dataclasses import dataclass, field
 from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, TypedDict
 
 from tenacity import (
+    RetryError,
     retry,
     retry_if_exception,
     stop_after_attempt,
@@ -50,7 +51,15 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from chatbot_conversation.utils.logging_util import get_logger
+from chatbot_conversation.utils import (
+    APIException,
+    ChatbotException,
+    ErrorSeverity,
+    ModelException,
+    SystemException,
+    ValidationException,
+    get_logger,
+)
 
 # Timeout constants (in seconds)
 DEFAULT_TOTAL_TIMEOUT: Final[int] = 90  # Maximum time for total trip through API
@@ -198,44 +207,68 @@ class _Model:
     def __post_init__(self) -> None:
         """Validate model type and version after initialization."""
         if not self.type or not self.type.strip():
-            raise ValueError("Model type cannot be empty")
+            raise ValidationException(
+                message="Model type cannot be empty",
+                user_message=(
+                    "Model type cannot be empty, "
+                    "please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         if not self.version or not self.version.strip():
-            raise ValueError("Model version cannot be empty")
-
+            raise ValidationException(
+                message="Model version cannot be empty",
+                user_message=(
+                    "Model version cannot be empty, "
+                    "please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
 
 class ChatbotBase(ABC):
     """
-    Abstract base class for chatbot implementations.
+    Abstract base class for building AI chatbot implementations.
+
+    This class provides the core framework for implementing chatbot models with consistent
+    behavior around initialization, configuration, error handling, and response generation.
 
     Core Features:
-    - Unique bot instance management
-    - System prompt handling
-    - Conversation tracking
-    - API communication with retries
-    - Response streaming
-    - Temperature and token management
+        - Unique bot instance tracking and naming validation
+        - System prompt and message history management  
+        - Fault-tolerant API communication with configurable retries
+        - Response streaming capabilities
+        - Temperature and token limit controls
+        - Standardized error handling and logging
 
     Required Implementations:
-    - _get_class_model_type(): Model type identifier
-    - _generate_response(): Model-specific response generation
-    - _should_retry_on_exception(): Retry logic
-    - _get_text_from_chunk(): Stream chunk parsing
-    - _generate_stream(): Response streaming
-    - Temperature properties (min/max/default)
+        Subclasses must implement these abstract methods:
+        - available_versions(): Get supported model versions
+        - _get_class_model_type(): Get model identifier
+        - _generate_response(): Core response generation logic
+        - _generate_stream(): Stream response chunks
+        - _get_text_from_chunk(): Parse stream chunks
+        - _should_retry_on_exception(): Retry policy logic
+        - Temperature properties (min/max/default)
 
     Attributes:
-        name: Unique bot identifier
-        system_prompt: System instructions
-        model_type: Backend identifier
-        model_version: Version identifier
-        model_temperature: Response randomness (0.0-1.0)
-        model_max_tokens: Response length limit
-        bot_index: Unique numerical ID
-        _model_api: API client reference
-        model_timeout: Timeout configuration
+        name (str): Unique identifier for this bot instance
+        system_prompt (str): Initial instructions for model behavior
+        bot_index (int): Unique numerical identifier
+        model_type (str): Type of model backend being used
+        model_version (str): Specific model version
+        model_temperature (float): Current temperature setting
+        model_max_tokens (int): Current max tokens limit
+        model_timeout (ChatbotTimeout): Timeout and retry settings
 
     Raises:
-        ValueError: On invalid configuration
+        ValidationException: If configuration validation fails
+        ModelException: For model-specific errors
+        APIException: For API communication issues
+        SystemException: For unexpected system errors
     """
 
     # Class Variables
@@ -371,8 +404,15 @@ class ChatbotBase(ABC):
                       or is already in use by another instance
         """
         if not name:  # Empty or whitespace-only
-            raise ValueError(
-                "Bot name must be a non-empty string without only whitespace"
+            raise ValidationException(
+                message="Bot name must be a non-empty string without only whitespace",
+                user_message=(
+                    "Bot name must be a non-empty string without only whitespace, "
+                    "please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
         # Regex to match to reject special characters
         # and invalid underscore usage at start and end of the name
@@ -381,15 +421,26 @@ class ChatbotBase(ABC):
             or name.startswith("_")
             or name.endswith("_")
         ):
-            raise ValueError(
+            error_msg = (
                 f"Bot name '{name}' contains "
                 "invalid characters or invalid underscore usage"
             )
-
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         # Validate bot name uniqueness
         if name in cls._used_names:
-            raise ValueError(
-                f"Bot name '{name}' is already in use by another bot instance"
+            error_msg = f"Bot name '{name}' is already in use by another bot instance"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
     @classmethod
@@ -405,9 +456,16 @@ class ChatbotBase(ABC):
         """
         expected_type = cls._get_class_model_type()
         if config.model.type != expected_type:
-            raise ValueError(
+            error_msg = (
                 f"Invalid model type for {cls.__name__}: "
                 f"got '{config.model.type}', expected '{expected_type}'"
+            )
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
     @classmethod
@@ -423,9 +481,16 @@ class ChatbotBase(ABC):
         """
         versions = cls.available_versions()
         if versions is not None and config.model.version not in versions:
-            raise ValueError(
+            error_msg = (
                 f"Invalid model version '{config.model.version}' for {cls.__name__}. "
                 f"Available versions: {', '.join(versions)}"
+            )
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
     @classmethod
@@ -442,9 +507,16 @@ class ChatbotBase(ABC):
         minimum_temperature = cls._get_model_min_temperature()
         maximum_temperature = cls._get_model_max_temperature()
         if not minimum_temperature <= temperature <= maximum_temperature:
-            raise ValueError(
+            error_msg = (
                 f"Temperature for {cls.__name__} must be between "
                 f"{minimum_temperature} and {maximum_temperature}"
+            )
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
     @classmethod
@@ -459,7 +531,14 @@ class ChatbotBase(ABC):
             ValueError: If max tokens is less than 1
         """
         if max_tokens < 1:
-            raise ValueError(f"Max tokens for {cls.__name__} must be greater than 0")
+            error_msg = f"Max tokens for {cls.__name__} must be greater than 0"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
 
     # Instance Initialization
     def __init__(
@@ -472,13 +551,6 @@ class ChatbotBase(ABC):
         Args:
             config (ChatbotConfig): The configuration for the chatbot instance.
 
-        Raises:
-            ValueError: If the bot name is empty or whitespace-only,
-                      contains invalid characters,
-                      already in use by another instance,
-                      if model type doesn't match implementation,
-                      if temperature is outside valid range,
-                      or if max tokens is less than 1
         """
         # Validate then set bot name
         name = config.name.strip()
@@ -611,18 +683,24 @@ class ChatbotBase(ABC):
         """
         Generate a model response with automatic retry handling.
 
-        Implements fault-tolerant API communication using configured retry
-        parameters and exponential backoff for transient failures.
+        This method provides fault-tolerant API communication by implementing
+        configurable retries with exponential backoff for transient failures.
 
         Args:
-            conversation: Sequential list of prior messages as ConversationMessage
+            conversation (List[ConversationMessage]): Sequential message history,
+                where each message contains:
+                - bot_index: Identifier of the source bot
+                - content: The message text
 
         Returns:
-            Generated response text from the model
+            str: The generated response text from the model
 
         Raises:
-            ValueError: If model produces empty response
-            Exception: Model-specific API exceptions from implementations
+            ValidationException: If validation of inputs fails
+            ModelException: If model returns empty response or exceeds retries
+            APIException: On API communication failures
+            SystemException: On unexpected errors
+            TimeoutError: If total response time exceeds configured timeout
         """
 
         # @retry around _inner_generate_response inside generate_response because
@@ -647,14 +725,73 @@ class ChatbotBase(ABC):
             ),
         )
         def _inner_generate_response() -> str:
-            return self._generate_response(conversation)
+            try:
+                return self._generate_response(conversation)
+            except Exception as e:
+                if isinstance(e, ChatbotException):
+                    raise
+                raise APIException(
+                    message=f"API error during response generation: {str(e)}",
+                    user_message=(
+                        "There seems to be a problem with the model API, "
+                        "please review the application log and if no errors found please "
+                        "try again later."
+                    ),
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e
+                ) from e
 
-        response_content: str = _inner_generate_response()
-        if response_content == "":
-            empty_response_error = "Model returned an empty response"
-            self._log_error(empty_response_error)
-            raise ValueError(empty_response_error)
-        return response_content
+        try:
+            response_content: str = _inner_generate_response()
+
+            if response_content == "":
+                raise ModelException(
+                    message="Model returned an empty string response",
+                    user_message=(
+                        "A model response was generated but it was empty, "
+                        "please review the application log for more information."
+                    ),
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                )
+            return response_content
+
+        except RetryError as e:
+            if isinstance(e.last_attempt.exception(), TimeoutError):
+                raise APIException(
+                    message=f"Response generation timed out after {self.model_timeout.total}s",
+                    user_message=(
+                        "A model took too long to respond, "
+                        "please review the application log for more information."
+                    ),
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                ) from e
+            raise ModelException(
+                message=f"Max retries ({self.model_timeout.max_retries}) exceeded during response generation",
+                user_message=(
+                    "A model failed to generate a response after multiple attempts, "
+                    "please review the application log for more information."
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=e,
+            ) from e
+        except Exception as e:
+            if isinstance(e, ChatbotException):
+                raise
+            raise SystemException(
+                message=f"Unexpected error during response generation: {str(e)}",
+                user_message=(
+                    "An unexpected error occurred during response generation, "
+                    "please review the application log for more information."
+                ),
+                severity=ErrorSeverity.FATAL,
+                retry_allowed=False,
+                original_error=e,
+            ) from e
 
     @abstractmethod
     def _generate_stream(
@@ -665,21 +802,27 @@ class ChatbotBase(ABC):
 
     def stream_response(self, conversation: list[ConversationMessage]) -> Iterator[str]:
         """
-        Stream model responses as they are generated.
+        Stream model responses incrementally as they are generated.
 
-        Provides incremental response chunks for real-time output handling.
-        Converts model-specific chunk formats to plain text.
-        Implements fault-tolerant API communication using configured retry
-        parameters and exponential backoff for transient failures.
+        This method enables real-time response handling by yielding text segments
+        as soon as they become available. It handles model-specific chunk formats
+        and implements the same fault-tolerance as generate_response().
 
         Args:
-            conversation: Sequential list of prior messages as ConversationMessage
+            conversation (List[ConversationMessage]): Sequential message history,
+                where each message contains:
+                - bot_index: Identifier of the source bot
+                - content: The message text
 
         Yields:
-            Text segments of the generated response as they become available
+            str: Text segments of the generated response as they become available
 
         Raises:
-            Exception: Model-specific API exceptions from implementations
+            ValidationException: If validation of inputs fails
+            ModelException: If model returns empty chunks or exceeds retries
+            APIException: On API communication failures
+            SystemException: On unexpected errors
+            TimeoutError: If total streaming time exceeds configured timeout
         """
 
         @retry(
@@ -701,11 +844,64 @@ class ChatbotBase(ABC):
             ),
         )
         def _inner_stream_response() -> Iterator[str]:
-            stream = self._generate_stream(conversation)
-            for chunk in stream:
-                yield self._get_text_from_chunk(chunk)
+            try:
+                stream = self._generate_stream(conversation)
+                for chunk in stream:
+                    yield self._get_text_from_chunk(chunk)
 
-        yield from _inner_stream_response()
+            except Exception as e:
+                if isinstance(e, ChatbotException):
+                    raise
+                raise APIException(
+                    message=f"API error during stream generation: {str(e)}",
+                    user_message=(
+                        "There seems to be a problem with the model API stream, "
+                        "please review the application log and if no errors found please "
+                        "try again later."
+                    ),
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=True,
+                    original_error=e,
+                ) from e
+
+        try:
+            yield from _inner_stream_response()
+
+        except RetryError as e:
+            if isinstance(e.last_attempt.exception(), TimeoutError):
+                raise APIException(
+                    message=f"Stream generation timed out after {self.model_timeout.total}s",
+                    user_message=(
+                        "The model stream took too long to respond, "
+                        "please review the application log for more information."
+                    ),
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                ) from e
+            raise ModelException(
+                message=f"Max retries ({self.model_timeout.max_retries}) exceeded during stream generation",
+                user_message=(
+                    "The model stream failed after multiple attempts, "
+                    "please review the application log for more information."
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=e,
+            ) from e
+        except Exception as e:
+            if isinstance(e, ChatbotException):
+                raise
+            raise SystemException(
+                message=f"Unexpected error during stream generation: {str(e)}",
+                user_message=(
+                    "An unexpected error occurred during stream generation, "
+                    "please review the application log for more information."
+                ),
+                severity=ErrorSeverity.FATAL,
+                retry_allowed=False,
+                original_error=e,
+            ) from e
 
     @abstractmethod
     def _get_text_from_chunk(self, chunk: Any) -> str:
@@ -732,7 +928,7 @@ class ChatbotBase(ABC):
         """
 
         messages: List[ChatMessage] = []
-        if add_system_prompt:
+        if (add_system_prompt):
             messages.append({"role": "system", "content": self.system_prompt})
 
         for contribution in conversation:

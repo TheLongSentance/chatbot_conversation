@@ -20,6 +20,7 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
+from chatbot_conversation.utils import APIException, ErrorSeverity
 
 # Default temperature for Claude models
 # Otherwise specify in the config file for a specific model
@@ -77,9 +78,14 @@ class ClaudeChatbot(ChatbotBase):
                 models = client.models.list()
                 cls._available_versions_cache = [model.id for model in models]
             except (anthropic.APIError, anthropic.APIConnectionError) as e:
-                error_message = f"Failed to retrieve model versions: {e}"
-                cls._logger.error(error_message)
-                raise
+                error_msg = f"Failed to retrieve model versions from Claude API: {e}"
+                raise APIException(
+                    message=error_msg,
+                    user_message="Failed to retrieve available model versions from Claude API",
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                )
         return cls._available_versions_cache
 
     @classmethod

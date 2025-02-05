@@ -32,6 +32,13 @@ from pydantic import (
     field_validator,
 )
 
+from chatbot_conversation.utils import (
+    ConfigurationException,
+    ErrorSeverity,
+    SystemException,
+    ValidationException,
+)
+
 BOT_NAME_PATTERN = r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$"
 MIN_TEMPERATURE = 0.0
 MAX_TEMPERATURE = 2.0
@@ -108,14 +115,27 @@ class ChatbotConfigData(BaseConfigModel):
             ValueError: If template variables are malformed or invalid
         """
         if v.count("{") != v.count("}"):
-            raise ValueError("Mismatched template variable braces in bot_prompt")
-
+            error_msg = "Mismatched template variable braces in bot_prompt"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         allowed_vars = ALLOWED_TEMPLATE_VARS
-        template_vars = re.findall(r"\{([^}]+)\}", v)
+        template_vars = re.findall(TEMPLATE_VARS_PATTERN, v)
         invalid_vars = set(template_vars) - allowed_vars
         if invalid_vars:
-            raise ValueError(
-                f"Invalid template variables in bot_prompt: {invalid_vars}"
+            raise ValidationException(
+                message=f"Invalid template variables in bot_prompt: {invalid_vars}",
+                user_message=(
+                    "Invalid template variables in bot_prompt: "
+                    f"{invalid_vars}, please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
         return v
 
@@ -181,13 +201,31 @@ class ConversationConfig(BaseConfigModel):
             ValueError: If template variables are malformed or invalid
         """
         if v.count("{") != v.count("}"):
-            raise ValueError("Mismatched template variable braces in core_prompt")
+            raise ValidationException(
+                message="Mismatched template variable braces in core_prompt",
+                user_message=(
+                    "Mismatched template variable braces in core_prompt,"
+                    "please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
 
         allowed_vars = {"bot_name", "max_tokens"}
         template_vars = re.findall(TEMPLATE_VARS_PATTERN, v)
         invalid_vars = set(template_vars) - allowed_vars
         if invalid_vars:
-            raise ValueError(f"Invalid template variables found: {invalid_vars}")
+            raise ValidationException(
+                message=f"Invalid template variables found: {invalid_vars}",
+                user_message=(
+                    f"Invalid template variables found: {invalid_vars}"
+                    ", please check conversation configuration file"
+                ),
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         return v
 
     @field_validator("bots")
@@ -213,9 +251,16 @@ class ConversationConfig(BaseConfigModel):
             bot.bot_name for bot in v if not bot_name_pattern.match(bot.bot_name)
         ]
         if invalid_names:
-            raise ValueError(
+            error_msg = (
                 f"Invalid bot names (must be alphanumeric with optional underscores, "
                 f"not starting/ending with underscore): {', '.join(invalid_names)}"
+            )
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
         # Check for duplicates
@@ -225,8 +270,13 @@ class ConversationConfig(BaseConfigModel):
             name for name, count in name_counts.items() if count > 1
         ]
         if duplicates:
-            raise ValueError(
-                f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
+            error_msg = f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
         return v
 
@@ -252,8 +302,14 @@ class ConversationConfig(BaseConfigModel):
 
         total_rounds: Optional[int] = info.data.get("rounds")
         if total_rounds is None:
-            raise ValueError("Cannot validate moderator messages without total rounds")
-
+            error_msg = "Cannot validate moderator messages without total rounds"
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         # Check round numbers are unique
         round_nums: List[int] = [msg.round_number for msg in v]
         round_counts: Dict[int, int] = Counter(round_nums)
@@ -261,17 +317,30 @@ class ConversationConfig(BaseConfigModel):
             num for num, count in round_counts.items() if count > 1
         ]
         if duplicates:
-            raise ValueError(
+            error_msg =(
                 "Duplicate round numbers found in moderator messages: "
                 f"{', '.join(map(str, duplicates))}"
             )
-
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
+            )
         # Check round numbers don't exceed total rounds
         invalid_rounds: List[int] = [num for num in round_nums if num > total_rounds]
         if invalid_rounds:
-            raise ValueError(
+            error_msg = (
                 "Round numbers exceed total rounds ({total_rounds}): "
                 f"{', '.join(map(str, invalid_rounds))}"
+            )
+            raise ValidationException(
+                message=error_msg,
+                user_message=f"{error_msg}, please check conversation configuration file",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=None,
             )
 
         return v
@@ -284,21 +353,50 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
         config_path: Must be a .json file
     """
     if not config_path.endswith(".json"):
-        raise ValueError("Configuration file must be a .json file")
+        error_msg = "Configuration file must be a .json file"
+        raise ConfigurationException(
+            message=error_msg,
+            user_message=f"{error_msg}, please review file name and format",
+            severity=ErrorSeverity.FATAL,
+            retry_allowed=False,
+            original_error=None,
+        )
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError as e:
-        raise FileNotFoundError(f"Configuration file not found: {config_path}") from e
+        raise ConfigurationException(
+            message=f"Configuration file not found: {config_path}",
+            user_message="The configuration file could not be found. Please check the file path.",
+            severity=ErrorSeverity.FATAL,
+            retry_allowed=False,
+            original_error=e
+        ) from e
     except json.JSONDecodeError as e:
-        raise json.JSONDecodeError(
-            f"Invalid JSON in configuration file: {str(e)}", e.doc, e.pos
+        raise ConfigurationException(
+            message=f"Invalid JSON in configuration file: {str(e)} at position {e.pos}",
+            user_message="The configuration file contains invalid JSON. Please check the file format.",
+            severity=ErrorSeverity.FATAL,
+            retry_allowed=False,
+            original_error=e
         ) from e
     except Exception as e:
-        raise RuntimeError(f"Error reading configuration: {str(e)}") from e
+        raise SystemException(
+            message=f"Error reading configuration: {str(e)}",
+            user_message="An unexpected error occurred while reading the configuration.",
+            severity=ErrorSeverity.FATAL,
+            retry_allowed=False,
+            original_error=e
+        ) from e
 
     try:
         config = ConversationConfig(**data)
         return config
     except ValidationError as e:
-        raise ValueError(f"Configuration validation failed: {str(e)}") from e
+        raise ValidationException(
+            message="Failed to validate conversation configuration",
+            user_message="The conversation configuration is invalid. Please check all required fields are present and have valid values.",
+            severity=ErrorSeverity.FATAL,
+            retry_allowed=False,
+            original_error=e,
+        ) from e

@@ -25,6 +25,7 @@ from ollama import ChatResponse
 
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.models.bot_registry import register_bot
+from chatbot_conversation.utils import APIException, ErrorSeverity
 
 # Model temperature range specifically for Ollama API
 OLLAMA_MINIMUM_TEMPERATURE = 0.0
@@ -91,9 +92,14 @@ class OllamaChatbot(ChatbotBase):
                         for model in models
                 ]
             except Exception as e:
-                error_message = f"Failed to retrieve model versions: {e}"
-                cls._logger.error(error_message)
-                raise
+                error_msg = f"Failed to retrieve installed model versions for Ollama: {e}"
+                raise APIException(
+                    message=error_msg,
+                    user_message="Failed to retrieve installed model versions from Ollama API",
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                )
         return cls._available_versions_cache
 
     @classmethod

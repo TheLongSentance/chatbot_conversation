@@ -38,6 +38,7 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
+from chatbot_conversation.utils import APIException, ErrorSeverity
 
 # Gemini 1.5 models default temperature (others may vary)
 GEMINI_MINIMUM_TEMPERATURE = 0.0
@@ -118,9 +119,14 @@ class GeminiChatbot(ChatbotBase):
                 cls._available_versions_cache = \
                     [model.name.split("/")[-1] for model in models]  # pyright: ignore
             except google.api_core.exceptions.GoogleAPIError as e:
-                error_message = f"Failed to retrieve model versions: {e}"
-                cls._logger.error(error_message)
-                raise
+                error_msg = f"Failed to retrieve model versions from Gemini API: {e}"
+                raise APIException(
+                    message=error_msg,
+                    user_message="Failed to retrieve available model versions from Gemini API",
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                )
         return cls._available_versions_cache
 
     @classmethod

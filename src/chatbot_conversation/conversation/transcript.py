@@ -12,6 +12,7 @@ from typing import List, Set, TextIO
 
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.models.base import ConversationMessage
+from chatbot_conversation.utils.exceptions import ErrorSeverity, SystemException
 
 # specific import path to avoid circular from package:
 # from ..version import __version__
@@ -117,9 +118,13 @@ class TranscriptManager:
             return file_path
 
         except IOError as e:
-            error_msg = f"Failed to write conversation: {str(e)}"
-            logger.error(error_msg)
-            raise IOError(error_msg) from e
+            raise SystemException(
+                message=f"Failed to write conversation transcript: {str(e)}",
+                user_message="Unable to save the conversation. Please check if you have write permissions for the output directory.",
+                severity=ErrorSeverity.ERROR,
+                retry_allowed=False,
+                original_error=e
+            ) from e
 
     @staticmethod
     def _write_metadata(

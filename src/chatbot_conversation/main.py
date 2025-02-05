@@ -7,19 +7,20 @@ import os
 import sys
 
 from chatbot_conversation.conversation import ConversationManager
+from chatbot_conversation.error import handle_error
 from chatbot_conversation.utils import APIConfig
 
 os.environ["GRPC_VERBOSITY"] = "ERROR"  # Suppress gRPC warnings
 
 logger = logging.getLogger("root")
 
-
 def main() -> None:
     """
     Main function to set up environment variables, load configuration,
     initialize the conversation manager, and run the chatbot conversation.
 
-    It handles any unexpected exceptions by logging the error and exiting the program.
+    It provides user-friendly error messages for various failure scenarios
+    while ensuring all errors are properly logged for debugging.
     """
     try:
         # Set up environment variables for API access
@@ -33,14 +34,9 @@ def main() -> None:
 
         # Run conversation
         manager.run_conversation()
-    except Exception as e:  # pylint: disable=broad-exception-caught
-        # Global error handling
-
-        print("An unexpected error occurred. Please check the logs for details.")
-
-        logger.error("An unexpected error occurred: %s", str(e), exc_info=True)
-
-        sys.exit(1)
+        sys.exit(0)
+    except Exception as e:
+        sys.exit(handle_error(e))
 
 
 if __name__ == "__main__":

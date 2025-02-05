@@ -10,9 +10,9 @@ Fixtures:
     chatbot_factory: Creates an instance of ChatbotFactory.
 """
 
-import pytest
-
 from typing import Generator
+
+import pytest
 
 from chatbot_conversation.models import (  # BotRegistry,; ChatbotFactory,
     ChatbotBase,

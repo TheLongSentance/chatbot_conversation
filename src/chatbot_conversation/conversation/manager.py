@@ -19,9 +19,14 @@ from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import load_conversation_config
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
-from chatbot_conversation.utils.logging_util import get_logger
+from chatbot_conversation.utils import (
+    LOGNAME_SYSTEM,
+    ErrorSeverity,
+    ModelException,
+    get_logger,
+)
 
-logger = get_logger("conversation")
+logger = get_logger(LOGNAME_SYSTEM)
 
 
 class ConversationManager:
@@ -113,19 +118,14 @@ class ConversationManager:
                 response = self.clean_truncated_response(response)
 
             except (IndexError, KeyError, AttributeError, ValueError) as e:
-                error_message = f"Exception: index/key/attribute/value error: {e}"
-                logger.error(error_message)
-                response = (
-                    f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
-                    "The values in my head are all over the place."
-                )
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                error_message = f"Exception: Unknown/API error generating response: {e}"
-                logger.error(error_message)
-                response = (
-                    f"**{bot.name}**: I'm sorry, I can't think of a response right now. "
-                    "My mind seems to be focussed elsewhere."
-                )
+                # Handle data/validation errors
+                raise ModelException(
+                    message=f"Data error in bot response: {str(e)}",
+                    user_message=f"**{bot.name}**: I'm sorry, I can't think of a response right now. The values in my head are all over the place.",
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+            )
 
             # Store the complete response in conversation history
             self.conversation.append({"bot_index": bot.bot_index, "content": response})

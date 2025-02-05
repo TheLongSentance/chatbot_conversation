@@ -34,6 +34,7 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
+from chatbot_conversation.utils import APIException, ErrorSeverity
 
 # OpenAI default temperature for GPT models
 GPT_MINIMUM_TEMPERATURE = 0.0
@@ -95,9 +96,15 @@ class GPTChatbot(ChatbotBase):
                 APIConnectionError,
                 APIError,
             ) as e:
-                error_message = f"Failed to retrieve model versions: {e}"
-                cls._logger.error(error_message)
-                raise
+                error_msg = f"Failed to retrieve model versions: {e}"
+                raise APIException(
+                    message=error_msg,
+                    user_message="Failed to retrieve available model versions from GPT API",
+                    severity=ErrorSeverity.ERROR,
+                    retry_allowed=False,
+                    original_error=e,
+                )
+
         return cls._available_versions_cache
 
     @classmethod
