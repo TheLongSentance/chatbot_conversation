@@ -10,6 +10,7 @@ import pytest
 
 from chatbot_conversation.models.base import ChatbotBase
 from chatbot_conversation.models.bot_registry import BotRegistry, register_bot
+from chatbot_conversation.utils import ValidationException
 
 
 def test_singleton_behavior() -> None:
@@ -47,7 +48,7 @@ def test_register_bot_decorator(dummy_bot_class: Type[ChatbotBase]) -> None:
 def test_get_nonexistent_bot() -> None:
     """Test getting a non-registered bot class raises ValueError."""
     registry = BotRegistry()
-    with pytest.raises(ValueError, match="Unknown bot type"):
+    with pytest.raises(ValidationException, match="Unknown bot type: NONEXISTENT_BOT"):
         registry.get_bot_class("NONEXISTENT_BOT")
 
 

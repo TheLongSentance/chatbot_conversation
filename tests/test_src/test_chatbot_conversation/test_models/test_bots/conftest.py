@@ -101,10 +101,19 @@ def ollama_config_for_tests() -> ChatbotConfig:
     )
 
 
+@pytest.fixture(autouse=True)
+def gemini_cleanup() -> Generator[None, None, None]:
+    """Cleanup Gemini resources after each test"""
+    yield
+    # Force cleanup of any remaining Gemini instances
+    import gc
+
+    gc.collect()
+
+
 @pytest.fixture
-def gemini_chatbot() -> GeminiChatbot:
-    """Fixture to create an instance of GeminiChatbot."""
-    # Get first available version from API
+def gemini_chatbot() -> Generator[GeminiChatbot, None, None]:
+    """Fixture to create an instance of GeminiChatbot with proper cleanup."""
     config = ChatbotConfig(
         name="GeminiTestBot1",
         system_prompt="You are a helpful assistant.",
@@ -113,7 +122,12 @@ def gemini_chatbot() -> GeminiChatbot:
             version="gemini-1.5-flash",
         ),
     )
-    return GeminiChatbot(config)
+    bot = GeminiChatbot(config)
+    yield bot
+    # Ensure proper cleanup
+    if hasattr(bot, "_model_api"):
+        if hasattr(bot._model_api, "_channel"):  # pyright: ignore[reportPrivateUsage]
+            bot._model_api._channel.close()  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.fixture

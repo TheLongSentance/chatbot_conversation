@@ -17,11 +17,11 @@ import os
 from typing import Callable, Dict, List, Type
 
 from chatbot_conversation.models.base import ChatbotBase
-from chatbot_conversation.utils import(
-    ErrorSeverity, 
-    ValidationException, 
-    get_logger, 
+from chatbot_conversation.utils import (
     LOGNAME_MODEL,
+    ErrorSeverity,
+    ValidationException,
+    get_logger,
 )
 
 # pylint: disable=duplicate-code

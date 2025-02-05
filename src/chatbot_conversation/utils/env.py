@@ -13,7 +13,9 @@ import os
 from typing import List, Optional, Tuple
 
 from dotenv import load_dotenv
+
 from chatbot_conversation.utils.exceptions import ConfigurationException, ErrorSeverity
+
 
 class APIConfig:  # pylint: disable=too-few-public-methods
     """Class responsible for setting up and validating environment variables for API keys."""

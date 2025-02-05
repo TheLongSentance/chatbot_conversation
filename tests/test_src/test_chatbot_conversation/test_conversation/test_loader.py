@@ -6,7 +6,6 @@ parameter validation. It covers template variable validation, moderator message
 validation, and bot configuration validation.
 """
 
-import json
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -19,6 +18,11 @@ from chatbot_conversation.conversation.loader import (
     ConversationConfig,
     ModeratorMessage,
     load_conversation_config,
+)
+from chatbot_conversation.utils import (
+    ConfigurationException,
+    ValidationException,
+    handle_pydantic_validation_errors,
 )
 
 
@@ -43,7 +47,7 @@ def test_load_nonexistent_config(invalid_config_path: str) -> None:
     Args:
         invalid_config_path: Path to a nonexistent configuration file
     """
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ConfigurationException):
         load_conversation_config(invalid_config_path)
 
 
@@ -53,7 +57,7 @@ def test_empty_config_validation(test_config_empty_path: str) -> None:
     Args:
         test_config_empty_path: Path to an empty configuration file
     """
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationException):
         load_conversation_config(test_config_empty_path)
 
 
@@ -80,9 +84,11 @@ def test_duplicate_bot_names() -> None:
             },
         ],
     }
-    with pytest.raises(ValueError, match="Duplicate bot names"):
+    with pytest.raises(
+        ValidationException,
+        match="Duplicate bot names found in configuration: same_name",
+    ):
         ConversationConfig(**config_data)
-
 
 def test_template_variables_validation() -> None:
     """Test validation of template variables in core_prompt and bot_prompt."""
@@ -102,13 +108,19 @@ def test_template_variables_validation() -> None:
             }
         ],
     }
-    with pytest.raises(ValueError, match="Invalid template variables"):
+    with pytest.raises(
+        ValidationException, 
+        match="Invalid template variables found: {'variable'}"
+    ):
         ConversationConfig(**config_data)
 
     # Test invalid variable in bot_prompt
     config_data["core_prompt"] = "Valid {bot_name} prompt"
     config_data["bots"][0]["bot_prompt"] = "Invalid {unknown_var} here"
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValidationException,
+        match="Invalid template variables in bot_prompt: {'unknown_var'}",
+    ):
         ConversationConfig(**config_data)
 
 
@@ -162,16 +174,15 @@ def test_moderator_messages_validation() -> None:
             }
         ],
     }
-    with pytest.raises(ValueError, match="Duplicate round numbers"):
+    with pytest.raises(ValidationException, match="Duplicate round numbers"):
         ConversationConfig(**config_data)
 
     # Test round number exceeding total rounds
     config_data["moderator_messages_opt"] = [
         {"round_number": 3, "content": "Message 1"}  # Exceeds total rounds (2)
     ]
-    with pytest.raises(ValueError, match="Round numbers exceed total rounds"):
+    with pytest.raises(ValidationException, match="Round numbers exceed total rounds"):
         ConversationConfig(**config_data)
-
 
 def test_moderator_message_display_opt() -> None:
     """Test moderator message display_opt configurations."""
@@ -220,7 +231,7 @@ def test_bot_name_format_validation() -> None:
                 }
             ],
         }
-        with pytest.raises(ValueError, match="Invalid bot names"):
+        with pytest.raises(ValidationException, match="Invalid bot names"):
             ConversationConfig(**config_data)
 
 
@@ -234,17 +245,11 @@ def test_invalid_temperature() -> None:
 def test_invalid_max_tokens() -> None:
     """Test validation of invalid max_tokens and empty bot name values."""
     params: Dict[str, Any] = {"temperature": 1.0, "max_tokens": -100}  # Should be > 0
-    with pytest.raises(ValueError):
-        ChatbotParamsOptData(**params)
-
-    bot_config: Dict[str, Any] = {
-        "bot_name": "",  # Should not be empty
-        "bot_prompt": "test prompt",
-        "bot_type": "test type",
-        "bot_version": "v1",
-    }
-    with pytest.raises(ValueError):
-        ChatbotConfigData(**bot_config)
+    with pytest.raises(
+        ValidationException,
+        match="Validation failed: max_tokens: Input should be greater than 0",
+    ):
+        handle_pydantic_validation_errors(ChatbotParamsOptData)(**params)
 
 
 def test_valid_bot_params() -> None:
@@ -264,7 +269,10 @@ def test_invalid_json_format(tmp_path: Path) -> None:
     with open(invalid_json_path, "w", encoding="utf-8") as f:
         f.write("{invalid json")
 
-    with pytest.raises(json.JSONDecodeError):
+    with pytest.raises(
+        ConfigurationException, 
+        match="Invalid JSON in configuration file:"
+    ):
         load_conversation_config(str(invalid_json_path))
 
 

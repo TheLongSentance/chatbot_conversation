@@ -8,7 +8,7 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 
-from chatbot_conversation.utils.env import APIConfig
+from chatbot_conversation.utils.env import APIConfig, ConfigurationException
 
 
 def test_setup_env_missing_file(monkeypatch: MonkeyPatch) -> None:
@@ -20,7 +20,7 @@ def test_setup_env_missing_file(monkeypatch: MonkeyPatch) -> None:
         lambda *args: "non_existent_path/.env",  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
     )
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ConfigurationException):
         APIConfig.setup_env()
 
 

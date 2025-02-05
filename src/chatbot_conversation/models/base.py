@@ -52,6 +52,7 @@ from tenacity import (
 )
 
 from chatbot_conversation.utils import (
+    LOGNAME_MODEL,
     APIException,
     ChatbotException,
     ErrorSeverity,
@@ -59,7 +60,6 @@ from chatbot_conversation.utils import (
     SystemException,
     ValidationException,
     get_logger,
-    LOGNAME_MODEL,
 )
 
 # pylint: disable=duplicate-code

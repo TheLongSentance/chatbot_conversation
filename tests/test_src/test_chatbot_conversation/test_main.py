@@ -26,29 +26,17 @@ from chatbot_conversation.main import main
 def test_main_with_default_config(
     mock_conversation_manager: Mock, mock_api_config: Mock, monkeypatch: MonkeyPatch
 ) -> None:
-    """Test the main function using the default configuration path.
-
-    Verifies that the main function correctly:
-    1. Sets up the environment
-    2. Initializes ConversationManager with default config path
-    3. Runs the conversation
-
-    Args:
-        mock_conversation_manager: Mock object for ConversationManager
-        mock_api_config: Mock object for APIConfig
-
-    Raises:
-        AssertionError: If any of the expected method calls are not made
-    """
+    """Test the main function using the default configuration path."""
     # Setup
     manager_instance: Mock = mock_conversation_manager.return_value
-    # Needed to explicitly set sys.argv to avoid pytest capturing command-line arguments
     monkeypatch.setattr(sys, "argv", ["script"])
 
     # Execute
-    main()
+    with pytest.raises(SystemExit) as exc_info:
+        main()
 
     # Verify
+    assert exc_info.value.code == 0  # Verify successful exit
     mock_api_config.setup_env.assert_called_once()
     mock_conversation_manager.assert_called_once_with(
         os.path.join("config", "config.json")
@@ -66,6 +54,7 @@ def test_main_with_custom_config(
     2. Uses the provided command-line config path
     3. Initializes ConversationManager with custom path
     4. Runs the conversation
+    5. Exits with success code 0
 
     Args:
         mock_conversation_manager: Mock object for ConversationManager
@@ -80,10 +69,12 @@ def test_main_with_custom_config(
     monkeypatch.setattr(sys, "argv", ["script", test_config])
     manager_instance: Mock = mock_conversation_manager.return_value
 
-    # Execute
-    main()
+    # Execute and verify SystemExit
+    with pytest.raises(SystemExit) as exc_info:
+        main()
 
-    # Verify
+    # Verify exit code and mock calls
+    assert exc_info.value.code == 0
     mock_api_config.setup_env.assert_called_once()
     mock_conversation_manager.assert_called_once_with(test_config)
     manager_instance.run_conversation.assert_called_once()
@@ -96,7 +87,7 @@ def test_main_handles_exceptions(
 
     Verifies that the main function correctly:
     1. Catches and logs unexpected exceptions
-    2. Exits with status code 1
+    2. Exits with status code 4
     3. Prints appropriate error message
 
     Args:
@@ -111,11 +102,12 @@ def test_main_handles_exceptions(
     test_error_msg: str = "Test error"
     mock_conversation_manager.side_effect = Exception(test_error_msg)
 
-    # Execute
+    # Execute and verify SystemExit
     with pytest.raises(SystemExit) as exc_info:
         main()
 
-    # Verify
-    assert exc_info.value.code == 1
+    # Verify exit code, error logging and messages
+    assert exc_info.value.code == 4  # Update expected exit code to 4
     assert "An unexpected error occurred" in caplog.text
     assert test_error_msg in caplog.text
+    mock_api_config.setup_env.assert_called_once()

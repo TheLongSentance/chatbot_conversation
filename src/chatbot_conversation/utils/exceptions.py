@@ -24,7 +24,48 @@ Example:
 
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Optional
+
+# Add after existing imports
+from functools import wraps
+from typing import Any, Callable, Optional, TypeVar
+
+from pydantic import ValidationError
+
+T = TypeVar("T")
+
+
+# Add after ErrorSeverity class but before exception classes
+def handle_pydantic_validation_errors(f: Callable[..., T]) -> Callable[..., T]:
+    """Convert Pydantic ValidationErrors into ValidationException.
+
+    Args:
+        f: Function to wrap with validation error handling
+
+    Returns:
+        Wrapped function that converts ValidationError to ValidationException
+    """
+
+    @wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> T:
+        try:
+            return f(*args, **kwargs)
+        except ValidationError as e:
+            error_details: list[str] = []
+            for error in e.errors():
+                loc = " -> ".join(str(item) for item in error["loc"])
+                msg = error["msg"]
+                error_details.append(f"{loc}: {msg}")
+
+            error_msg = "\n".join(error_details)
+
+            raise ValidationException(
+                message=f"Validation failed: {error_msg}",
+                user_message="The provided data failed validation checks. Please verify all fields meet the requirements.",
+                severity=ErrorSeverity.ERROR,
+                original_error=e,
+            ) from e
+
+    return wrapper
 
 
 class ErrorSeverity(Enum):

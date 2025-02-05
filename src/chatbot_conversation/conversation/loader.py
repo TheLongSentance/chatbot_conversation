@@ -37,6 +37,7 @@ from chatbot_conversation.utils import (
     ErrorSeverity,
     SystemException,
     ValidationException,
+    handle_pydantic_validation_errors,
 )
 
 BOT_NAME_PATTERN = r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$"
@@ -345,6 +346,7 @@ class ConversationConfig(BaseConfigModel):
         return v
 
 
+@handle_pydantic_validation_errors
 def load_conversation_config(config_path: str) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
 

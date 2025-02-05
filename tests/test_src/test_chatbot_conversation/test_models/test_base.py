@@ -9,9 +9,6 @@ import tenacity
 from pytest_mock import MockFixture
 
 from chatbot_conversation.models.base import (
-    ChatMessage,  # Add this line to import ChatMessage
-)
-from chatbot_conversation.models.base import (
     _Model,  # pyright: ignore[reportPrivateUsage]
 )
 from chatbot_conversation.models.base import (
@@ -19,11 +16,13 @@ from chatbot_conversation.models.base import (
     ChatbotConfig,
     ChatbotModel,
     ChatbotParamsOpt,
+    ChatMessage,
     ConversationMessage,
 )
 
 # For now, only DummyChatbot is used for testing base class
 from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
+from chatbot_conversation.utils import APIException, ValidationException
 
 # List of bot classes to test - for the moment, only DummyChatbot
 bot_classes = [DummyChatbot]
@@ -74,7 +73,7 @@ class TestChatbotBaseValidation:
 
     def test_empty_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty names are rejected"""
-        with pytest.raises(ValueError, match="Bot name must be"):
+        with pytest.raises(ValidationException, match="Bot name must be"):
             config = ChatbotConfig(
                 name="",
                 system_prompt="test",
@@ -87,7 +86,7 @@ class TestChatbotBaseValidation:
 
     def test_whitespace_name(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only names are rejected"""
-        with pytest.raises(ValueError, match="Bot name must be"):
+        with pytest.raises(ValidationException, match="Bot name must be"):
             config = ChatbotConfig(
                 name="   ",
                 system_prompt="test",
@@ -102,7 +101,7 @@ class TestChatbotBaseValidation:
         """Test that names with invalid characters are rejected"""
         invalid_names = ["test!", "test@bot", "test#", "test$", "test%"]
         for name in invalid_names:
-            with pytest.raises(ValueError, match="invalid characters"):
+            with pytest.raises(ValidationException, match="invalid characters"):
                 config = ChatbotConfig(
                     name=name,
                     system_prompt="test",
@@ -117,7 +116,7 @@ class TestChatbotBaseValidation:
         """Test that names with invalid underscore placement are rejected"""
         invalid_names = ["_test", "test_", "_test_"]
         for name in invalid_names:
-            with pytest.raises(ValueError, match="invalid underscore usage"):
+            with pytest.raises(ValidationException, match="invalid underscore usage"):
                 config = ChatbotConfig(
                     name=name,
                     system_prompt="test",
@@ -153,7 +152,7 @@ class TestChatbotBaseValidation:
             ),
         )
         bot_class(config)
-        with pytest.raises(ValueError, match="already in use"):
+        with pytest.raises(ValidationException, match="already in use"):
             bot_class(config)
 
 
@@ -240,7 +239,7 @@ class TestChatbotBaseTemperature:
 
         for temp in invalid_temps:
             with pytest.raises(
-                ValueError, match="(?i).*temperature.*must be between.*"
+                ValidationException, match="(?i).*temperature.*must be between.*"
             ):
                 config = ChatbotConfig(
                     name=f"TempBot{str(temp).replace('.', '_').replace('-', 'neg')}",
@@ -278,7 +277,7 @@ class TestChatbotBaseMaxTokens:
         """Test that invalid max token values are rejected"""
         invalid_tokens = [0, -1, -100]
         for tokens in invalid_tokens:
-            with pytest.raises(ValueError, match="Max tokens.*must be greater than 0"):
+            with pytest.raises(ValidationException, match="Max tokens.*must be greater than 0"):
                 config = ChatbotConfig(
                     name=f"TokenBot{str(tokens).replace('-', 'neg')}",
                     system_prompt="test",
@@ -321,7 +320,7 @@ class TestChatbotBaseModelType:
 
     def test_invalid_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that invalid model types are rejected"""
-        with pytest.raises(ValueError, match="Invalid model type"):
+        with pytest.raises(ValidationException, match="Invalid model type"):
             config = ChatbotConfig(
                 name="TestBot",
                 system_prompt="test",
@@ -336,7 +335,7 @@ class TestModelValidation:
 
     def test_empty_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty model types are rejected"""
-        with pytest.raises(ValueError, match="Model type cannot be empty"):
+        with pytest.raises(ValidationException, match="Model type cannot be empty"):
             _Model(
                 type="",
                 version="1.0",
@@ -354,7 +353,7 @@ class TestModelValidation:
 
     def test_whitespace_model_type(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only model types are rejected"""
-        with pytest.raises(ValueError, match="Model type cannot be empty"):
+        with pytest.raises(ValidationException, match="Model type cannot be empty"):
             _Model(
                 type="   ",
                 version="1.0",
@@ -372,7 +371,7 @@ class TestModelValidation:
 
     def test_empty_model_version(self, bot_class: type[ChatbotBase]) -> None:
         """Test that empty model versions are rejected"""
-        with pytest.raises(ValueError, match="Model version cannot be empty"):
+        with pytest.raises(ValidationException, match="Model version cannot be empty"):
             _Model(
                 type=bot_class.__name__.replace("Chatbot", "").upper(),
                 version="",
@@ -390,7 +389,7 @@ class TestModelValidation:
 
     def test_whitespace_model_version(self, bot_class: type[ChatbotBase]) -> None:
         """Test that whitespace-only model versions are rejected"""
-        with pytest.raises(ValueError, match="Model version cannot be empty"):
+        with pytest.raises(ValidationException, match="Model version cannot be empty"):
             _Model(
                 type=bot_class.__name__.replace("Chatbot", "").upper(),
                 version="   ",
@@ -470,6 +469,7 @@ class TestRetryBehavior:
         with pytest.raises(ValueError):
             bot.generate_response(conversation)
 
+
     def test_max_retries_exceeded(
         self, bot_class: type[ChatbotBase], mocker: MockFixture
     ) -> None:
@@ -487,7 +487,8 @@ class TestRetryBehavior:
         mock_generate = mocker.patch.object(
             bot,
             "_generate_response",
-            side_effect=ConnectionError("Transient error"),
+            side_effect=[ConnectionError("Transient error")]
+            * (bot.model_timeout.max_retries + 1),
             autospec=True,
         )
         mock_generate = cast(MagicMock, mock_generate)
@@ -496,14 +497,12 @@ class TestRetryBehavior:
             {"bot_index": 0, "content": "test message"}
         ]
 
-        with pytest.raises(tenacity.RetryError) as exc_info:
+        with pytest.raises(APIException) as exc_info:
             bot.generate_response(conversation)
 
         # Verify retry count matches max_retries
         assert mock_generate.call_count == bot.model_timeout.max_retries
-
-        # Verify the wrapped exception is ConnectionError
-        assert isinstance(exc_info.value.last_attempt.exception(), ConnectionError)
+        assert isinstance(exc_info.value.original_error, tenacity.RetryError)
 
     def test_total_timeout_enforced(
         self, bot_class: type[ChatbotBase], mocker: MockFixture
@@ -539,13 +538,12 @@ class TestRetryBehavior:
             {"bot_index": 0, "content": "test message"}
         ]
 
-        # Test both that RetryError is raised and that it contains the original ConnectionError
-        with pytest.raises(tenacity.RetryError) as exc_info:
+        # Test that APIException is raised with timeout message
+        with pytest.raises(APIException) as exc_info:
             bot.generate_response(conversation)
 
-        # Verify the wrapped exception is ConnectionError
-        assert isinstance(exc_info.value.last_attempt.exception(), ConnectionError)
-        assert str(exc_info.value.last_attempt.exception()) == "Timeout error"
+        # Verify this is specifically a timeout exception
+        assert "Timeout error" in str(exc_info.value)
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -607,7 +605,7 @@ class TestChatbotBaseVersionValidation:
         # Mock available_versions to return empty list
         mocker.patch.object(bot_class, "available_versions", return_value=[])
 
-        with pytest.raises(ValueError, match="Invalid model version"):
+        with pytest.raises(ValidationException, match="Invalid model version"):
             config = ChatbotConfig(
                 name="EmptyVersionsBot",
                 system_prompt="test",

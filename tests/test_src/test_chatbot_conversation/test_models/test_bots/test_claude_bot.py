@@ -11,6 +11,7 @@ from chatbot_conversation.models.base import (
     ConversationMessage,
 )
 from chatbot_conversation.models.bots.claude_bot import CLAUDE_MODEL_TYPE, ClaudeChatbot
+from chatbot_conversation.utils import ModelException, ValidationException
 
 
 class TestClaudeChatbot:
@@ -109,7 +110,9 @@ class TestClaudeChatbot:
         bot = ClaudeChatbot(claude_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(ValueError, match="Model returned an empty response"):
+        with pytest.raises(
+            ModelException, match=".*Model returned an empty string response.*"
+        ):
             bot.generate_response(conversation)
 
     def test_available_versions_live(self) -> None:
@@ -144,5 +147,5 @@ class TestClaudeChatbot:
             model=ChatbotModel(type="CLAUDE", version="invalid-version"),
         )
 
-        with pytest.raises(ValueError, match="Invalid model version"):
+        with pytest.raises(ValidationException, match="Invalid model version"):
             ClaudeChatbot(config)

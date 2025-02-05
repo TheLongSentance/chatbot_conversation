@@ -16,6 +16,7 @@ Test cases cover:
 import pytest
 
 from chatbot_conversation.conversation.manager import ConversationManager
+from chatbot_conversation.utils import ConfigurationException
 
 
 def test_initialization(test_config_path: str) -> None:
@@ -49,7 +50,7 @@ def test_invalid_config_loading(invalid_config_path: str) -> None:
         - Appropriate exception raising
         - Error handling for invalid configurations
     """
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ConfigurationException):
         ConversationManager(invalid_config_path)
 
 

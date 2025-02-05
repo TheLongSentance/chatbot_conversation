@@ -11,6 +11,7 @@ from chatbot_conversation.models.bots.gemini_bot import (
     _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
 )
 from chatbot_conversation.models.bots.gemini_bot import GEMINI_MODEL_TYPE, GeminiChatbot
+from chatbot_conversation.utils import ValidationException
 
 
 class TestGeminiChatbot:
@@ -141,7 +142,7 @@ class TestGeminiChatbot:
     ) -> None:
         """Test that bot creation with invalid version fails"""
         gemini_config_for_tests.model.version = "invalid-model-version"
-        with pytest.raises(ValueError, match="Invalid model version"):
+        with pytest.raises(ValidationException, match="Invalid model version"):
             GeminiChatbot(gemini_config_for_tests)
 
     def test_version_caching(self) -> None:

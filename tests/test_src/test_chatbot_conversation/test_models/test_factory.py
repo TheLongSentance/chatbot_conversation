@@ -10,6 +10,7 @@ import pytest
 from chatbot_conversation.models.base import ChatbotBase, ChatbotConfig
 from chatbot_conversation.models.bot_registry import BotRegistry
 from chatbot_conversation.models.factory import ChatbotFactory
+from chatbot_conversation.utils import ValidationException
 
 
 def test_factory_initialization(bot_registry: BotRegistry) -> None:
@@ -51,7 +52,7 @@ def test_create_bot_with_invalid_type(
         dummy_config: Pytest fixture providing ChatbotConfig to modify.
     """
     dummy_config.model.type = "NONEXISTENT_BOT_TYPE"
-    with pytest.raises(ValueError, match="Unknown bot type"):
+    with pytest.raises(ValidationException, match="Unknown bot type"):
         chatbot_factory.create_bot(dummy_config)
 
 

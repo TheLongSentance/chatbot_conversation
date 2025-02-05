@@ -11,6 +11,7 @@ from chatbot_conversation.utils.exceptions import (
     ModelException,
     SystemException,
     ValidationException,
+    handle_pydantic_validation_errors,
 )
 from chatbot_conversation.utils.logging_util import (
     LOGNAME_API,
@@ -38,4 +39,5 @@ __all__ = [
     "ModelException",
     "SystemException",
     "ValidationException",
+    "handle_pydantic_validation_errors",
 ]

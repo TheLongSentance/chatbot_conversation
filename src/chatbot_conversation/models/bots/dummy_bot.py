@@ -123,7 +123,7 @@ class DummyChatbot(ChatbotBase):
         Returns:
             bool: True if the operation should be retried, False otherwise
         """
-        return isinstance(exception, (ConnectionError))
+        return isinstance(exception, ConnectionError)
 
     # typically __init__ would be defined here with call to
     # super().__init__(config) to initialize the base class

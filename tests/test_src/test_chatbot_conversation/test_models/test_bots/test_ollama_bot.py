@@ -17,6 +17,7 @@ from chatbot_conversation.models.bots.ollama_bot import (
     OLLAMA_MODEL_TYPE,
     OllamaChatbot,
 )
+from chatbot_conversation.utils import ModelException, ValidationException
 
 
 class TestOllamaChatbot:
@@ -52,7 +53,7 @@ class TestOllamaChatbot:
         assert bot_valid.model_temperature == 0.5
 
         # Test invalid temperature initialization
-        with pytest.raises(ValueError, match="Temperature .* must be between"):
+        with pytest.raises(ValidationException, match="Temperature .* must be between"):
             invalid_config = ChatbotConfig(
                 name="TestBot3",
                 system_prompt="Test prompt",
@@ -67,7 +68,7 @@ class TestOllamaChatbot:
             OllamaChatbot(invalid_config)
 
         # Test invalid temperature initialization
-        with pytest.raises(ValueError, match="Temperature .* must be between"):
+        with pytest.raises(ValidationException, match="Temperature .* must be between"):
             invalid_config = ChatbotConfig(
                 name="TestBot4",
                 system_prompt="Test prompt",
@@ -150,8 +151,12 @@ class TestOllamaChatbot:
         assert messages[1]["content"] == "Test message"
 
     @patch("chatbot_conversation.models.bots.ollama_bot.ollama")
+    @patch.object(OllamaChatbot, "available_versions", return_value=["llama3.2"])
     def test_empty_response_handling(
-        self, mock_ollama: MagicMock, ollama_config_for_tests: ChatbotConfig
+        self,
+        mock_available_versions: MagicMock,
+        mock_ollama: MagicMock,
+        ollama_config_for_tests: ChatbotConfig,
     ) -> None:
         """Test handling of empty responses from Ollama API"""
         mock_response = {"message": {"content": ""}}
@@ -160,7 +165,7 @@ class TestOllamaChatbot:
         bot = OllamaChatbot(ollama_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(ValueError, match="Model returned an empty response"):
+        with pytest.raises(ModelException, match="Model returned an empty string response"):
             bot.generate_response(conversation)
 
     def test_available_versions_returns_valid_list(self) -> None:
@@ -202,7 +207,7 @@ class TestOllamaChatbot:
         Uses a known invalid version string to verify error handling.
         """
         ollama_config_for_tests.model.version = "invalid-model-version"
-        with pytest.raises(ValueError, match="Invalid model version"):
+        with pytest.raises(ValidationException, match="Invalid model version"):
             OllamaChatbot(ollama_config_for_tests)
 
     def test_version_caching(self) -> None:
@@ -217,7 +222,7 @@ class TestOllamaChatbot:
         """
         # Clear cache first
         OllamaChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
-        
+
         # First call should hit API
         versions1 = OllamaChatbot.available_versions()
 

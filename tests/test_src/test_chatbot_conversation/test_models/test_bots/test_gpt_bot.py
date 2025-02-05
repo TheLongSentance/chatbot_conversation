@@ -7,6 +7,7 @@ from openai import APIConnectionError, APIError, RateLimitError
 
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gpt_bot import GPT_MODEL_TYPE, GPTChatbot
+from chatbot_conversation.utils import ModelException, ValidationException
 
 
 class TestGPTChatbot:
@@ -105,7 +106,7 @@ class TestGPTChatbot:
         bot = GPTChatbot(gpt_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(ValueError, match="Model returned an empty response"):
+        with pytest.raises(ModelException, match="Model returned an empty string response"):
             bot.generate_response(conversation)
 
     def test_available_versions_returns_valid_list(self) -> None:
@@ -136,7 +137,7 @@ class TestGPTChatbot:
     ) -> None:
         """Test that bot creation with invalid version fails"""
         gpt_config_for_tests.model.version = "invalid-model-version"
-        with pytest.raises(ValueError, match="Invalid model version"):
+        with pytest.raises(ValidationException, match="Invalid model version"):
             GPTChatbot(gpt_config_for_tests)
 
     def test_version_caching(self) -> None:

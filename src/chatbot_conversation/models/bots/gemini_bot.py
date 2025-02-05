@@ -261,6 +261,10 @@ class GeminiChatbot(ChatbotBase):
         Note:
             Updates model_system_prompt_updated flag after initialization
         """
+        if hasattr(self, '_model_api'):
+            if hasattr(self._model_api, '_channel'):
+                self._model_api._channel.close()
+
         self._model_api = google.generativeai.GenerativeModel(
             model_name=self.model_version,
             system_instruction=self.system_prompt,
@@ -269,6 +273,12 @@ class GeminiChatbot(ChatbotBase):
                 max_output_tokens=self.model_max_tokens,
             ),
         )
+
+    def __del__(self) -> None:
+        """Cleanup resources when object is destroyed."""
+        if hasattr(self, "_model_api"):
+            if hasattr(self._model_api, "_channel"):
+                self._model_api._channel.close()
 
     def _get_text_from_chunk(self, chunk: Any) -> str:
         """
