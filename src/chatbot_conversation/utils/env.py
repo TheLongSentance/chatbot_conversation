@@ -13,7 +13,7 @@ import os
 from typing import List, Optional, Tuple
 
 from dotenv import load_dotenv
-
+from chatbot_conversation.utils.exceptions import ConfigurationException, ErrorSeverity
 
 class APIConfig:  # pylint: disable=too-few-public-methods
     """Class responsible for setting up and validating environment variables for API keys."""
@@ -29,7 +29,12 @@ class APIConfig:  # pylint: disable=too-few-public-methods
         dotenv_path = os.path.join(os.path.dirname(__file__), "../../../config/.env")
 
         if not os.path.exists(dotenv_path):
-            raise FileNotFoundError(f".env file not found at path: {dotenv_path}")
+            error_msg = f".env file not found at path: {dotenv_path}"
+            raise ConfigurationException(
+                message=error_msg,
+                user_message=error_msg,
+                severity=ErrorSeverity.FATAL,
+            )
 
         load_dotenv(dotenv_path=dotenv_path)
 

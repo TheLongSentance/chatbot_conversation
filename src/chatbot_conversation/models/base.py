@@ -59,6 +59,7 @@ from chatbot_conversation.utils import (
     SystemException,
     ValidationException,
     get_logger,
+    LOGNAME_MODEL,
 )
 
 # pylint: disable=duplicate-code
@@ -277,7 +278,7 @@ class ChatbotBase(ABC):
     _used_names: ClassVar[Set[str]] = set()
     _available_versions_cache: ClassVar[Optional[List[str]]] = None
 
-    _logger = get_logger("models")
+    _logger = get_logger(LOGNAME_MODEL)
 
     # Class Methods - Core
     @classmethod
