@@ -131,10 +131,10 @@ class ClaudeChatbot(ChatbotBase):
 
         """Check both direct and wrapped exceptions against retryable types"""
         retryable_types = (
-            APIError, 
-            APIException, 
-            APIConnectionError, 
-            RateLimitError, 
+            APIError,
+            APIException,
+            APIConnectionError,
+            RateLimitError,
             ConnectionError,
         )
         # Logic below needed for potential nested exceptions
