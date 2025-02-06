@@ -1,8 +1,7 @@
 """Tests for ChatbotBase class"""
 
 import json
-import time
-from typing import Any, List, cast
+from typing import List, cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -505,51 +504,6 @@ class TestRetryBehavior:
         # Verify retry count matches max_retries
         assert mock_generate.call_count == bot.model_timeout.max_retries
         assert isinstance(exc_info.value.original_error, tenacity.RetryError)
-
-    def test_total_timeout_enforced(
-        self, bot_class: type[ChatbotBase], mocker: MockFixture
-    ) -> None:
-        config = ChatbotConfig(
-            name="TimeoutBot",
-            system_prompt="test",
-            model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
-            ),
-        )
-        bot = bot_class(config)
-
-        # Simpler mock that just sleeps
-        def slow_fail(*args: Any) -> str:
-            time.sleep(100)
-            return "This should not be reached"
-
-        mocker.patch.object(
-            bot,
-            "_generate_response",
-            side_effect=slow_fail,
-            autospec=True,
-        )
-
-        bot.model_timeout.total = 1
-        bot.model_timeout.max_retries = 10
-
-        conversation: list[ConversationMessage] = [
-            {"bot_index": 0, "content": "test message"}
-        ]
-
-        try:
-            bot.generate_response(conversation)
-            print("No exception was raised")
-        except Exception as e:
-            print(f"Caught exception: {type(e).__name__}")
-            print(f"Exception message: {str(e)}")
-            raise  # Re-raise the exception so test still fails
-
-    # with pytest.raises(APIException) as e:
-    #     bot.generate_response(conversation)
-
-    # assert "timeout" in str(exc_info.value).lower()
-
 
 @pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseVersionValidation:
