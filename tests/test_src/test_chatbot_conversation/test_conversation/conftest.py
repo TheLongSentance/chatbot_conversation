@@ -6,6 +6,7 @@ including configuration data, mock objects, and manager instances.
 
 import os
 from typing import List
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -95,7 +96,7 @@ def sample_conversation_config() -> ConversationConfig:
         core_prompt="You are {bot_name}. Respond within {max_tokens} tokens.",
         moderator_messages_opt=[
             ModeratorMessage(round_number=1, content="Welcome to round 1"),
-            ModeratorMessage(round_number=2, content="Final round"),
+            ModeratorMessage(round_number=2, content="Final round", display_opt=False),
         ],
         bots=[
             ChatbotConfigData(
@@ -121,6 +122,21 @@ def sample_conversation_config() -> ConversationConfig:
         ],
     )
 
+
+@pytest.fixture
+def env_transcript_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Set up and return a temporary transcript directory via environment variable."""
+    env_dir = tmp_path / "env_transcripts"
+    monkeypatch.setenv("BOTCONV_TRANSCRIPT_DIR", str(env_dir))
+    return env_dir
+
+@pytest.fixture
+def mock_project_root(tmp_path: Path) -> Path:
+    """Create a mock project root with pyproject.toml."""
+    root = tmp_path / "project_root"
+    root.mkdir()
+    (root / "pyproject.toml").touch()
+    return root
 
 @pytest.fixture
 def manager(test_config_path: str) -> ConversationManager:
