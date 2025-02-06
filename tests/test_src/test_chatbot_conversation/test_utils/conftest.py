@@ -3,7 +3,7 @@
 import logging.config
 import os
 from pathlib import Path
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -57,22 +57,49 @@ GOOGLE_API_KEY=mock-google-key-12345678
 
 
 @pytest.fixture
-def temp_logging_conf(tmp_path: Path) -> Generator[str, None, None]:
-    """Fixture to create a temporary logging.conf file.
+def temp_env_files(tmp_path: Path) -> Generator[List[str], None, None]:
+    """Create multiple temporary .env files for testing path precedence.
 
     Args:
-        tmp_path: PyTest's temporary path fixture providing a temporary directory
+        tmp_path: PyTest's temporary path fixture
 
-    Yields:
-        str: Path to temporary logging.conf file as a string
+    Returns:
+        List of paths to temporary .env files
     """
+    env_files: List[str] = []
+
+    # Create three different config directories
+    for i in range(3):
+        config_dir = tmp_path / f"config_{i}"
+        config_dir.mkdir(exist_ok=True)
+        env_file = config_dir / ".env"
+
+        env_content = f"""
+OPENAI_API_KEY=mock-openai-key-{i}
+ANTHROPIC_API_KEY=mock-anthropic-key-{i}
+GOOGLE_API_KEY=mock-google-key-{i}
+"""
+        env_file.write_text(env_content.strip())
+        env_files.append(str(env_file))
+
+    try:
+        yield env_files
+    finally:
+        for file_path in env_files:
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+
+
+@pytest.fixture
+def temp_logging_conf(tmp_path: Path) -> Generator[str, None, None]:
+    """Fixture to create a temporary logging.conf file."""
     config_dir: Path = tmp_path / "config"
     config_dir.mkdir(exist_ok=True)
     log_conf: Path = config_dir / "logging.conf"
 
     conf_content = """
 [loggers]
-keys=root,testLogger
+keys=root,api,config,model,system,validation
 
 [handlers]
 keys=consoleHandler
@@ -84,10 +111,34 @@ keys=testFormatter
 level=DEBUG
 handlers=consoleHandler
 
-[logger_testLogger]
+[logger_api]
 level=DEBUG
 handlers=consoleHandler
-qualname=testLogger
+qualname=api
+propagate=0
+
+[logger_config]
+level=DEBUG
+handlers=consoleHandler
+qualname=config
+propagate=0
+
+[logger_model]
+level=DEBUG
+handlers=consoleHandler
+qualname=model
+propagate=0
+
+[logger_system]
+level=DEBUG
+handlers=consoleHandler
+qualname=system
+propagate=0
+
+[logger_validation]
+level=DEBUG
+handlers=consoleHandler
+qualname=validation
 propagate=0
 
 [handler_consoleHandler]
@@ -97,7 +148,7 @@ formatter=testFormatter
 args=(sys.stdout,)
 
 [formatter_testFormatter]
-format=%(levelname)s - %(message)s
+format=%(name)s - %(levelname)s - %(message)s
 """
     log_conf.write_text(conf_content.strip())
     try:

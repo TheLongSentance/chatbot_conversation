@@ -8,13 +8,17 @@ The APIConfig class handles:
 - Logging the status of the API keys
 """
 
-import logging
 import os
-from typing import List, Optional, Tuple
-
 from dotenv import load_dotenv
+from pathlib import Path
 
-from chatbot_conversation.utils.exceptions import ConfigurationException, ErrorSeverity
+from chatbot_conversation.utils.logging_util import get_logger, LOGNAME_CONFIG
+
+FILE_IN_PROJECT_ROOT = "pyproject.toml"
+DEFAULT_CONFIG_DIR = "config"
+CONFIG_DIR_ENV_VAR = "BOTCONV_CONFIG_DIR"
+
+logger = get_logger(LOGNAME_CONFIG)
 
 
 class APIConfig:  # pylint: disable=too-few-public-methods
@@ -27,45 +31,64 @@ class APIConfig:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _load_config() -> None:
-        """Initialize and validate API keys."""
-        dotenv_path = os.path.join(os.path.dirname(__file__), "../../../config/.env")
+        """Initialize environment by loading .env file if present.
 
-        if not os.path.exists(dotenv_path):
-            error_msg = f".env file not found at path: {dotenv_path}"
-            raise ConfigurationException(
-                message=error_msg,
-                user_message=error_msg,
-                severity=ErrorSeverity.FATAL,
+        Attempts to load .env file to supplement any environment variables.
+        Does not enforce any specific keys as requirements depend on dynamic configuration.
+        """
+        possible_paths: list[str] = []
+
+        # Check for user-defined config directory from environment variable
+        config_dir = APIConfig.get_config_dir_from_env()
+        if config_dir is not None:
+            possible_paths.append(os.path.join(config_dir, ".env"))
+
+        # Check in local directory
+        possible_paths.append(".env")
+
+        # Try to find project root and set default development config directory
+        default_config_dir = APIConfig.get_default_config_dir()
+        if default_config_dir is not None:
+            possible_paths.append(os.path.join(default_config_dir, ".env"))
+
+        # Try to load .env if found
+        for dotenv_path in possible_paths:
+            if os.path.exists(dotenv_path):
+                load_dotenv(dotenv_path=dotenv_path)
+                logger.info("Loaded environment from: %s", dotenv_path)
+                break
+            logger.info("No .env file found at: %s", dotenv_path)
+        else:
+            logger.info(
+                "No .env file found in searched locations, using only environment variables"
             )
 
-        load_dotenv(dotenv_path=dotenv_path)
-
-        keys = [
-            ("OpenAI", os.getenv("OPENAI_API_KEY")),
-            ("Anthropic", os.getenv("ANTHROPIC_API_KEY")),
-            ("Google", os.getenv("GOOGLE_API_KEY")),
-        ]
-        APIConfig._validate_keys(keys)
+        # Log available API-related environment variables without assuming which are required
+        for env_var in os.environ:
+            if env_var.endswith("_API_KEY"):
+                logger.info("%s is set in environment", env_var)
 
     @staticmethod
-    def _validate_keys(keys: List[Tuple[str, Optional[str]]]) -> None:
-        """Validate presence of required API keys.
+    def get_config_dir_from_env() -> str | None:
+        """Get the configuration directory path from environment or default.
 
-        Args:
-            keys: List of tuples containing service name and API key
+        Returns:
+            str: Path to configuration directory
         """
-        for service, key in keys:
-            APIConfig._log_key_status(service, key)
+        return os.getenv(CONFIG_DIR_ENV_VAR)
 
     @staticmethod
-    def _log_key_status(service: str, key: Optional[str]) -> None:
-        """Log the status of the API key.
-
-        Args:
-            service: Name of the service
-            key: API key for the service
+    def get_default_config_dir() -> Path | None:
+        """Get the default config directory relative to this module.
+        
+        Returns:
+            Path: Path to default config directory, attempting to find project root's
+                config dir, falling back to a relative path from this module if not found.
         """
-        if not key:
-            logging.warning("%s API Key not set", service)
-        else:
-            logging.info("%s API Key exists and begins %s", service, key[:8])
+        current = Path(__file__).resolve().parent        
+        # Try to find project root by walking up
+        for parent in [current, *current.parents]:
+            if (parent / FILE_IN_PROJECT_ROOT).exists():
+                return parent / DEFAULT_CONFIG_DIR
+        # None found so return None
+        return None
