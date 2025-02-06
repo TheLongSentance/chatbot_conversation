@@ -25,7 +25,7 @@ Classes:
 """
 
 import json
-from typing import Any, Iterator, List, Optional, TypedDict, Type
+from typing import Any, Iterator, List, Optional, Type, TypedDict
 
 import google.api_core.exceptions
 

@@ -9,10 +9,11 @@ The APIConfig class handles:
 """
 
 import os
-from dotenv import load_dotenv
 from pathlib import Path
 
-from chatbot_conversation.utils.logging_util import get_logger, LOGNAME_CONFIG
+from dotenv import load_dotenv
+
+from chatbot_conversation.utils.logging_util import LOGNAME_CONFIG, get_logger
 
 FILE_IN_PROJECT_ROOT = "pyproject.toml"
 DEFAULT_CONFIG_DIR = "config"

@@ -9,12 +9,13 @@ from _pytest.logging import LogCaptureFixture
 from _pytest.monkeypatch import MonkeyPatch
 
 from chatbot_conversation.utils.env import (
-    APIConfig,
     CONFIG_DIR_ENV_VAR,
-    FILE_IN_PROJECT_ROOT,
     DEFAULT_CONFIG_DIR,
+    FILE_IN_PROJECT_ROOT,
+    APIConfig,
 )
 from chatbot_conversation.utils.logging_util import LOGNAME_CONFIG
+
 
 def test_get_config_dir_from_env(monkeypatch: MonkeyPatch) -> None:
     """Test get_config_dir_from_env returns expected values."""

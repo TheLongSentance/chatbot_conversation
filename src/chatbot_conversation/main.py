@@ -2,11 +2,9 @@
 This module initializes and runs the chatbot conversation.
 """
 
-# Set gRPC environment variables before imports
-import os
 import logging
+import os
 import sys
-
 
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.error import handle_error

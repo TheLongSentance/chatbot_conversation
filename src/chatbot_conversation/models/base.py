@@ -39,7 +39,7 @@ import json
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, TypedDict, Type
+from typing import Any, ClassVar, Final, Iterator, List, Optional, Set, Type, TypedDict
 
 from tenacity import (
     RetryError,
