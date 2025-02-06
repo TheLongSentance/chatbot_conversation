@@ -5,6 +5,7 @@ Unit tests for the TranscriptManager class in the chatbot_conversation package.
 import json
 from pathlib import Path
 from unittest.mock import mock_open, patch
+
 import pytest
 
 from chatbot_conversation.conversation.loader import ConversationConfig
