@@ -170,7 +170,7 @@ If you plan to use Ollama models, you need to:
 ollama pull llama2
 ```
 
-### Using pip (Recommended)
+### Using pip
 
 ```bash
 # Clone the repository
