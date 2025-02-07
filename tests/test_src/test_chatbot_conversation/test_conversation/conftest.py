@@ -163,6 +163,9 @@ def sample_private_messages() -> List[ConversationMessage]:
     return [
         {"bot_index": 1, "content": "Public message from bot 1"},
         {"bot_index": 1, "content": "Public part PR1V4T3: Private part for bot 1"},
-        {"bot_index": 2, "content": "Another public message PR1V4T3: Secret bot 2 stuff"},
+        {
+            "bot_index": 2,
+            "content": "Another public message PR1V4T3: Secret bot 2 stuff",
+        },
         {"bot_index": 3, "content": "Just public content"},
     ]

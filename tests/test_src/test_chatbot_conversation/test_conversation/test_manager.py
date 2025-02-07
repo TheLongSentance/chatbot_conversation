@@ -19,8 +19,8 @@ from typing import List
 import pytest
 
 from chatbot_conversation.conversation.manager import ConversationManager
-from chatbot_conversation.utils import ConfigurationException
 from chatbot_conversation.models import ConversationMessage
+from chatbot_conversation.utils import ConfigurationException
 
 
 def test_initialization(test_config_path: str) -> None:

@@ -186,7 +186,6 @@ class ConversationManager:
             return response[: last_ending + 1]
         return response
 
-
     def filter_private_content(
         self, message: ConversationMessage, for_bot_index: Optional[int] = None
     ) -> str:
@@ -215,7 +214,6 @@ class ConversationManager:
 
         # Otherwise return only the public part
         return parts[0].strip()
-
 
     def get_filtered_conversation(self, bot_index: int) -> List[ConversationMessage]:
         """
