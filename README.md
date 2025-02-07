@@ -1,6 +1,6 @@
 # Chatbot Conversation
 
-An extensible Python application that facilitates conversations between multiple AI chatbots using different language models.
+An extensible Python application that facilitates conversations between multiple AI chatbots using different large language models (LLMs).
 
 ## Features
 
