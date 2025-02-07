@@ -13,10 +13,11 @@ Test cases cover:
 - Display functionality
 """
 
+from pathlib import Path
+
 import pytest
 
 from chatbot_conversation.conversation.manager import ConversationManager
-from pathlib import Path
 from chatbot_conversation.utils import ConfigurationException
 
 

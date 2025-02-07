@@ -11,13 +11,12 @@ from typing import List, Set, TextIO
 
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.models.base import ConversationMessage
-from chatbot_conversation.utils import(
-    ErrorSeverity, 
+from chatbot_conversation.utils import (
+    ErrorSeverity,
     SystemException,
     get_logger,
     get_output_dir,
 )
-
 
 # specific import path to avoid circular from package:
 # from ..version import __version__

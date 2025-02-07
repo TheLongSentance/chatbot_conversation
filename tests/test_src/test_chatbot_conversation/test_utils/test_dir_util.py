@@ -12,8 +12,8 @@ from _pytest.monkeypatch import MonkeyPatch
 from chatbot_conversation.utils.dir_util import (
     CONFIG_DIR_ENV_VAR,
     DEFAULT_CONFIG_DIR,
-    OUTPUT_DIR_ENV_VAR,
     DEFAULT_OUTPUT_DIR,
+    OUTPUT_DIR_ENV_VAR,
     get_config_dir,
     get_output_dir,
 )
