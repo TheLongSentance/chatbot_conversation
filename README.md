@@ -461,7 +461,8 @@ These template variables allow for personalized system prompts and instructions 
 
 1. Set up environment variables:
    - API keys in `.env` file in your config directory
-   - Optionally set `BOTCONV_CONFIG_DIR` and `BOTCONV_OUTPUT_DIR`
+   - Do not set BOTCONV_CONFIG_DIR in .env since a "chicken and egg" situation
+     - i.e. you are loading a config that is telling you where to load a config file...
 2. Configure/check logging settings
 3. Configure your bots and conversation by either:
    - Editing `config.json` in your config directory
