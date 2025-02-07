@@ -92,12 +92,11 @@ def _get_dir(
                 dir_path,
             )
             return dir_path
-        else:
-            logger.warning(
-                "Environment variable %s points to non-existent path: %s",
-                env_var,
-                dir_path,
-            )
+        logger.warning(
+            "Environment variable %s points to non-existent path: %s",
+            env_var,
+            dir_path,
+        )
 
     # Second priority: Try to find project root and use/create directory there
     current = Path.cwd()
@@ -113,10 +112,9 @@ def _get_dir(
                 root_output.mkdir(parents=True, exist_ok=True)
                 logger.info("Created directory under project root: %s", root_output)
                 return root_output
-            else:
-                logger.warning(
-                    "Project root directory %s does not contain %s", parent, default_dir
-                )
+            logger.warning(
+                "Project root directory %s does not contain %s", parent, default_dir
+            )
 
     # Third priority: Use current directory
     logger.info("Using current directory: %s", current)
