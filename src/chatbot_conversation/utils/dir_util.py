@@ -33,7 +33,7 @@ def get_config_dir() -> Path:
     Returns:
         Path: Directory path for configuration files, created if necessary
     """
-    # creat_dir set to false since used to search for files that should already 
+    # creat_dir set to false since used to search for files that should already
     # exist in the config directory
     return _get_dir(CONFIG_DIR_ENV_VAR, FILE_IN_PROJECT_ROOT, DEFAULT_CONFIG_DIR, False)
 
@@ -96,7 +96,7 @@ def _get_dir(
             logger.warning(
                 "Environment variable %s points to non-existent path: %s",
                 env_var,
-                dir_path
+                dir_path,
             )
 
     # Second priority: Try to find project root and use/create directory there
@@ -115,10 +115,8 @@ def _get_dir(
                 return root_output
             else:
                 logger.warning(
-                    "Project root directory %s does not contain %s",
-                    parent,
-                    default_dir
-                )        
+                    "Project root directory %s does not contain %s", parent, default_dir
+                )
 
     # Third priority: Use current directory
     logger.info("Using current directory: %s", current)
