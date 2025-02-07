@@ -16,6 +16,7 @@ Test cases cover:
 import pytest
 
 from chatbot_conversation.conversation.manager import ConversationManager
+from pathlib import Path
 from chatbot_conversation.utils import ConfigurationException
 
 
@@ -31,7 +32,7 @@ def test_initialization(test_config_path: str) -> None:
         - Bots are initialized
         - Initial conversation state is set up properly
     """
-    manager = ConversationManager(test_config_path)
+    manager = ConversationManager(Path(test_config_path))
     assert isinstance(manager, ConversationManager)
     assert len(manager.bots) > 0
     assert isinstance(manager.conversation[0], dict)
@@ -51,7 +52,7 @@ def test_invalid_config_loading(invalid_config_path: str) -> None:
         - Error handling for invalid configurations
     """
     with pytest.raises(ConfigurationException):
-        ConversationManager(invalid_config_path)
+        ConversationManager(Path(invalid_config_path))
 
 
 def test_clean_truncated_response(manager: ConversationManager) -> None:

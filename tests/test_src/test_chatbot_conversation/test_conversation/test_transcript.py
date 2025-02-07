@@ -27,7 +27,7 @@ def test_save_transcript(
         sample_conversation_config (ConversationConfig): Sample conversation configuration.
         tmp_path (Path): Temporary path for output files.
     """
-    config_path = "test_config_path.json"
+    config_path = Path("test_config_path.json")
     output_dir = tmp_path / "output"
     output_dir.mkdir()
 
@@ -79,7 +79,7 @@ def test_transcript_with_hidden_moderator(
     tmp_path: Path,
 ) -> None:
     """Test that hidden moderator messages are not included in transcript."""
-    config_path = "test_config.json"
+    config_path = Path("test_config.json")
 
     # Add a hidden moderator message to conversation data
     hidden_msg = ConversationMessage(bot_index=0, content="Hidden message")

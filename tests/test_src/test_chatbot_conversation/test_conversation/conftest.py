@@ -150,4 +150,4 @@ def manager(test_config_path: str) -> ConversationManager:
     Returns:
         ConversationManager: Instance of ConversationManager
     """
-    return ConversationManager(test_config_path)
+    return ConversationManager(Path(test_config_path))
