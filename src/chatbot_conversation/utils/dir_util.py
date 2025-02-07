@@ -84,7 +84,7 @@ def _get_dir(
                 dir_path,
             )
             return dir_path
-        elif create_dir:
+        if create_dir:
             dir_path.mkdir(parents=True, exist_ok=True)
             logger.info(
                 "Created directory from environment variable %s: %s",
@@ -109,7 +109,7 @@ def _get_dir(
                     "Using existing directory under project root: %s", root_output
                 )
                 return root_output
-            elif create_dir:
+            if create_dir:
                 root_output.mkdir(parents=True, exist_ok=True)
                 logger.info("Created directory under project root: %s", root_output)
                 return root_output
