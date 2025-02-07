@@ -13,6 +13,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from chatbot_conversation.utils.dir_util import get_config_dir
 from chatbot_conversation.utils.logging_util import LOGNAME_CONFIGURATION, get_logger
 
 FILE_IN_PROJECT_ROOT = "pyproject.toml"
@@ -37,32 +38,16 @@ class APIConfig:  # pylint: disable=too-few-public-methods
         Attempts to load .env file to supplement any environment variables.
         Does not enforce any specific keys as requirements depend on dynamic configuration.
         """
-        possible_paths: list[str] = []
 
-        # Check for user-defined config directory from environment variable
-        config_dir = APIConfig.get_config_dir_from_env()
-        if config_dir is not None:
-            possible_paths.append(os.path.join(config_dir, ".env"))
+        config_dir = get_config_dir()
+        dotenv_path = config_dir / ".env"
 
-        # Check in local directory
-        possible_paths.append(".env")
-
-        # Try to find project root and set default development config directory
-        default_config_dir = APIConfig.get_default_config_dir()
-        if default_config_dir is not None:
-            possible_paths.append(os.path.join(default_config_dir, ".env"))
-
-        # Try to load .env if found
-        for dotenv_path in possible_paths:
-            if os.path.exists(dotenv_path):
-                load_dotenv(dotenv_path=dotenv_path)
-                logger.info("Loaded environment from: %s", dotenv_path)
-                break
-            logger.info("No .env file found at: %s", dotenv_path)
+        if os.path.exists(dotenv_path):
+            load_dotenv(dotenv_path=dotenv_path)
+            logger.info("Loaded environment from: %s", dotenv_path)
         else:
-            logger.info(
-                "No .env file found in searched locations, using only environment variables"
-            )
+            logger.info("No .env file found in config directory with path: %s"
+                        , dotenv_path)
 
         # Log available API-related environment variables without assuming which are required
         for env_var in os.environ:

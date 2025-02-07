@@ -8,6 +8,8 @@ from typing import Any, Dict, Generator, List
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
+from chatbot_conversation.utils.dir_util import FILE_IN_PROJECT_ROOT
+
 
 @pytest.fixture
 def mock_env_keys(monkeypatch: MonkeyPatch) -> Dict[str, str]:
@@ -99,14 +101,12 @@ def mock_logging_config() -> Generator[None, None, None]:
     """
     # Reset logging config
     logging.shutdown()
-    
+
     # Configure test logging
     test_config: Dict[str, Any] = {
         "version": 1,
         "formatters": {
-            "testFormatter": {
-                "format": "%(name)s - %(levelname)s - %(message)s"
-            }
+            "testFormatter": {"format": "%(name)s - %(levelname)s - %(message)s"}
         },
         "handlers": {
             "consoleHandler": {
@@ -118,14 +118,95 @@ def mock_logging_config() -> Generator[None, None, None]:
         },
         "loggers": {
             "root": {"level": "DEBUG", "handlers": ["consoleHandler"]},
-            "api": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "configuration": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "conversation": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "models": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "system": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "utils": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-            "validation": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
-        }
+            "api": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "configuration": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "conversation": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "models": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "system": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "utils": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+            "validation": {
+                "level": "DEBUG",
+                "handlers": ["consoleHandler"],
+                "propagate": False,
+            },
+        },
     }
     logging.config.dictConfig(test_config)
     yield
+
+
+@pytest.fixture
+def temp_dir(tmp_path: Path) -> Path:
+    """Fixture providing a temporary directory.
+
+    Args:
+        tmp_path: PyTest's temporary path fixture
+
+    Returns:
+        Path to temporary directory
+    """
+    return tmp_path
+
+
+@pytest.fixture
+def temp_project_root(temp_dir: Path) -> Generator[Path, None, None]:
+    """Fixture creating a temporary project root structure.
+
+    Args:
+        temp_dir: Fixture providing temporary directory
+
+    Yields:
+        Path to temporary project root
+    """
+    # Create mock project root with pyproject.toml
+    project_root = temp_dir / "project_root"
+    project_root.mkdir(parents=True)
+    (project_root / FILE_IN_PROJECT_ROOT).touch()
+
+    # Change to project directory during test
+    original_dir = os.getcwd()
+    os.chdir(project_root)
+
+    try:
+        yield project_root
+    finally:
+        os.chdir(original_dir)
+
+
+@pytest.fixture
+def mock_config_dir(tmp_path: Path) -> Path:
+    """Fixture providing a mock config directory.
+
+    Args:
+        tmp_path: PyTest's temporary path fixture
+
+    Returns:
+        Path: Path to mock config directory
+    """
+    config_dir = tmp_path / "mock_config"
+    config_dir.mkdir(parents=True)
+    return config_dir

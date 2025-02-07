@@ -9,9 +9,9 @@ This module contains test cases for the main application functionality, includin
 The tests use mock objects to avoid actual file operations and API calls.
 """
 
-import os
 import sys
 from unittest.mock import Mock
+from pathlib import Path
 
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -39,7 +39,7 @@ def test_main_with_default_config(
     assert exc_info.value.code == 0  # Verify successful exit
     mock_api_config.setup_env.assert_called_once()
     mock_conversation_manager.assert_called_once_with(
-        os.path.join("config", "config.json")
+        Path("config.json")
     )
     manager_instance.run_conversation.assert_called_once()
 
@@ -76,7 +76,7 @@ def test_main_with_custom_config(
     # Verify exit code and mock calls
     assert exc_info.value.code == 0
     mock_api_config.setup_env.assert_called_once()
-    mock_conversation_manager.assert_called_once_with(test_config)
+    mock_conversation_manager.assert_called_once_with(Path(test_config))
     manager_instance.run_conversation.assert_called_once()
 
 

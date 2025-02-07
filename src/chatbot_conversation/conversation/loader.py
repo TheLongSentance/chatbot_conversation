@@ -19,7 +19,6 @@ Functions:
 """
 
 import json
-import os
 import re
 from collections import Counter
 from pathlib import Path
@@ -40,13 +39,10 @@ from chatbot_conversation.utils import (
     ErrorSeverity,
     SystemException,
     ValidationException,
+    get_config_dir,
     get_logger,
     handle_pydantic_validation_errors,
 )
-
-CONFIG_DIR_ENV_VAR: str = "BOTCONV_CONFIG_DIR"
-DEFAULT_CONFIG_DIR: str = "config"
-FILE_IN_PROJECT_ROOT: str = "pyproject.toml"
 
 BOT_NAME_PATTERN = r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$"
 MIN_TEMPERATURE = 0.0
@@ -354,39 +350,6 @@ class ConversationConfig(BaseConfigModel):
 
         return v
     
-def get_config_dir() -> Path:
-    """Get the directory to search for config files.
-
-    Tries the following locations in order:
-    1. Directory specified in BOTCONV_CONFIG_DIR environment variable (creates if needed)
-    2. 'config' directory under project root (creates if project root found)
-    3. Current directory as fallback
-
-    Returns:
-        Path: Directory path where configuration files should be found
-    """
-    # First priority: Check environment variable
-    env_dir = os.getenv(CONFIG_DIR_ENV_VAR)
-    if env_dir is not None:
-        dir_path = Path(env_dir)
-        dir_path.mkdir(parents=True, exist_ok=True)
-        logger.info("Using config directory from environment: %s", dir_path)
-        return dir_path
-
-    # Second priority: Try to find project root and use/create config directory there
-    current = Path.cwd()
-    for parent in [current, *current.parents]:
-        if (parent / FILE_IN_PROJECT_ROOT).exists():
-            root_config = parent / DEFAULT_CONFIG_DIR
-            root_config.mkdir(parents=True, exist_ok=True)
-            logger.info("Using project root config directory: %s", root_config)
-            return root_config
-
-    # Third priority: Use current directory
-    logger.info("Using current directory: %s", current)
-    return current
-
-
 @handle_pydantic_validation_errors
 def load_conversation_config(config_path: Path) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
@@ -404,7 +367,7 @@ def load_conversation_config(config_path: Path) -> ConversationConfig:
         )
 
     # Convert to Path object
-    path_obj = config_path
+    path_obj = Path(config_path)
 
     # If it's not an absolute path, look in config directory
     if not path_obj.is_absolute():
