@@ -333,7 +333,16 @@ If you can't import your package, verify:
 
 ## Environment Setup
 
-Create a `.env` file in the `./config/` directory with your API keys:
+The application uses environment variables to manage configuration directories and API keys:
+
+- `BOTCONV_CONFIG_DIR`: Optional path to configuration directory. If not set, the application will:
+  1. Look for a 'config' directory in the project root (identified by pyproject.toml)
+  2. Fall back to current working directory if neither option exists
+- `BOTCONV_OUTPUT_DIR`: Optional path to output directory. If not set, the application will:
+  1. Look for/create 'output' directory in the project root
+  2. Fall back to current working directory if project root not found (again identified by pyproject.toml)
+
+Create a `.env` file in your configuration directory with your API keys:
 
 ```text
 OPENAI_API_KEY=your_openai_key
@@ -343,7 +352,13 @@ GOOGLE_API_KEY=your_google_key
 
 ## Configuration
 
-Edit `/config/config.json` to customize the conversation. Example configuration for a tennis discussion:
+Configuration files can be placed in any of these locations:
+
+1. Directory specified by `BOTCONV_CONFIG_DIR`
+2. 'config' directory in project root (if it exists)
+3. Current working directory (fallback)
+
+Edit `config.json` in your chosen configuration directory to customize the conversation. Example configuration for a tennis discussion:
 
 ```json
 {
@@ -444,20 +459,28 @@ These template variables allow for personalized system prompts and instructions 
 
 ## Usage
 
-1. Set up environment variables in `/config/.env`
-2. Configure/check logging in `/config/logging.conf`
+1. Set up environment variables:
+   - API keys in `.env` file in your config directory
+   - Optionally set `BOTCONV_CONFIG_DIR` and `BOTCONV_OUTPUT_DIR`
+2. Configure/check logging settings
 3. Configure your bots and conversation by either:
-   - Editing the default `/config/config.json`, or
-   - Creating a custom configuration file (see examples in `/config/examples/`)
-4. Run the conversation using either:
+   - Editing `config.json` in your config directory
+   - Creating a custom configuration file
+4. Run the conversation:
 
    ```bash
-   # Using default config.json
+   # Using default config.json from config directory
    python /src/chatbot_conversation/main.py
    
-   # Or specifying a custom config file
-   python /src/chatbot_conversation/main.py /config/examples/tennis.config.json
+   # Or specifying a custom config file (relative to config directory)
+   python /src/chatbot_conversation/main.py examples/tennis.config.json
    ```
+
+The conversation transcript will be saved to:
+
+1. Directory specified by `BOTCONV_OUTPUT_DIR`
+2. 'output' directory in project root
+3. Current working directory (fallback)
 
 The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to the `./output` directory with a filename that includes the date and time in the pattern *transcript_\<yymmdd>_\<hhmmss>.md* for example *"transcript_250112_095235.md"*
 

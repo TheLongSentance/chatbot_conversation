@@ -4,8 +4,6 @@ using the TranscriptManager for the provided conversation configuration.
 """
 
 import json
-import logging
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -13,7 +11,13 @@ from typing import List, Set, TextIO
 
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.models.base import ConversationMessage
-from chatbot_conversation.utils.exceptions import ErrorSeverity, SystemException
+from chatbot_conversation.utils import(
+    ErrorSeverity, 
+    SystemException,
+    get_logger,
+    get_output_dir,
+)
+
 
 # specific import path to avoid circular from package:
 # from ..version import __version__
@@ -21,11 +25,9 @@ from chatbot_conversation.version import __version__
 
 # Update constants
 TRANSCRIPT_FILE_STUB: str = "transcript_"
-TRANSCRIPT_DIR_ENV_VAR: str = "BOTCONV_TRANSCRIPT_DIR"
-DEFAULT_TRANSCRIPT_DIR: str = "output"
 FILE_IN_PROJECT_ROOT: str = "pyproject.toml"  # Same as in env.py
 
-logger = logging.getLogger("conversation")
+logger = get_logger("conversation")
 
 
 @dataclass
@@ -63,7 +65,7 @@ class TranscriptManager:
             IOError: If file operations fail
         """
         # Get output directory
-        output_dir = TranscriptManager.get_transcript_dir()
+        output_dir = get_output_dir()
 
         # Generate timestamp for unique filename
         timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
@@ -81,7 +83,6 @@ class TranscriptManager:
         }
 
         try:
-            file_path.parent.mkdir(parents=True, exist_ok=True)
             with open(file_path, "w", encoding="utf-8") as file:
                 # Write conversation title
                 file.write(f"# {conversation[0]['content']}\n\n")
@@ -161,38 +162,3 @@ class TranscriptManager:
             f"## *Configuration File* : {config_path}\n\n"
             f"```json\n{json.dumps(config.model_dump(), indent=4)}\n```\n"
         )
-
-    @staticmethod
-    def get_transcript_dir() -> Path:
-        """Get the directory path for saving transcripts.
-
-        Tries the following locations in order:
-        1. Directory specified in BOTCONV_TRANSCRIPT_DIR environment variable (creates if needed)
-        2. 'output' directory under project root (creates if project root found)
-        3. './output' in current directory (creates if needed)
-
-        Returns:
-            Path: Directory path where transcripts should be saved
-        """
-        # First priority: Check environment variable
-        env_dir = os.getenv(TRANSCRIPT_DIR_ENV_VAR)
-        if env_dir is not None:
-            dir_path = Path(env_dir)
-            dir_path.mkdir(parents=True, exist_ok=True)
-            logger.info("Using transcript directory from environment: %s", dir_path)
-            return dir_path
-
-        # Second priority: Try to find project root and use/create output directory there
-        current = Path.cwd()
-        for parent in [current, *current.parents]:
-            if (parent / FILE_IN_PROJECT_ROOT).exists():
-                root_output = parent / DEFAULT_TRANSCRIPT_DIR
-                root_output.mkdir(parents=True, exist_ok=True)
-                logger.info("Using project root output directory: %s", root_output)
-                return root_output
-
-        # Third priority: Create output directory in current location
-        current_output = Path.cwd() / DEFAULT_TRANSCRIPT_DIR
-        current_output.mkdir(parents=True, exist_ok=True)
-        logger.info("Using local output directory: %s", current_output)
-        return current_output

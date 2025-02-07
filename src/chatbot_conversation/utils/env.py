@@ -9,7 +9,6 @@ The APIConfig class handles:
 """
 
 import os
-from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -54,28 +53,3 @@ class APIConfig:  # pylint: disable=too-few-public-methods
         for env_var in os.environ:
             if env_var.endswith("_API_KEY"):
                 logger.info("%s is set in environment", env_var)
-
-    @staticmethod
-    def get_config_dir_from_env() -> str | None:
-        """Get the configuration directory path from environment or default.
-
-        Returns:
-            str: Path to configuration directory
-        """
-        return os.getenv(CONFIG_DIR_ENV_VAR)
-
-    @staticmethod
-    def get_default_config_dir() -> Path | None:
-        """Get the default config directory relative to this module.
-
-        Returns:
-            Path: Path to default config directory, attempting to find project root's
-                config dir, falling back to a relative path from this module if not found.
-        """
-        current = Path(__file__).resolve().parent
-        # Try to find project root by walking up
-        for parent in [current, *current.parents]:
-            if (parent / FILE_IN_PROJECT_ROOT).exists():
-                return parent / DEFAULT_CONFIG_DIR
-        # None found so return None
-        return None

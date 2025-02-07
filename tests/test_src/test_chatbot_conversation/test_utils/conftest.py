@@ -174,13 +174,17 @@ def temp_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def temp_project_root(temp_dir: Path) -> Generator[Path, None, None]:
-    """Fixture creating a temporary project root structure.
+    """Create a temporary project root structure with pyproject.toml.
+
+    Creates a mock project root directory containing a pyproject.toml file
+    for testing directory location logic. Changes the working directory to
+    the project root during the test.
 
     Args:
         temp_dir: Fixture providing temporary directory
 
     Yields:
-        Path to temporary project root
+        Path: Path to temporary project root containing pyproject.toml
     """
     # Create mock project root with pyproject.toml
     project_root = temp_dir / "project_root"

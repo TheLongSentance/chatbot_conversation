@@ -6,8 +6,6 @@ import json
 from pathlib import Path
 from unittest.mock import mock_open, patch
 
-import pytest
-
 from chatbot_conversation.conversation.loader import ConversationConfig
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models import ConversationMessage
@@ -31,8 +29,11 @@ def test_save_transcript(
     output_dir = tmp_path / "output"
     output_dir.mkdir()
 
-    with patch("builtins.open", mock_open()) as mocked_file:
-        with patch("pathlib.Path.mkdir"):
+    with patch(
+        "chatbot_conversation.conversation.transcript.get_output_dir",
+        return_value=output_dir,
+    ):
+        with patch("builtins.open", mock_open()) as mocked_file:
             file_path = TranscriptManager.save_transcript(
                 conversation=sample_conversation_data,
                 config=sample_conversation_config,
@@ -40,7 +41,7 @@ def test_save_transcript(
             )
 
             # Basic file checks
-            assert file_path.parent.resolve() == Path("./output/").resolve()
+            assert file_path.parent == output_dir
             assert file_path.name.startswith("transcript_")
             assert file_path.suffix == ".md"
 
@@ -97,32 +98,3 @@ def test_transcript_with_hidden_moderator(
         full_output = "".join(write_calls)
 
         assert "Hidden message" not in full_output
-
-
-def test_get_transcript_dir_env(env_transcript_dir: Path) -> None:
-    """Test transcript directory from environment variable."""
-    dir_path = TranscriptManager.get_transcript_dir()
-    assert dir_path == env_transcript_dir
-    assert dir_path.exists()
-
-
-def test_get_transcript_dir_project_root(
-    mock_project_root: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Test transcript directory in project root."""
-    monkeypatch.chdir(mock_project_root)
-    dir_path = TranscriptManager.get_transcript_dir()
-    assert dir_path == mock_project_root / "output"
-    assert dir_path.exists()
-
-
-def test_get_transcript_dir_fallback(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Test fallback to local output directory."""
-    monkeypatch.chdir(tmp_path)
-    dir_path = TranscriptManager.get_transcript_dir()
-    assert dir_path == tmp_path / "output"
-    assert dir_path.exists()

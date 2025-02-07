@@ -73,12 +73,12 @@ def sample_conversation_data() -> List[ConversationMessage]:
     """Return sample conversation data for testing.
 
     Returns:
-        List[ConversationMessage]: Sample conversation messages
+        List[ConversationMessage]: Sample conversation messages representing a complete conversation
     """
     return [
-        {"bot_index": 0, "content": "Test seed message"},
-        {"bot_index": 1, "content": "Bot1 response"},
-        {"bot_index": 2, "content": "Bot2 response"},
+        ConversationMessage(bot_index=0, content="Test seed message"),
+        ConversationMessage(bot_index=1, content="Bot1 response"),
+        ConversationMessage(bot_index=2, content="Bot2 response"),
     ]
 
 

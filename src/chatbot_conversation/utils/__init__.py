@@ -2,7 +2,7 @@
 Subpackage for utilities used in the chatbot_conversation package.
 """
 
-from chatbot_conversation.utils.dir_util import get_config_dir
+from chatbot_conversation.utils.dir_util import get_config_dir, get_output_dir
 from chatbot_conversation.utils.env import APIConfig
 from chatbot_conversation.utils.exceptions import (
     APIException,
@@ -46,4 +46,5 @@ __all__ = [
     "ValidationException",
     "handle_pydantic_validation_errors",
     "get_config_dir",
+    "get_output_dir",
 ]
