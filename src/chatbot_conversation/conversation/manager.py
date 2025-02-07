@@ -12,7 +12,7 @@ Classes:
 
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
@@ -25,6 +25,8 @@ from chatbot_conversation.utils import (
     ModelException,
     get_logger,
 )
+
+PRIVATE_CONTENT_SEPARATOR = "PR1V4T3: "
 
 logger = get_logger(LOGNAME_CONVERSATION)
 
@@ -106,11 +108,14 @@ class ConversationManager:
         # After checking for moderator, now run responses from all bots
         for bot in self.bots:
             try:
+                # Get filtered conversation for this bot
+                filtered_conversation = self.get_filtered_conversation(bot.bot_index)
+
                 # Use show_streaming_text to handle streaming response
                 # Note: more complex to truncate streaming response to
                 # last complete sentence since you don't know when it ends
                 response = self.display_manager.show_streaming_text(
-                    bot.stream_response(self.conversation)
+                    bot.stream_response(filtered_conversation)
                 )
 
                 # Clean potentially truncated response for use in
@@ -180,3 +185,53 @@ class ConversationManager:
         if last_ending != -1:
             return response[: last_ending + 1]
         return response
+
+
+    def filter_private_content(
+        self, message: ConversationMessage, for_bot_index: Optional[int] = None
+    ) -> str:
+        """
+        Filter private content from a conversation message.
+        If for_bot_index is None, remove all private content.
+        If for_bot_index matches message's bot_index, keep private content.
+
+        Args:
+            message (ConversationMessage): The message to filter
+            for_bot_index (int, optional): Bot index to preserve private content for
+
+        Returns:
+            str: Filtered message content
+        """
+        content = message["content"]
+        parts = content.split(PRIVATE_CONTENT_SEPARATOR)
+
+        # If no private content, return original
+        if len(parts) == 1:
+            return content
+
+        # Keep private content only if bot indices match
+        if for_bot_index is not None and message["bot_index"] == for_bot_index:
+            return content
+
+        # Otherwise return only the public part
+        return parts[0].strip()
+
+
+    def get_filtered_conversation(self, bot_index: int) -> List[ConversationMessage]:
+        """
+        Create filtered version of conversation history for a specific bot.
+        Private content is only included for the specified bot.
+
+        Args:
+            bot_index (int): Index of the bot to filter conversation for
+
+        Returns:
+            List[ConversationMessage]: Filtered conversation history
+        """
+        return [
+            {
+                "bot_index": msg["bot_index"],
+                "content": self.filter_private_content(msg, bot_index),
+            }
+            for msg in self.conversation
+        ]

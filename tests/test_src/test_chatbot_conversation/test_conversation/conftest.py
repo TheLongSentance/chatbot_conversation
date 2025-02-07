@@ -151,3 +151,18 @@ def manager(test_config_path: str) -> ConversationManager:
         ConversationManager: Instance of ConversationManager
     """
     return ConversationManager(Path(test_config_path))
+
+
+@pytest.fixture
+def sample_private_messages() -> List[ConversationMessage]:
+    """Return sample messages with private content for testing.
+
+    Returns:
+        List[ConversationMessage]: Sample messages with mixed public and private content
+    """
+    return [
+        {"bot_index": 1, "content": "Public message from bot 1"},
+        {"bot_index": 1, "content": "Public part PR1V4T3: Private part for bot 1"},
+        {"bot_index": 2, "content": "Another public message PR1V4T3: Secret bot 2 stuff"},
+        {"bot_index": 3, "content": "Just public content"},
+    ]
