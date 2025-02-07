@@ -53,6 +53,7 @@ chatbot_conversation/
 │   │       │   └── test_factory.py
 │   │       ├── test_utils/
 │   │       │   ├── conftest.py
+│   │       │   ├── test_dir_util.py
 │   │       │   ├── test_env.py
 │   │       │   └── test_logging_util.py
 │   │       ├── conftest.py
@@ -86,9 +87,12 @@ chatbot_conversation/
 │       │   └── factory.py
 │       ├── utils/
 │       │   ├── __init__.py
+│       │   ├── dir_util.py
 │       │   ├── env.py
+│       │   ├── exceptions.py
 │       │   └── logging_util.py
 │       ├── __init__.py
+│       ├── error.py
 │       ├── main.py
 │       └── version.py
 ├── config/
@@ -419,6 +423,12 @@ Configuration parameters:
     - Example: "You are {bot_name}. " becomes "You are RogerFan. " for the RogerFan bot
     - Supports template variable `{max_tokens}` which gets replaced with the setting of max_tokens passed to the model api
     - Example: "Keep responses under {max_tokens} tokens. " becomes "Keep responses under 400 tokens. " for a max_tokens parameter set to 400.
+  - Supports private content functionality using 'PR1V4T3: ' keyword:
+    - Bots can store private thoughts/strategy by adding 'PR1V4T3: ' followed by content
+    - Private content is only visible to the bot that created it
+    - Useful for games and maintaining consistent bot behavior across rounds
+    - Example: "My public response... PR1V4T3: Remember I chose elephant as my secret animal"
+    - Bots need to be prompted to be aware of this functionality (see 20questions.config.json for example)
 - `moderator_message_opt`: Optional Array of moderator comments to guide the conversation, such as bringing it to a close.
   - `round_number`: The round number to which the moderator comment should be applied at the start of the round.
   - `content`: The moderator comment.
@@ -482,6 +492,25 @@ The conversation transcript will be saved to:
 1. Directory specified by `BOTCONV_OUTPUT_DIR`
 2. 'output' directory in project root
 3. Current working directory (fallback)
+
+### Private Content
+
+Bots can maintain private information across conversation rounds using the 'PR1V4T3: ' keyword:
+
+- Any text after 'PR1V4T3: ' in a bot's response is only visible to that bot
+- Other bots only see the public portion of the response
+- Useful for:
+  - Games where bots need to remember secret information
+  - Maintaining consistent bot personas and memories
+  - Strategy development across multiple rounds
+- Private content is preserved in the conversation transcript
+- Bots need to be prompted to be aware of this functionality (see 20questions.config.json for example)
+
+Example bot response with private content:
+
+```markdown
+My public response... PR1V4T3: Remember I chose elephant as my secret animal
+```
 
 The bots will engage in a multi-round discussion based on the conversation seed, with each bot maintaining its configured personality and expertise. The conversation will be saved to the `./output` directory with a filename that includes the date and time in the pattern *transcript_\<yymmdd>_\<hhmmss>.md* for example *"transcript_250112_095235.md"*
 
