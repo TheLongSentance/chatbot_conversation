@@ -505,6 +505,7 @@ class TestRetryBehavior:
         assert mock_generate.call_count == bot.model_timeout.max_retries
         assert isinstance(exc_info.value.original_error, tenacity.RetryError)
 
+
 @pytest.mark.parametrize("bot_class", bot_classes)
 class TestChatbotBaseVersionValidation:
     """Test version validation in ChatbotBase"""

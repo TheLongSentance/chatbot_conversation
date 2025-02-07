@@ -64,7 +64,7 @@ class TranscriptManager:
         """
         # Get output directory
         output_dir = TranscriptManager.get_transcript_dir()
-        
+
         # Generate timestamp for unique filename
         timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
         file_path = output_dir / f"{TRANSCRIPT_FILE_STUB}{timestamp}.md"

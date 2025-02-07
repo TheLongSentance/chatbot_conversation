@@ -10,8 +10,8 @@ The tests use mock objects to avoid actual file operations and API calls.
 """
 
 import sys
-from unittest.mock import Mock
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from _pytest.logging import LogCaptureFixture
@@ -38,9 +38,7 @@ def test_main_with_default_config(
     # Verify
     assert exc_info.value.code == 0  # Verify successful exit
     mock_api_config.setup_env.assert_called_once()
-    mock_conversation_manager.assert_called_once_with(
-        Path("config.json")
-    )
+    mock_conversation_manager.assert_called_once_with(Path("config.json"))
     manager_instance.run_conversation.assert_called_once()
 
 

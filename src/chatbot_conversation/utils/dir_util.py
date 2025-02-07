@@ -33,7 +33,8 @@ def get_config_dir() -> Path:
         dir_path.mkdir(parents=True, exist_ok=True)
         logger.info(
             "Using environment variable setting %s as config directory: %s",
-            CONFIG_DIR_ENV_VAR, dir_path
+            CONFIG_DIR_ENV_VAR,
+            dir_path,
         )
         return dir_path
 
@@ -43,9 +44,7 @@ def get_config_dir() -> Path:
         if (parent / FILE_IN_PROJECT_ROOT).exists():
             root_config = parent / DEFAULT_CONFIG_DIR
             root_config.mkdir(parents=True, exist_ok=True)
-            logger.info(
-                "Using /config/ directory under project root%s", root_config
-            )
+            logger.info("Using /config/ directory under project root%s", root_config)
             return root_config
 
     # Third priority: Use current directory

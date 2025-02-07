@@ -52,6 +52,7 @@ TEMPLATE_VARS_PATTERN = r"\{([^}]+)\}"
 
 logger = get_logger(LOGNAME_CONVERSATION)
 
+
 class BaseConfigModel(BaseModel):
     """Base configuration model with strict validation."""
 
@@ -349,7 +350,8 @@ class ConversationConfig(BaseConfigModel):
             # pylint: enable=duplicate-code
 
         return v
-    
+
+
 @handle_pydantic_validation_errors
 def load_conversation_config(config_path: Path) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.

@@ -46,8 +46,9 @@ class APIConfig:  # pylint: disable=too-few-public-methods
             load_dotenv(dotenv_path=dotenv_path)
             logger.info("Loaded environment from: %s", dotenv_path)
         else:
-            logger.info("No .env file found in config directory with path: %s"
-                        , dotenv_path)
+            logger.info(
+                "No .env file found in config directory with path: %s", dotenv_path
+            )
 
         # Log available API-related environment variables without assuming which are required
         for env_var in os.environ:

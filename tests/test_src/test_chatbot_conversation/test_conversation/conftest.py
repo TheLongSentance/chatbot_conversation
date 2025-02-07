@@ -130,6 +130,7 @@ def env_transcript_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("BOTCONV_TRANSCRIPT_DIR", str(env_dir))
     return env_dir
 
+
 @pytest.fixture
 def mock_project_root(tmp_path: Path) -> Path:
     """Create a mock project root with pyproject.toml."""
@@ -137,6 +138,7 @@ def mock_project_root(tmp_path: Path) -> Path:
     root.mkdir()
     (root / "pyproject.toml").touch()
     return root
+
 
 @pytest.fixture
 def manager(test_config_path: str) -> ConversationManager:

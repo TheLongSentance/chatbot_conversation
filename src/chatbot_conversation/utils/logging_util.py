@@ -83,6 +83,7 @@ LOGGING_CONFIG: Dict[str, Any] = {
 # Configure logging using dictionary config
 logging.config.dictConfig(LOGGING_CONFIG)
 
+
 def get_logger(name: str) -> logging.Logger:
     """
     Get a configured logger instance with the specified name.
