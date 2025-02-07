@@ -13,13 +13,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from chatbot_conversation.utils.logging_util import LOGNAME_CONFIG, get_logger
+from chatbot_conversation.utils.logging_util import LOGNAME_CONFIGURATION, get_logger
 
 FILE_IN_PROJECT_ROOT = "pyproject.toml"
 DEFAULT_CONFIG_DIR = "config"
 CONFIG_DIR_ENV_VAR = "BOTCONV_CONFIG_DIR"
 
-logger = get_logger(LOGNAME_CONFIG)
+logger = get_logger(LOGNAME_CONFIGURATION)
 
 
 class APIConfig:  # pylint: disable=too-few-public-methods
@@ -81,12 +81,12 @@ class APIConfig:  # pylint: disable=too-few-public-methods
     @staticmethod
     def get_default_config_dir() -> Path | None:
         """Get the default config directory relative to this module.
-        
+
         Returns:
             Path: Path to default config directory, attempting to find project root's
                 config dir, falling back to a relative path from this module if not found.
         """
-        current = Path(__file__).resolve().parent        
+        current = Path(__file__).resolve().parent
         # Try to find project root by walking up
         for parent in [current, *current.parents]:
             if (parent / FILE_IN_PROJECT_ROOT).exists():

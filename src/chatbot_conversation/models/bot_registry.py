@@ -18,7 +18,7 @@ from typing import Callable, Dict, List, Type
 
 from chatbot_conversation.models.base import ChatbotBase
 from chatbot_conversation.utils import (
-    LOGNAME_MODEL,
+    LOGNAME_MODELS,
     ErrorSeverity,
     ValidationException,
     get_logger,
@@ -26,7 +26,7 @@ from chatbot_conversation.utils import (
 
 # pylint: disable=duplicate-code
 
-logger = get_logger(LOGNAME_MODEL)
+logger = get_logger(LOGNAME_MODELS)
 
 
 class BotRegistry:

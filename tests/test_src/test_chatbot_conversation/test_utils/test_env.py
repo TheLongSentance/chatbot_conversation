@@ -14,7 +14,7 @@ from chatbot_conversation.utils.env import (
     FILE_IN_PROJECT_ROOT,
     APIConfig,
 )
-from chatbot_conversation.utils.logging_util import LOGNAME_CONFIG
+from chatbot_conversation.utils.logging_util import LOGNAME_CONFIGURATION
 
 
 def test_get_config_dir_from_env(monkeypatch: MonkeyPatch) -> None:
@@ -43,7 +43,7 @@ def test_get_default_config_dir(monkeypatch: MonkeyPatch, tmp_path: Path) -> Non
     mock_file_path.parent.mkdir(parents=True)
     mock_file_path.touch()
 
-    monkeypatch.setattr('chatbot_conversation.utils.env.__file__', str(mock_file_path))
+    monkeypatch.setattr("chatbot_conversation.utils.env.__file__", str(mock_file_path))
 
     # Test finding config dir
     result = APIConfig.get_default_config_dir()
@@ -53,8 +53,7 @@ def test_get_default_config_dir(monkeypatch: MonkeyPatch, tmp_path: Path) -> Non
 
     # Test when project root marker is not found
     monkeypatch.setattr(
-        'chatbot_conversation.utils.env.__file__',
-        str(tmp_path / "nowhere" / "env.py")
+        "chatbot_conversation.utils.env.__file__", str(tmp_path / "nowhere" / "env.py")
     )
     assert APIConfig.get_default_config_dir() is None
 
@@ -67,7 +66,7 @@ def test_setup_env_missing_file(
     caplog.set_level(logging.DEBUG)
 
     # Then create and set up the logger
-    test_logger = logging.getLogger(LOGNAME_CONFIG)
+    test_logger = logging.getLogger(LOGNAME_CONFIGURATION)
     # Clear any existing handlers
     test_logger.handlers = []
     # Add the caplog handler
@@ -93,7 +92,7 @@ def test_load_config_no_env_files(
     caplog.set_level(logging.DEBUG)
 
     # Set up the logger with caplog handler
-    test_logger = logging.getLogger(LOGNAME_CONFIG)
+    test_logger = logging.getLogger(LOGNAME_CONFIGURATION)
     test_logger.handlers = []
     test_logger.addHandler(caplog.handler)
     monkeypatch.setattr("chatbot_conversation.utils.env.logger", test_logger)
@@ -120,7 +119,7 @@ def test_load_config_path_precedence(
     caplog.set_level(logging.DEBUG)
 
     # Set up the logger with caplog handler
-    test_logger = logging.getLogger(LOGNAME_CONFIG)
+    test_logger = logging.getLogger(LOGNAME_CONFIGURATION)
     test_logger.handlers = []
     test_logger.addHandler(caplog.handler)
     monkeypatch.setattr("chatbot_conversation.utils.env.logger", test_logger)
@@ -179,7 +178,7 @@ def test_load_config_logs_api_keys(
     caplog.set_level(logging.DEBUG)
 
     # Set up the logger with caplog handler
-    test_logger = logging.getLogger(LOGNAME_CONFIG)
+    test_logger = logging.getLogger(LOGNAME_CONFIGURATION)
     test_logger.handlers = []
     test_logger.addHandler(caplog.handler)
     monkeypatch.setattr("chatbot_conversation.utils.env.logger", test_logger)

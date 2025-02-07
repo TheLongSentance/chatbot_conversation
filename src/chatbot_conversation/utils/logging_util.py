@@ -1,55 +1,87 @@
 """
 Logging utility module for configuring and retrieving application loggers.
 
-This module provides functionality to set up logging configuration from a file
-and retrieve named logger instances. It uses Python's built-in logging module
-and supports configuration via a logging.conf file.
+This module provides functionality to set up logging configuration
+and retrieve named logger instances. It uses Python's built-in logging module.
 """
 
-import configparser
 import logging
 import logging.config
-import os
-
-from chatbot_conversation.utils.exceptions import ConfigurationException, ErrorSeverity
+from typing import Any, Dict
 
 LOGNAME_API = "api"
-LOGNAME_CONFIG = "config"
-LOGNAME_MODEL = "model"
-LOGNAME_SYSTEM = "system"
-LOGNAME_VALIDATION = "validation"
+LOGNAME_CONFIGURATION = "configuration"
+LOGNAME_CONVERSATION = "conversation"
+LOGNAME_MODELS = "models"
 LOGNAME_ROOT = "root"
+LOGNAME_SYSTEM = "system"
+LOGNAME_UTILS = "utils"
+LOGNAME_VALIDATION = "validation"
 
+LOGGING_CONFIG: Dict[str, Any] = {
+    "version": 1,
+    "formatters": {
+        "defaultFormatter": {
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        }
+    },
+    "handlers": {
+        "consoleHandler": {
+            "class": "logging.StreamHandler",
+            "level": "CRITICAL",
+            "formatter": "defaultFormatter",
+            "stream": "ext://sys.stdout",
+        },
+        "fileHandler": {
+            "class": "logging.FileHandler",
+            "level": "INFO",
+            "formatter": "defaultFormatter",
+            "filename": "chatbot_conversation.log",
+            "mode": "a",
+        },
+    },
+    "loggers": {
+        LOGNAME_ROOT: {"level": "INFO", "handlers": ["consoleHandler", "fileHandler"]},
+        LOGNAME_API: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_CONFIGURATION: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_CONVERSATION: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_MODELS: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_SYSTEM: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_UTILS: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+        LOGNAME_VALIDATION: {
+            "level": "INFO",
+            "handlers": ["consoleHandler", "fileHandler"],
+            "propagate": False,
+        },
+    },
+}
 
-def _validate_logger_config(config_file_path: str) -> None:
-    """Validate that all LOGNAME constants have corresponding config sections."""
-    parser = configparser.ConfigParser()
-    parser.read(config_file_path)
-
-    configured_loggers = parser.get("loggers", "keys").split(",")
-    logger_constants = [
-        LOGNAME_API,
-        LOGNAME_CONFIG,
-        LOGNAME_MODEL,
-        LOGNAME_SYSTEM,
-        LOGNAME_VALIDATION,
-        LOGNAME_ROOT,
-    ]
-
-    for logger_name in logger_constants:
-        if logger_name not in configured_loggers:
-            raise ConfigurationException(
-                message=f"Logger {logger_name} not configured in logging.conf",
-                user_message="System configuration error",
-                severity=ErrorSeverity.FATAL,
-            )
-
-
-# Set up logging from config file
-config_path = os.path.join(os.path.dirname(__file__), "../../../config/logging.conf")
-_validate_logger_config(config_path)
-logging.config.fileConfig(config_path)
-
+# Configure logging using dictionary config
+logging.config.dictConfig(LOGGING_CONFIG)
 
 def get_logger(name: str) -> logging.Logger:
     """
@@ -61,8 +93,18 @@ def get_logger(name: str) -> logging.Logger:
     Returns:
         logging.Logger: A configured logger instance.
 
+    Raises:
+        ValueError: If the requested logger name is not configured.
+
     Example:
         >>> logger = get_logger(__name__)
         >>> logger.info("This is a log message")
     """
+    # Check if this is a explicitly configured logger name
+    if name not in LOGGING_CONFIG["loggers"]:
+        raise ValueError(
+            f"Logger '{name}' is not currently supported. "
+            f"Must be one of: {', '.join(LOGGING_CONFIG['loggers'].keys())}"
+        )
+
     return logging.getLogger(name)

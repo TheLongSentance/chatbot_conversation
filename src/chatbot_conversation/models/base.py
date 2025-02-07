@@ -52,7 +52,7 @@ from tenacity import (
 )
 
 from chatbot_conversation.utils import (
-    LOGNAME_MODEL,
+    LOGNAME_MODELS,
     APIException,
     ChatbotException,
     ErrorSeverity,
@@ -278,7 +278,7 @@ class ChatbotBase(ABC):
     _used_names: ClassVar[Set[str]] = set()
     _available_versions_cache: ClassVar[Optional[List[str]]] = None
 
-    _logger = get_logger(LOGNAME_MODEL)
+    _logger = get_logger(LOGNAME_MODELS)
 
     # Class Methods - Core
     @classmethod
@@ -322,7 +322,7 @@ class ChatbotBase(ABC):
     def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
         Returns tuple of exception types that should trigger a retry.
-        
+
         Returns:
             tuple: Exception types that warrant retry attempts
         """

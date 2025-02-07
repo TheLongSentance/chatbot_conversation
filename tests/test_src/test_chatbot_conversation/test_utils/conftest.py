@@ -3,7 +3,7 @@
 import logging.config
 import os
 from pathlib import Path
-from typing import Dict, Generator, List
+from typing import Any, Dict, Generator, List
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -91,100 +91,41 @@ GOOGLE_API_KEY=mock-google-key-{i}
 
 
 @pytest.fixture
-def temp_logging_conf(tmp_path: Path) -> Generator[str, None, None]:
-    """Fixture to create a temporary logging.conf file."""
-    config_dir: Path = tmp_path / "config"
-    config_dir.mkdir(exist_ok=True)
-    log_conf: Path = config_dir / "logging.conf"
-
-    conf_content = """
-[loggers]
-keys=root,api,config,model,system,validation
-
-[handlers]
-keys=consoleHandler
-
-[formatters]
-keys=testFormatter
-
-[logger_root]
-level=DEBUG
-handlers=consoleHandler
-
-[logger_api]
-level=DEBUG
-handlers=consoleHandler
-qualname=api
-propagate=0
-
-[logger_config]
-level=DEBUG
-handlers=consoleHandler
-qualname=config
-propagate=0
-
-[logger_model]
-level=DEBUG
-handlers=consoleHandler
-qualname=model
-propagate=0
-
-[logger_system]
-level=DEBUG
-handlers=consoleHandler
-qualname=system
-propagate=0
-
-[logger_validation]
-level=DEBUG
-handlers=consoleHandler
-qualname=validation
-propagate=0
-
-[handler_consoleHandler]
-class=StreamHandler
-level=DEBUG
-formatter=testFormatter
-args=(sys.stdout,)
-
-[formatter_testFormatter]
-format=%(name)s - %(levelname)s - %(message)s
-"""
-    log_conf.write_text(conf_content.strip())
-    try:
-        yield str(log_conf)
-    finally:
-        if log_conf.exists():
-            log_conf.unlink()
-
-
-@pytest.fixture
-def mock_logging_config(
-    temp_logging_conf: str, monkeypatch: MonkeyPatch
-) -> Generator[None, None, None]:
-    """Setup mock logging configuration.
-
-    Args:
-        temp_logging_conf: Fixture providing path to temporary logging.conf
-        monkeypatch: PyTest's monkeypatch fixture
+def mock_logging_config() -> Generator[None, None, None]:
+    """Setup mock logging configuration using dictConfig.
 
     Yields:
         None
     """
-    # Store original config path
-    original_path = os.environ.get("LOGGING_CONFIG_PATH")
-
-    # Set up mock config path
-    monkeypatch.setenv("LOGGING_CONFIG_PATH", temp_logging_conf)
-
     # Reset logging config
     logging.shutdown()
-    logging.config.fileConfig(temp_logging_conf)
-
+    
+    # Configure test logging
+    test_config: Dict[str, Any] = {
+        "version": 1,
+        "formatters": {
+            "testFormatter": {
+                "format": "%(name)s - %(levelname)s - %(message)s"
+            }
+        },
+        "handlers": {
+            "consoleHandler": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "testFormatter",
+                "stream": "ext://sys.stdout",
+            }
+        },
+        "loggers": {
+            "root": {"level": "DEBUG", "handlers": ["consoleHandler"]},
+            "api": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "configuration": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "conversation": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "models": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "system": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "utils": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+            "validation": {"level": "DEBUG", "handlers": ["consoleHandler"], "propagate": False},
+        }
+    }
+    logging.config.dictConfig(test_config)
     yield
-
-    # Restore original config path
-    if original_path:
-        monkeypatch.setenv("LOGGING_CONFIG_PATH", original_path)
-    else:
-        monkeypatch.delenv("LOGGING_CONFIG_PATH", raising=False)

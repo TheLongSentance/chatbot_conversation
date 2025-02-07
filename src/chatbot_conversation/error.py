@@ -4,8 +4,8 @@ from typing import Dict, Type
 
 from chatbot_conversation.utils import (
     LOGNAME_API,
-    LOGNAME_CONFIG,
-    LOGNAME_MODEL,
+    LOGNAME_CONFIGURATION,
+    LOGNAME_MODELS,
     LOGNAME_ROOT,
     LOGNAME_SYSTEM,
     LOGNAME_VALIDATION,
@@ -19,10 +19,11 @@ from chatbot_conversation.utils import (
     get_logger,
 )
 
+# Mapping of exception types to specific (not all) logger names
 LOGGER_MAPPING: Dict[Type[Exception], str] = {
     APIException: LOGNAME_API,
-    ConfigurationException: LOGNAME_CONFIG,
-    ModelException: LOGNAME_MODEL,
+    ConfigurationException: LOGNAME_CONFIGURATION,
+    ModelException: LOGNAME_MODELS,
     SystemException: LOGNAME_SYSTEM,
     ValidationException: LOGNAME_VALIDATION,
 }

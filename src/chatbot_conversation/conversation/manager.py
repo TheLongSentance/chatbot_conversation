@@ -20,19 +20,19 @@ from chatbot_conversation.conversation.loader import load_conversation_config
 from chatbot_conversation.conversation.transcript import TranscriptManager
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils import (
-    LOGNAME_SYSTEM,
+    LOGNAME_CONVERSATION,
     ErrorSeverity,
     ModelException,
     get_logger,
 )
 
-logger = get_logger(LOGNAME_SYSTEM)
+logger = get_logger(LOGNAME_CONVERSATION)
 
 
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
 
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: Path):
         """
         Initialize conversation manager from config file.
 
@@ -118,7 +118,6 @@ class ConversationManager:
                 response = self.clean_truncated_response(response)
 
             except (IndexError, KeyError, AttributeError, ValueError) as e:
-                # Handle data/validation errors
                 raise ModelException(
                     message=f"Data error in bot response: {str(e)}",
                     user_message=(

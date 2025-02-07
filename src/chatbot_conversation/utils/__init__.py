@@ -15,10 +15,12 @@ from chatbot_conversation.utils.exceptions import (
 )
 from chatbot_conversation.utils.logging_util import (
     LOGNAME_API,
-    LOGNAME_CONFIG,
-    LOGNAME_MODEL,
+    LOGNAME_CONFIGURATION,
+    LOGNAME_CONVERSATION,
+    LOGNAME_MODELS,
     LOGNAME_ROOT,
     LOGNAME_SYSTEM,
+    LOGNAME_UTILS,
     LOGNAME_VALIDATION,
     get_logger,
 )
@@ -27,9 +29,11 @@ __all__ = [
     "APIConfig",
     "get_logger",
     "LOGNAME_API",
-    "LOGNAME_CONFIG",
-    "LOGNAME_MODEL",
+    "LOGNAME_CONFIGURATION",
+    "LOGNAME_CONVERSATION",
+    "LOGNAME_MODELS",
     "LOGNAME_SYSTEM",
+    "LOGNAME_UTILS",
     "LOGNAME_VALIDATION",
     "LOGNAME_ROOT",
     "APIException",

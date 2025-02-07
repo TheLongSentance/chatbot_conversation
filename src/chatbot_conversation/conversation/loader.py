@@ -19,8 +19,10 @@ Functions:
 """
 
 import json
+import os
 import re
 from collections import Counter
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from pydantic import (
@@ -33,12 +35,18 @@ from pydantic import (
 )
 
 from chatbot_conversation.utils import (
+    LOGNAME_CONVERSATION,
     ConfigurationException,
     ErrorSeverity,
     SystemException,
     ValidationException,
+    get_logger,
     handle_pydantic_validation_errors,
 )
+
+CONFIG_DIR_ENV_VAR: str = "BOTCONV_CONFIG_DIR"
+DEFAULT_CONFIG_DIR: str = "config"
+FILE_IN_PROJECT_ROOT: str = "pyproject.toml"
 
 BOT_NAME_PATTERN = r"^[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*$"
 MIN_TEMPERATURE = 0.0
@@ -46,6 +54,7 @@ MAX_TEMPERATURE = 2.0
 ALLOWED_TEMPLATE_VARS = {"bot_name", "max_tokens"}
 TEMPLATE_VARS_PATTERN = r"\{([^}]+)\}"
 
+logger = get_logger(LOGNAME_CONVERSATION)
 
 class BaseConfigModel(BaseModel):
     """Base configuration model with strict validation."""
@@ -344,16 +353,48 @@ class ConversationConfig(BaseConfigModel):
             # pylint: enable=duplicate-code
 
         return v
+    
+def get_config_dir() -> Path:
+    """Get the directory to search for config files.
+
+    Tries the following locations in order:
+    1. Directory specified in BOTCONV_CONFIG_DIR environment variable (creates if needed)
+    2. 'config' directory under project root (creates if project root found)
+    3. Current directory as fallback
+
+    Returns:
+        Path: Directory path where configuration files should be found
+    """
+    # First priority: Check environment variable
+    env_dir = os.getenv(CONFIG_DIR_ENV_VAR)
+    if env_dir is not None:
+        dir_path = Path(env_dir)
+        dir_path.mkdir(parents=True, exist_ok=True)
+        logger.info("Using config directory from environment: %s", dir_path)
+        return dir_path
+
+    # Second priority: Try to find project root and use/create config directory there
+    current = Path.cwd()
+    for parent in [current, *current.parents]:
+        if (parent / FILE_IN_PROJECT_ROOT).exists():
+            root_config = parent / DEFAULT_CONFIG_DIR
+            root_config.mkdir(parents=True, exist_ok=True)
+            logger.info("Using project root config directory: %s", root_config)
+            return root_config
+
+    # Third priority: Use current directory
+    logger.info("Using current directory: %s", current)
+    return current
 
 
 @handle_pydantic_validation_errors
-def load_conversation_config(config_path: str) -> ConversationConfig:
+def load_conversation_config(config_path: Path) -> ConversationConfig:
     """Load and validate a conversation configuration from a JSON file.
 
     Args:
         config_path: Must be a .json file
     """
-    if not config_path.endswith(".json"):
+    if not str(config_path).endswith(".json"):
         error_msg = "Configuration file must be a .json file"
         raise ConfigurationException(
             message=error_msg,
@@ -361,8 +402,16 @@ def load_conversation_config(config_path: str) -> ConversationConfig:
             severity=ErrorSeverity.FATAL,
             original_error=None,
         )
+
+    # Convert to Path object
+    path_obj = config_path
+
+    # If it's not an absolute path, look in config directory
+    if not path_obj.is_absolute():
+        path_obj = get_config_dir() / path_obj
+
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(path_obj, "r", encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError as e:
         raise ConfigurationException(

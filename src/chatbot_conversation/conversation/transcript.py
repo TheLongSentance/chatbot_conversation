@@ -44,7 +44,7 @@ class TranscriptManager:
     def save_transcript(
         conversation: List[ConversationMessage],
         config: ConversationConfig,
-        config_path: str,
+        config_path: Path,
     ) -> Path:
         """Save conversation transcript to a file.
 
@@ -136,7 +136,7 @@ class TranscriptManager:
     def _write_metadata(
         file: TextIO,
         config: ConversationConfig,
-        config_path: str,
+        config_path: Path,
     ) -> None:
         """Write conversation metadata to the transcript file.
 
