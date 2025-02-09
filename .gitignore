@@ -173,3 +173,7 @@ logs/
 output/*
 # Except the examples sub-directory which contains example transcripts
 !output/examples/
+
+# Ignore .DS_Store files on macOS
+.DS_Store
+.DS_Store config
