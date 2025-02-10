@@ -21,6 +21,66 @@ An extensible Python application that facilitates conversations between multiple
 
 ```text
 chatbot_conversation/
+├── config/
+│   ├── 20questions.config.json
+│   ├── aliens.config.json
+│   ├── apocalypse.config.json
+│   ├── art.config.json
+│   ├── attention.config.json
+│   ├── caeser.config.json
+│   ├── chess.config.json
+│   ├── churchill.config.json
+│   ├── config.json
+│   ├── conscious.config.json
+│   ├── cryto.config.json
+│   ├── dummy.config.json
+│   ├── immortal.config.json
+│   ├── mars.config.json
+│   ├── music.config.json
+│   ├── robots.config.json
+│   ├── scifi.config.json
+│   ├── shakespeare.config.json
+│   ├── story.config.json
+│   ├── tennis.config.json
+│   ├── timetravel.config.json
+│   └── turingtest.config.json
+├── output/
+│   └── tennis.transcript_250203_070315.md
+├── src/
+│   └── chatbot_conversation/
+│       ├── conversation/
+│       │   ├── display/
+│       │   │   ├── __init__.py
+│       │   │   ├── abstract_display.py
+│       │   │   └── rich_display.py
+│       │   ├── __init__.py
+│       │   ├── bots_initializer.py
+│       │   ├── loader.py
+│       │   ├── manager.py
+│       │   ├── prompt.py
+│       │   └── transcript.py
+│       ├── models/
+│       │   ├── bots/
+│       │   │   ├── __init__.py
+│       │   │   ├── claude_bot.py
+│       │   │   ├── dummy_bot.py
+│       │   │   ├── gemini_bot.py
+│       │   │   ├── gpt_bot.py
+│       │   │   └── ollama_bot.py
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── bot_registry.py
+│       │   └── factory.py
+│       ├── utils/
+│       │   ├── __init__.py
+│       │   ├── dir_util.py
+│       │   ├── env.py
+│       │   ├── exceptions.py
+│       │   └── logging_util.py
+│       ├── __init__.py
+│       ├── error.py
+│       ├── main.py
+│       └── version.py
 ├── tests/
 │   ├── config/
 │   │   ├── test_config.json
@@ -60,71 +120,7 @@ chatbot_conversation/
 │   │       ├── test_main.py
 │   │       └── test_version.py
 │   └── conftest.py
-├── src/
-│   └── chatbot_conversation/
-│       ├── conversation/
-│       │   ├── display/
-│       │   │   ├── __init__.py
-│       │   │   ├── abstract_display.py
-│       │   │   └── rich_display.py
-│       │   ├── __init__.py
-│       │   ├── bots_initializer.py
-│       │   ├── loader.py
-│       │   ├── manager.py
-│       │   ├── prompt.py
-│       │   └── transcript.py
-│       ├── models/
-│       │   ├── bots/
-│       │   │   ├── __init__.py
-│       │   │   ├── claude_bot.py
-│       │   │   ├── dummy_bot.py
-│       │   │   ├── gemini_bot.py
-│       │   │   ├── gpt_bot.py
-│       │   │   └── ollama_bot.py
-│       │   ├── __init__.py
-│       │   ├── base.py
-│       │   ├── bot_registry.py
-│       │   └── factory.py
-│       ├── utils/
-│       │   ├── __init__.py
-│       │   ├── dir_util.py
-│       │   ├── env.py
-│       │   ├── exceptions.py
-│       │   └── logging_util.py
-│       ├── __init__.py
-│       ├── error.py
-│       ├── main.py
-│       └── version.py
-├── config/
-│   ├── examples/
-│   │   ├── 20questions.config.json
-│   │   ├── aliens.config.json
-│   │   ├── apocalypse.config.json
-│   │   ├── art.config.json
-│   │   ├── attention.config.json
-│   │   ├── caeser.config.json
-│   │   ├── chess.config.json
-│   │   ├── churchill.config.json
-│   │   ├── conscious.config.json
-│   │   ├── cryto.config.json
-│   │   ├── dummy.config.json
-│   │   ├── immortal.config.json
-│   │   ├── mars.config.json
-│   │   ├── music.config.json
-│   │   ├── robots.config.json
-│   │   ├── scifi.config.json
-│   │   ├── shakespeare.config.json
-│   │   ├── story.config.json
-│   │   ├── tennis.config.json
-│   │   ├── timetravel.config.json
-│   │   └── turingtest.config.json
-│   ├── .env.example
-│   ├── config.json
-│   └── logging.conf
-├── output/
-│   ├── examples/
-│   │   └── tennis.transcript_250203_070315.md
-│   └── transcript_<yymmdd>_<hhmmss>.md
+├── .env.example
 ├── .gitignore
 ├── environment.yml
 ├── LICENSE
@@ -136,25 +132,22 @@ chatbot_conversation/
 
 The project is organized into the following components:
 
+- `config/`: Contains runtime configuration files (default `config.json` plus examples)
+- `output/`: Directory containing conversation transcripts with date and time in their name in the pattern *transcript_\<yymmdd>_\<hhmmss>.md*
+- `tests/`: Test infrastructure based on pytest
 - `src/chatbot_conversation/conversation/`: Contains the core conversation management logic
 - `src/chatbot_conversation/models/`: Implements core model functionality
 - `src/chatbot_conversation/models/bots`: Drop-in directory containing specific AI model integrations
 - `src/chatbot_conversation/utils/`: Utility functions and environment configuration
 - `src/chatbot_conversation/main.py`: Application entry point
-- `src/chatbot_conversation/version.py`: Package software version number
-- `config/`: Contains runtime configuration files
-- `config/config.json`: Configuration file for conversation settings
-- `config/examples/`: Example configuration files for use in the config directory
-- `config/.env.example`: Example .env file format for storage of private keys for AI APIs
-- `config/logging.conf`: Configuration file for logging
-- `tests/`: Test infrastructure based on pytest
+- `.env.example`: Example `.env` file format for storage of private keys for AI APIs
 - `.gitignore`: Git ignore file
 - `environment.yml`: Conda environment configuration
 - `LICENSE`: License file
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
 - `requirements-dev.txt`: Pip requirements file for development environment
-- `output/`: Directory containing conversation transcripts with date and time in their name in the pattern *transcript_\<yymmdd>_\<hhmmss>.md*
+
 
 ## Installation
 
@@ -337,16 +330,7 @@ If you can't import your package, verify:
 
 ## Environment Setup
 
-The application uses environment variables to manage configuration directories and API keys:
-
-- `BOTCONV_CONFIG_DIR`: Optional path to configuration directory. If not set, the application will:
-  1. Look for a 'config' directory in the project root (identified by pyproject.toml)
-  2. Fall back to current working directory if neither option exists
-- `BOTCONV_OUTPUT_DIR`: Optional path to output directory. If not set, the application will:
-  1. Look for/create 'output' directory in the project root
-  2. Fall back to current working directory if project root not found (again identified by pyproject.toml)
-
-Create a `.env` file in your configuration directory with your API keys:
+The application uses environment variables to set API keys for whatever model providers you are using. So keys like OPENAI_API_KEY, ANTHROPIC_API_KEY and GOOGLE_API_KEY etc. can be set in the environment if that is what you would prefer. Otherwise you can create a `.env` file in your configuration directory with your API keys:
 
 ```text
 OPENAI_API_KEY=your_openai_key
@@ -354,22 +338,29 @@ ANTHROPIC_API_KEY=your_anthropic_key
 GOOGLE_API_KEY=your_google_key
 ```
 
+There are two optional environment variables for the application, one to set the configuration directory where json conversation configuration files can be found, one to set the output directory where conversation transcripts are saved:
+
+- `BOTCONV_CONFIG_DIR`: Optional path to configuration directory which if set, the directory must already exist. If not set, the application will:
+  1. Look for a 'config' directory in the project root (identified by pyproject.toml)
+  2. Fall back to current working directory if neither option exists
+- `BOTCONV_OUTPUT_DIR`: Optional path to output directory. If set and it does not exist, the application will attempt to create the directory. If not set, the application will:
+  1. Look for/create an 'output' directory in the project root (identified by pyproject.toml)
+  2. Fall back to current working directory if project root not found
+
+These two application environment variables can be added to the `.env` file above if desired.
+
 ## Configuration
 
-Configuration files can be placed in any of these locations:
+The default config directory for where configuration files are looked for follows:
 
-1. Directory specified by `BOTCONV_CONFIG_DIR`
+1. Directory specified by `BOTCONV_CONFIG_DIR` (if set correctly)
 2. 'config' directory in project root (if it exists)
 3. Current working directory (fallback)
 
 When specifying a configuration file as a command-line argument:
 
 - If given a full path, that exact path is used (whether a relative or absolute path)
-- If given just a filename (e.g., "tennis.config.json"):
-  1. Searches in the config directory first
-  2. Then searches all subdirectories of config
-  3. Uses the first matching file found
-  - Note: If multiple files with the same name exist in different subdirectories, there's no guarantee which one will be used. Use unique names or full paths for clarity.
+- If given just a filename (e.g., "tennis.config.json") then it is assumed the file exists in the config directory
 
 Edit `config.json` in your chosen configuration directory to customize the conversation. Example configuration for a tennis discussion:
 
@@ -478,21 +469,20 @@ These template variables allow for personalized system prompts and instructions 
 
 ## Usage
 
-1. Set up environment variables:
+1. Set up environment variables (optionally set them in .env for convenience):
    - API keys in `.env` file in your config directory
-   - Do not set BOTCONV_CONFIG_DIR in .env since that is a "chicken and egg" situation
-     - i.e. you are loading a config that is telling you where to load a config file...
-2. Configure/check logging settings
-3. Configure your bots and conversation by either:
+   - Optionally set the BOTCONV_CONFIG_DIR directory
+   - Optionally set the BOTCONV_OUTPUT_DIR directory
+2. Configure your bots and conversation by either:
    - Editing `config.json` in your config directory
-   - Creating a custom configuration file
-4. Run the conversation:
+   - Creating a custom json configuration file like `tennis.config.json` or `tennis.json`
+3. Run the conversation:
 
    ```bash
    # Using default config.json from config directory
    python /src/chatbot_conversation/main.py
    
-   # Using just a filename - searches config dir and its subdirectories
+   # Using just a filename - searches config dir
    python /src/chatbot_conversation/main.py tennis.config.json
    
    # Using a specific path

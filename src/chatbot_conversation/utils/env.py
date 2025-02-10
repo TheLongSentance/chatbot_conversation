@@ -11,8 +11,8 @@ The APIConfig class handles:
 import os
 
 from dotenv import load_dotenv
+from pathlib import Path
 
-from chatbot_conversation.utils.dir_util import get_config_dir
 from chatbot_conversation.utils.logging_util import LOGNAME_CONFIGURATION, get_logger
 
 FILE_IN_PROJECT_ROOT = "pyproject.toml"
@@ -38,15 +38,15 @@ class APIConfig:  # pylint: disable=too-few-public-methods
         Does not enforce any specific keys as requirements depend on dynamic configuration.
         """
 
-        config_dir = get_config_dir()
-        dotenv_path = config_dir / ".env"
+        current = Path.cwd()
+        dotenv_path = current / ".env"
 
         if os.path.exists(dotenv_path):
             load_dotenv(dotenv_path=dotenv_path)
             logger.info("Loaded environment from: %s", dotenv_path)
-        else:
+        else:  # Only log info not debug message - environment could be set already
             logger.info(
-                "No .env file found in config directory with path: %s", dotenv_path
+                "No .env file found in current directory with path: %s", dotenv_path
             )
 
         # Log available API-related environment variables without assuming which are required
