@@ -4,7 +4,6 @@ This module initializes and runs the chatbot conversation.
 
 import logging
 import sys
-from pathlib import Path
 
 from chatbot_conversation.conversation import ConversationManager
 from chatbot_conversation.error import handle_error
@@ -26,7 +25,7 @@ def main() -> None:
         APIConfig.setup_env()
 
         # Load configuration and initialize conversation manager
-        config_path = Path(sys.argv[1] if len(sys.argv) > 1 else "config.json")
+        config_path: str = sys.argv[1] if len(sys.argv) > 1 else "config.json"
         manager = ConversationManager(config_path)
 
         # Run conversation

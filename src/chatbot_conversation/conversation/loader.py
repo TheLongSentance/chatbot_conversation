@@ -39,7 +39,6 @@ from chatbot_conversation.utils import (
     ErrorSeverity,
     SystemException,
     ValidationException,
-    get_config_dir,
     get_logger,
     handle_pydantic_validation_errors,
 )
@@ -368,24 +367,9 @@ def load_conversation_config(config_path: Path) -> ConversationConfig:
             original_error=None,
         )
 
-    # Convert to Path object
-    path_obj = Path(config_path)
-
-    # If just a filename then assume it's in the config directory
-    if len(path_obj.parts) == 1:
-        config_dir = get_config_dir()
-        path_obj = config_dir / path_obj
-
-        # If the file is not found in the config directory, search subdirectories
-        if not path_obj.exists():
-            for subdir in config_dir.rglob('*'):
-                if subdir.is_file() and subdir.name == path_obj.name:
-                    path_obj = subdir
-                    break
-
     # Load and validate configuration
     try:
-        with open(path_obj, "r", encoding="utf-8") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
     except FileNotFoundError as e:
         raise ConfigurationException(

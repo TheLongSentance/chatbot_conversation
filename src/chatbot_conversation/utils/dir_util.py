@@ -119,3 +119,29 @@ def _get_dir(
     # Third priority: Use current directory
     logger.info("Using current directory: %s", current)
     return current
+
+def path_is_simple_filename(filename: str) -> bool:
+    """
+    Check if the given filename is a simple filename (not a directory) without any path components.
+    Had to take in filename as str since as a Path object, it would normalise the path giving
+    a parent of '.' for a filename like 'file.txt' which is not what we want.
+
+    Args:
+        filename (str): The filename to check.
+
+    Returns:
+        bool: True if it is a simple filename, False otherwise.
+    """
+    # Reject empty filenames or special directory references
+    if not filename or filename in {".", ".."}:
+        return False
+
+    # Reject filenames containing path separators
+    if "/" in filename or "\\" in filename:
+        return False
+
+    # Reject filenames with Windows-style drive letters (e.g., "C:file.txt")
+    if len(filename) > 2 and filename[1] == ":":
+        return False  # Ensures it only matches cases like "C:file.txt"
+
+    return True

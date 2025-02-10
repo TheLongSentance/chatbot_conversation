@@ -16,6 +16,7 @@ from chatbot_conversation.utils.dir_util import (
     OUTPUT_DIR_ENV_VAR,
     get_config_dir,
     get_output_dir,
+    path_is_simple_filename,
 )
 
 
@@ -222,3 +223,36 @@ def test_directory_creation(
 
     assert get_config_dir().exists()
     assert get_output_dir().exists()
+
+
+@pytest.mark.parametrize(
+    "test_path,expected",
+    [
+        ("file.txt", True),
+        ("myfile", True),
+        ("config.json", True),
+        (".env", True),
+        ("C:file.txt", False),
+        ("dir/file.txt", False),
+        ("../file.txt", False),
+        ("./file.txt", False),
+        ("/absolute/path/file.txt", False),
+        ("C:/Windows/file.txt", False),
+        (".", False),
+        ("..", False),
+        ("dir/", False),
+        ("dir/.", False),
+        ("dir/..", False),
+    ],
+)
+def test_path_is_simple_filename(test_path: str, expected: bool) -> None:
+    """Test identification of simple filenames without path components.
+
+    Tests various path formats to verify the function correctly identifies
+    simple filenames vs paths with directories or special references.
+
+    Args:
+        test_path: Path to test
+        expected: Expected result (True for simple filename, False otherwise)
+    """
+    assert path_is_simple_filename(test_path) == expected

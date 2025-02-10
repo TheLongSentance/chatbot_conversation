@@ -23,7 +23,9 @@ from chatbot_conversation.utils import (
     LOGNAME_CONVERSATION,
     ErrorSeverity,
     ModelException,
+    get_config_dir,
     get_logger,
+    path_is_simple_filename,
 )
 
 PRIVATE_CONTENT_SEPARATOR = "PR1V4T3: "
@@ -34,7 +36,7 @@ logger = get_logger(LOGNAME_CONVERSATION)
 class ConversationManager:
     """Manages conversation between multiple chatbots."""
 
-    def __init__(self, config_path: Path):
+    def __init__(self, config_path: str) -> None:
         """
         Initialize conversation manager from config file.
 
@@ -43,8 +45,15 @@ class ConversationManager:
         """
         logger.info("Initializing conversation manager")
 
-        self.config_path = config_path
-        self.config = load_conversation_config(config_path)
+        # Resolve config path
+        if path_is_simple_filename(config_path):
+            config_dir = get_config_dir()
+            self.config_path = Path(config_dir / config_path)
+        else:
+            self.config_path = Path(config_path)
+
+        self.config = load_conversation_config(self.config_path)
+
         self.bots: List[ChatbotBase] = []
 
         # This is the seed message with the bot index set to a dummy bot index value of 0
