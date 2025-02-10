@@ -362,6 +362,15 @@ Configuration files can be placed in any of these locations:
 2. 'config' directory in project root (if it exists)
 3. Current working directory (fallback)
 
+When specifying a configuration file as a command-line argument:
+
+- If given a full path, that exact path is used (whether a relative or absolute path)
+- If given just a filename (e.g., "tennis.config.json"):
+  1. Searches in the config directory first
+  2. Then searches all subdirectories of config
+  3. Uses the first matching file found
+  - Note: If multiple files with the same name exist in different subdirectories, there's no guarantee which one will be used. Use unique names or full paths for clarity.
+
 Edit `config.json` in your chosen configuration directory to customize the conversation. Example configuration for a tennis discussion:
 
 ```json
@@ -483,8 +492,11 @@ These template variables allow for personalized system prompts and instructions 
    # Using default config.json from config directory
    python /src/chatbot_conversation/main.py
    
-   # Or specifying a custom config file (relative to config directory)
-   python /src/chatbot_conversation/main.py examples/tennis.config.json
+   # Using just a filename - searches config dir and its subdirectories
+   python /src/chatbot_conversation/main.py tennis.config.json
+   
+   # Using a specific path
+   python /src/chatbot_conversation/main.py config/examples/tennis.config.json
    ```
 
 The conversation transcript will be saved to:
