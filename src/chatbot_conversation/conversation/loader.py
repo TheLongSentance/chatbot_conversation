@@ -371,10 +371,19 @@ def load_conversation_config(config_path: Path) -> ConversationConfig:
     # Convert to Path object
     path_obj = Path(config_path)
 
-    # If it's not an absolute path, look in config directory
-    if not path_obj.is_absolute():
-        path_obj = get_config_dir() / path_obj
+    # If just a filename then assume it's in the config directory
+    if len(path_obj.parts) == 1:
+        config_dir = get_config_dir()
+        path_obj = config_dir / path_obj
 
+        # If the file is not found in the config directory, search subdirectories
+        if not path_obj.exists():
+            for subdir in config_dir.rglob('*'):
+                if subdir.is_file() and subdir.name == path_obj.name:
+                    path_obj = subdir
+                    break
+
+    # Load and validate configuration
     try:
         with open(path_obj, "r", encoding="utf-8") as f:
             data = json.load(f)
