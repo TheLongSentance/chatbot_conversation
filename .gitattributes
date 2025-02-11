@@ -12,6 +12,3 @@
 # Keep Windows batch scripts with CRLF (if needed)
 *.bat text eol=crlf
 *.cmd text eol=crlf
-
-# Mark shell scripts as executable
-*.sh text eol=lf chmod +x
