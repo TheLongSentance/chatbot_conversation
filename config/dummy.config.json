@@ -16,7 +16,7 @@
         {
             "round_number": 3,
             "content": "We're now in the final round of our discussion. Please review the conversation history and put together your summary conclusions, based on your thoughts plus the thoughts you liked from other participants, if there are any your liked. Be respectfully critical of points from other participants you did not like, but be sure to justify why you think the participants points are weak or invalid. Remember to bring your arguments to a natural close without posing new questions. Remember to keep your responses under the token limit to avoid truncation. ",
-            "display_opt:": true
+            "display_opt": true
         }
     ],
     "bots": [
