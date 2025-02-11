@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import mock_open, patch
 
 from chatbot_conversation.conversation.loader import ConversationConfig
-from chatbot_conversation.conversation.transcript import TranscriptManager
+from chatbot_conversation.conversation.transcript import save_transcript
 from chatbot_conversation.models import ConversationMessage
 from chatbot_conversation.version import __version__
 
@@ -34,7 +34,7 @@ def test_save_transcript(
         return_value=output_dir,
     ):
         with patch("builtins.open", mock_open()) as mocked_file:
-            file_path = TranscriptManager.save_transcript(
+            file_path = save_transcript(
                 conversation=sample_conversation_data,
                 config=sample_conversation_config,
                 config_path=config_path,
@@ -87,7 +87,7 @@ def test_transcript_with_hidden_moderator(
     conversation_data = sample_conversation_data + [hidden_msg]
 
     with patch("builtins.open", mock_open()) as mocked_file:
-        TranscriptManager.save_transcript(
+        save_transcript(
             conversation=conversation_data,
             config=sample_conversation_config,
             config_path=config_path,

@@ -17,7 +17,7 @@ from typing import List, Optional
 from chatbot_conversation.conversation.bots_initializer import BotsInitializer
 from chatbot_conversation.conversation.display import create_display
 from chatbot_conversation.conversation.loader import load_conversation_config
-from chatbot_conversation.conversation.transcript import TranscriptManager
+from chatbot_conversation.conversation.transcript import save_transcript
 from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
 from chatbot_conversation.utils import (
     LOGNAME_CONVERSATION,
@@ -88,7 +88,7 @@ class ConversationManager:
         )
         self.display_manager.show_text(completion_message)
 
-        transcript_path: Path = TranscriptManager.save_transcript(
+        transcript_path: Path = save_transcript(
             self.conversation, self.config, self.config_path
         )
 
