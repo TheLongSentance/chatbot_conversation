@@ -120,6 +120,7 @@ def _get_dir(
     logger.info("Using current directory: %s", current)
     return current
 
+
 def path_is_simple_filename(filename: str) -> bool:
     """
     Check if the given filename is a simple filename (not a directory) without any path components.

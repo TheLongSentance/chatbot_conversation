@@ -130,6 +130,7 @@ def env_transcript_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv("BOTCONV_TRANSCRIPT_DIR", str(env_dir))
     return env_dir
 
+
 @pytest.fixture
 def manager(test_config_path: str) -> ConversationManager:
     """Provide a ConversationManager instance for testing.
