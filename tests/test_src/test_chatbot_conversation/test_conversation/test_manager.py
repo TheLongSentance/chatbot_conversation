@@ -13,7 +13,6 @@ Test cases cover:
 - Display functionality
 """
 
-from pathlib import Path
 from typing import List
 
 import pytest
@@ -35,7 +34,7 @@ def test_initialization(test_config_path: str) -> None:
         - Bots are initialized
         - Initial conversation state is set up properly
     """
-    manager = ConversationManager(Path(test_config_path))
+    manager = ConversationManager(test_config_path)
     assert isinstance(manager, ConversationManager)
     assert len(manager.bots) > 0
     assert isinstance(manager.conversation[0], dict)
@@ -55,7 +54,7 @@ def test_invalid_config_loading(invalid_config_path: str) -> None:
         - Error handling for invalid configurations
     """
     with pytest.raises(ConfigurationException):
-        ConversationManager(Path(invalid_config_path))
+        ConversationManager(invalid_config_path)
 
 
 def test_clean_truncated_response(manager: ConversationManager) -> None:

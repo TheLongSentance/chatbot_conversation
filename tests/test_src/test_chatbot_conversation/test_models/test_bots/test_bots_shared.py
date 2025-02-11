@@ -1,5 +1,6 @@
 """Tests shared across concrete child classes of ChatbotBase"""
 
+import time
 from typing import Optional
 
 import pytest
@@ -148,6 +149,7 @@ class TestLiveAPIStreamingResponses:
         system_prompt = "You are a test assistant, involved in testing max token limits for your api. "
 
         for max_tokens, size in test_cases:
+            time.sleep(1)  # Try to avoid rate limiting
             # Create bot with specific token limit
             config = ChatbotConfig(
                 name=f"{size.capitalize()}Limit_{bot_fixture}",
@@ -215,6 +217,7 @@ class TestLiveAPIStreamingResponses:
             # Generate multiple responses at this temperature
             responses: list[str] = []
             for _ in range(responses_per_temp):
+                time.sleep(1)  # Try to avoid rate limiting
                 conversation = [
                     ConversationMessage(
                         bot_index=0,

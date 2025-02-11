@@ -9,9 +9,9 @@ The APIConfig class handles:
 """
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
-from pathlib import Path
 
 from chatbot_conversation.utils.logging_util import LOGNAME_CONFIGURATION, get_logger
 
