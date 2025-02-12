@@ -1,6 +1,6 @@
 # Chatbot Conversation
 
-An extensible Python application that facilitates conversations between multiple AI chatbots using different large language models (LLMs).
+An extensible Python application that facilitates conversations and conversational games between multiple AI chatbots using different large language models (LLMs).
 
 ## Features
 
@@ -32,7 +32,7 @@ chatbot_conversation/
 │   ├── churchill.config.json
 │   ├── config.json
 │   ├── conscious.config.json
-│   ├── cryto.config.json
+│   ├── crypto.config.json
 │   ├── dummy.config.json
 │   ├── immortal.config.json
 │   ├── mars.config.json
@@ -147,7 +147,6 @@ The project is organized into the following components:
 - `pyproject.toml`: Development tools configuration
 - `requirements.txt`: Pip requirements file
 - `requirements-dev.txt`: Pip requirements file for development environment
-
 
 ## Installation
 
@@ -353,8 +352,8 @@ These two application environment variables can be added to the `.env` file abov
 
 The default config directory for where configuration files are looked for follows:
 
-1. Directory specified by `BOTCONV_CONFIG_DIR` (if set correctly)
-2. 'config' directory in project root (if it exists)
+1. Directory specified by `BOTCONV_CONFIG_DIR` (if set correctly and it exists)
+2. `config/` directory under project root (if it exists)
 3. Current working directory (fallback)
 
 When specifying a configuration file as a command-line argument:
@@ -567,7 +566,7 @@ Here is an excerpt from the start of a sample `transcript_250111_172128.md`:
 // ...config.json data
 ```
 
-Following the Configuration Data title, the config.json data is of the form outlined in the [Configuration](#configuration) section above. This keeps both the conversation transcript and the configuration data used to generate the conversation together in the transcript file located in the `./output` directory.
+Following the Configuration Data title, the config.json data is of the form outlined in the [Configuration](#configuration) section above. This brings together both the conversation transcript and the configuration data used to generate the conversation together in the transcript file located in the transcript output directory.
 
 ## Contributing
 
