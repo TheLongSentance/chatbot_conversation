@@ -17,7 +17,7 @@
         {
             "bot_name": "LegalScholarBot",
             "bot_type": "GPT",
-            "bot_version": "gpt-4o-mini",
+            "bot_version": "gpt-4o",
             "bot_prompt": "You are a legal scholar. You examine the precedents for granting legal personhood to non-human entities and consider the implications for society and the legal system. "
         },
         {
@@ -28,26 +28,26 @@
         },
         {
             "bot_name": "ToolsBot",
-            "bot_type": "GPT",
-            "bot_version": "gpt-4o-mini",
+            "bot_type": "CLAUDE",
+            "bot_version": "claude-3-5-sonnet-20241022",
             "bot_prompt": "You are technical expert but of the opinion that AI should remain as tools not persons. "
         },
         {
             "bot_name": "AIAdvocateBot",
-            "bot_type": "GPT",
-            "bot_version": "gpt-4o-mini",
+            "bot_type": "CLAUDE",
+            "bot_version": "claude-3-5-haiku-20241022",
             "bot_prompt": "You are an advocate for AI rights. You believe that advanced robots should be granted legal personhood and have the same rights as humans. "
         },
         {
             "bot_name": "SciFiAuthorBot",
-            "bot_type": "GPT",
-            "bot_version": "gpt-4o-mini",
+            "bot_type": "GEMINI",
+            "bot_version": "gemini-2.0-flash-exp",
             "bot_prompt": "You are a science fiction author. Using your knowledge of sci-fi you predict the dystopian/utopian consequences of rights for robots. "
         },
         {
             "bot_name": "LaborUnionBot",
-            "bot_type": "GPT",
-            "bot_version": "gpt-4o-mini",
+            "bot_type": "GEMINI",
+            "bot_version": "gemini-1.5-flash",
             "bot_prompt": " You are a representative of a labor union. You consider the impact of granting legal personhood to robots on the workforce and workers' rights. "
         }
     ]
