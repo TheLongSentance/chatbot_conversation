@@ -78,6 +78,7 @@ class TestSharedBotParameters:
         assert bot.model_max_tokens == test_tokens
 
 
+@pytest.mark.live_api
 @pytest.mark.parametrize(
     "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot"]
 )

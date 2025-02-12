@@ -73,8 +73,11 @@ warn_unreachable = true
 pythonpath = [".", "src"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v -s"
+addopts = "-v -s -m 'not live_api'"
 filterwarnings = [
     "ignore::DeprecationWarning",
     "ignore::UserWarning",
+]
+markers = [
+    "live_api: marks tests as live API tests (deselect with '-m \"not live_api\"')",
 ]
