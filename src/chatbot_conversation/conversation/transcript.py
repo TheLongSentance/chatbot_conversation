@@ -118,6 +118,7 @@ def save_transcript(
             original_error=e,
         ) from e
 
+
 def _write_metadata(
     file: TextIO,
     config: ConversationConfig,

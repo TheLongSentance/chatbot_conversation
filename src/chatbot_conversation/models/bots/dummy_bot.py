@@ -43,6 +43,7 @@ from typing import Any, ClassVar, Iterator, List, Optional, Type
 
 from chatbot_conversation.models.base import (
     ChatbotBase,
+    ChatbotConfig,
     ConversationMessage,
 )
 from chatbot_conversation.models.bot_registry import register_bot
@@ -103,12 +104,98 @@ class DummyChatbot(ChatbotBase):
         demonstrate error handling and retry mechanisms.
     """
 
-    # Class variable to store available versions
+    # Class variables demonstrating common patterns
     _available_versions: ClassVar[List[str]] = [
         "tpg-o1",
         "tpg-o4-mini",
         "tpg-o5-beta",
     ]
+
+    # Simulated API client for demonstration
+    class DummyAPIClient:
+        """Mock API client to demonstrate typical integration patterns."""
+
+        def __init__(self, timeout: int = 30):
+            self.timeout = timeout
+            self.connected = False
+
+        def connect(self) -> None:
+            """Simulate API connection."""
+            time.sleep(0.1)  # Simulate network delay
+            self.connected = True
+
+        def disconnect(self) -> None:
+            """Simulate API disconnection."""
+            self.connected = False
+
+    def __init__(self, config: ChatbotConfig) -> None:
+        """
+        Initialize dummy chatbot with simulated API client.
+
+        Demonstrates common patterns for API integration:
+        1. Call parent initialization first (validates config)
+        2. Initialize API client with timeout from config
+        3. Establish initial API connection
+        4. Handle connection failures
+        5. Clean up on initialization errors
+
+        Args:
+            config: Complete bot configuration
+
+        Raises:
+            APIException: On simulated API connection failure
+            ValidationException: On invalid configuration
+        """
+        # Always initialize parent first - validates config
+        super().__init__(config)
+
+        try:
+            # Initialize API client with timeout from config
+            self._model_api = self.DummyAPIClient(
+                timeout=self.model_timeout.api_timeout
+            )
+
+            # Establish initial connection
+            self._model_api.connect()
+
+            # Simulate random connection failure (1 in 100)
+            if random.random() < 0.01:
+                raise ConnectionError("Simulated API connection failure")
+
+        except Exception as e:
+            # Clean up partial initialization
+            if hasattr(self, "_model_api"):
+                self._model_api.disconnect()
+
+            raise APIException(
+                message=f"Failed to initialize API client: {str(e)}",
+                user_message="Failed to connect to dummy API service",
+                severity=ErrorSeverity.ERROR,
+                original_error=e,
+            ) from e
+
+    def __del__(self) -> None:
+        """
+        Cleanup resources when object is destroyed. Many of the live APIs are
+        stateless and this cleanup is not necessary. However, it is a good
+        practice to demonstrate proper cleanup patterns.
+
+        Demonstrates proper API client cleanup pattern:
+        1. Check if API client exists
+        2. Ensure client is connected before disconnecting
+        3. Handle cleanup failures gracefully
+        """
+        if hasattr(self, "_model_api"):
+            try:
+                if self._model_api.connected:
+                    self._model_api.disconnect()
+            except Exception as e:
+                raise APIException(
+                    message=f"Error during API cleanup: {str(e)}",
+                    user_message="Error during API cleansup, see log for more details",
+                    severity=ErrorSeverity.ERROR,
+                    original_error=e,
+                ) from e
 
     @classmethod
     def available_versions(cls) -> Optional[List[str]]:

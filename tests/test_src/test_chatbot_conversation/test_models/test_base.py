@@ -52,7 +52,7 @@ class TestChatbotConfig:
         assert bot.model_max_tokens == 100
         assert bot.model_timeout == config.timeout
         assert bot.bot_index == ChatbotBase.get_total_bots()
-        assert bot._model_api is None  # pyright: ignore[reportPrivateUsage]
+        assert bot._model_api is not None  # pyright: ignore[reportPrivateUsage]
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)

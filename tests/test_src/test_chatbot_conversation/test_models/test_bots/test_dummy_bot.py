@@ -5,9 +5,9 @@ from unittest.mock import patch
 from chatbot_conversation.models import ChatbotConfig, ChatbotModel
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ConversationMessage
 from chatbot_conversation.models.bots.dummy_bot import (
-    DummyChatbot, 
-    _EXAMPLE_RESPONSES  # pyright: ignore[reportPrivateUsage]
-)   
+    _EXAMPLE_RESPONSES,  # pyright: ignore[reportPrivateUsage]
+)
+from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
 
 
 def test_should_retry_on_exception() -> None:
@@ -77,8 +77,17 @@ def test_generate_response_ignores_conversation() -> None:
         {"bot_index": 1, "content": "Completely different content"},
     ]
 
-    # Mock random.choice to return a fixed response
-    with patch("random.choice", return_value="Test response"):
+    # Mock both random calls to ensure deterministic behavior
+    with (
+        patch(
+            "chatbot_conversation.models.bots.dummy_bot.random.random", 
+            return_value=1.0
+        ),
+        patch(
+            "chatbot_conversation.models.bots.dummy_bot.random.choice",
+            return_value="Test response",
+        ),
+    ):
         response1 = bot.generate_response(conv1)
         response2 = bot.generate_response(conv2)
 
