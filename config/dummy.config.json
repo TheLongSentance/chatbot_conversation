@@ -23,19 +23,19 @@
         {
             "bot_name": "Dummy1",
             "bot_type": "DUMMY",
-            "bot_version": "None",
+            "bot_version": "tpg-o1",
             "bot_prompt": "You are a dummy bot. "
         },
         {
             "bot_name": "Dummy2",
             "bot_type": "DUMMY",
-            "bot_version": "None",
+            "bot_version": "tpg-o4-mini",
             "bot_prompt": "You are a dummy bot. "
         },
         {
             "bot_name": "Dummy3",
             "bot_type": "DUMMY",
-            "bot_version": "None",
+            "bot_version": "tpg-o5-beta",
             "bot_prompt": "You are a dummy bot. "
         }
     ]

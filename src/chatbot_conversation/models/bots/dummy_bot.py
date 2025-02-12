@@ -1,183 +1,257 @@
 """
-A simple mock chatbot implementation for testing and demonstration purposes.
+Example chatbot implementation for demonstration and testing purposes.
 
-This module provides a stateless chatbot implementation that returns random responses
-from a predefined list. It serves multiple purposes:
-- Testing the chatbot framework without external dependencies
-- Providing a reference implementation for custom chatbots
-- Demonstrating basic chatbot functionality
+This module serves as a reference implementation to illustrate how to create
+new chatbot integrations. It implements all required functionality of ChatbotBase
+while remaining completely self-contained (no external API dependencies).
 
-Key Components:
-    DummyChatbot: A concrete implementation of ChatbotBase for testing
-    MODEL_TYPE: Constant identifier for the dummy bot model
+Key Educational Points:
+- Complete docstrings explaining implementation decisions
+- Type hints for all methods and parameters
+- Error handling patterns and validation
+- Streaming response simulation
+- Temperature and token limit implementations
+- Proper class hierarchy and method overrides
+
+Example Usage:
+    ```python
+    config = ChatbotConfig(
+        name="example_bot",
+        system_prompt="You are a helpful assistant",
+        model=ChatbotModel(
+            type="DUMMY",
+            version="demo-v1",
+            params_opt=ChatbotParamsOpt(temperature=0.7)
+        )
+    )
+    
+    bot = DummyChatbot(config)
+    response = bot.generate_response([
+        {"bot_index": 0, "content": "What is 2+2?"}
+    ])
+    ```
+
+Note:
+    This implementation is intended for educational purposes and testing.
+    It should not be used in production environments.
 """
 
 import random
 import re
+import time
 from typing import Any, ClassVar, Iterator, List, Optional, Type
 
-from chatbot_conversation.models.base import ChatbotBase, ConversationMessage
+from chatbot_conversation.models.base import (
+    ChatbotBase,
+    ConversationMessage,
+)
 from chatbot_conversation.models.bot_registry import register_bot
-from chatbot_conversation.utils import APIException
+from chatbot_conversation.utils import APIException, ErrorSeverity
 
-# Default temperature values for Dummy models
+# Model configuration constants
 DUMMY_MINIMUM_TEMPERATURE = 0.0
 DUMMY_MAXIMUM_TEMPERATURE = 1.0
-DUMMY_DEFAULT_TEMPERATURE = 1.0
+DUMMY_DEFAULT_TEMPERATURE = 0.7
 
-# Default max tokens for Dummy models
-DUMMY_MAX_TOKENS = 50
+# Unique identifier for this model type
+DUMMY_MODEL_TYPE = "DUMMY"
 
-MODEL_TYPE = "DUMMY"
+# Example responses to demonstrate dynamic content generation
+_EXAMPLE_RESPONSES = [
+    "This is a simulated response showing how chatbots work.",
+    "Here's another example of what a bot might say.",
+    "Responses can vary in length and content to seem more natural.",
+    "Temperature settings influence how random these selections are.",
+    "Streaming responses show how content arrives incrementally.",
+]
 
 
-@register_bot(MODEL_TYPE)
+@register_bot(DUMMY_MODEL_TYPE)
 class DummyChatbot(ChatbotBase):
     """
-    A mock chatbot that provides predefined responses for testing purposes.
+    Educational example of a ChatbotBase implementation.
 
-    This implementation demonstrates the basic structure of a chatbot while
-    requiring no external dependencies. It randomly selects responses from
-    a predefined list, making it suitable for testing the framework and
-    showing basic chatbot behavior.
+    This class demonstrates the minimum requirements for creating a new chatbot
+    integration. It simulates API-like behavior while remaining self-contained
+    for testing and learning purposes.
 
-    Key Features:
-        - Dependency-free response generation
-        - Configurable mock parameters
-        - Support for both streaming and non-streaming responses
-        - Simple error handling demonstration
-        - Test-friendly implementation
+    Implementation Features:
+    - Temperature-influenced response selection
+    - Simulated streaming responses
+    - Proper error handling patterns
+    - Example retry scenarios
+    - Token limit demonstrations
 
-    Args:
-        config (ChatbotConfig): Configuration containing:
-            name (str): Unique identifier for this bot instance
-            system_prompt (str): Initial instructions (not used in dummy implementation)
-            model (dict): Model configuration (only type validation)
-            timeout (float): Response timeout in seconds (not used)
+    Example Config:
+        ```python
+        config = ChatbotConfig(
+            name="test_bot",
+            system_prompt="Be helpful and concise",
+            model=ChatbotModel(
+                type="DUMMY",
+                version="demo-v1",
+                params_opt=ChatbotParamsOpt(
+                    temperature=0.5,
+                    max_tokens=100
+                )
+            )
+        )
+        ```
+
+    Note:
+        This implementation intentionally includes "simulated failures" to
+        demonstrate error handling and retry mechanisms.
     """
 
-    # Not a standard thing to do for a model, but for demonstration purposes
-    _responses: ClassVar[List[str]] = [
-        "Hello! How can I assist you today?",
-        "I'm here to help you with any questions.",
-        "What can I do for you?",
-        "Feel free to ask me anything.",
-        "I'm a dummy bot, but I'll try my best to help.",
-        "How can I make your day better?",
-        "Let's chat! What do you want to talk about?",
-        "I'm here to assist you with your queries.",
-        "Ask me anything, I'm here to help.",
-        "What would you like to know today?",
+    # Class variable to store available versions
+    _available_versions: ClassVar[List[str]] = [
+        "tpg-o1",
+        "tpg-o4-mini",
+        "tpg-o5-beta",
     ]
 
     @classmethod
     def available_versions(cls) -> Optional[List[str]]:
         """
-        Get available model versions for this bot type.
+        Get list of supported model versions.
+
+        For this dummy implementation, we return a static list of fake versions
+        to demonstrate version handling patterns.
 
         Returns:
-            Optional[List[str]]: List of valid model versions, or None if
-            versions are not applicable/available
-
-        Raises:
-            APIError: If API call to retrieve versions fails
+            Optional[List[str]]: List of supported version strings
         """
-        # Dummy bot has no versions, so return None
-        return None
+        return cls._available_versions.copy()
 
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
-        Retrieve the model type identifier for this chatbot implementation.
+        Get the model type identifier.
 
         Returns:
-            str: The constant MODEL_TYPE value identifying this as a dummy bot
+            str: "DUMMY" as the model identifier
         """
-        return MODEL_TYPE
+        return DUMMY_MODEL_TYPE
 
     @classmethod
     def _get_model_min_temperature(cls) -> float:
-        """Get the minimum allowed temperature value."""
+        """Get the minimum allowed temperature value (0.0)."""
         return DUMMY_MINIMUM_TEMPERATURE
 
     @classmethod
     def _get_model_max_temperature(cls) -> float:
-        """Get the maximum allowed temperature value."""
+        """Get the maximum allowed temperature value (1.0)."""
         return DUMMY_MAXIMUM_TEMPERATURE
 
     @classmethod
     def _get_model_default_temperature(cls) -> float:
-        """Get the default temperature value."""
+        """Get the default temperature value (0.7)."""
         return DUMMY_DEFAULT_TEMPERATURE
 
     @classmethod
     def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Returns tuple of Claude-specific retryable exception types.
+        Define which exception types should trigger retry attempts.
+
+        This example shows both standard exceptions and custom API exceptions
+        that would warrant retry attempts in a real implementation.
 
         Returns:
-            tuple: Exception types that warrant retry attempts
+            tuple: Exception types that should trigger retries
         """
         return (APIException, ConnectionError, TimeoutError)
 
-    # typically __init__ would be defined here with call to
-    # super().__init__(config) to initialize the base class
-    # and then specifics for the bot implementation
-
     def _generate_response(self, conversation: List[ConversationMessage]) -> str:
         """
-        Create a response by randomly selecting from predefined messages.
+        Generate a response based on conversation history.
 
-        This method demonstrates the simplest possible response generation,
-        ignoring the conversation history and selecting randomly from a fixed list.
+        This implementation demonstrates:
+        1. How to use temperature to influence randomness
+        2. Basic response generation patterns
+        3. Error simulation for testing
+        4. Token limit handling
 
         Args:
-            conversation (List[ConversationMessage]): The conversation history (unused)
+            conversation: List of previous messages in the conversation
 
         Returns:
-            str: A randomly selected response from the predefined list
+            str: Generated response text
+
+        Raises:
+            APIException: On simulated API errors
+            TimeoutError: On simulated timeout conditions
         """
-        return random.choice(self._responses)
+        # Simulate potential API failures (1 in 100 chance)
+        if random.random() < 0.01:
+            raise APIException(
+                message="Simulated API error for testing",
+                user_message="The dummy bot is simulating an API error",
+                severity=ErrorSeverity.ERROR,
+                original_error=None,
+            )
+
+        # Use temperature to influence response selection
+        if random.random() > self.model_temperature:
+            # Low temperature = more deterministic
+            response = _EXAMPLE_RESPONSES[0]
+        else:
+            # High temperature = more random
+            response = random.choice(_EXAMPLE_RESPONSES)
+
+        # Simulate processing delay
+        time.sleep(0.1)
+
+        return response
 
     def _get_text_from_chunk(self, chunk: Any) -> str:
         """
-        Extract text content from a stream chunk.
+        Extract text content from a streaming response chunk.
 
-        In this dummy implementation, chunks are already strings and are
-        passed through unchanged.
+        In this dummy implementation, chunks are simple strings.
+        Real implementations would need to handle API-specific chunk formats.
 
         Args:
-            chunk (Any): A chunk of response text
+            chunk: A response chunk (string in this implementation)
 
         Returns:
-            str: The input chunk, unmodified
+            str: Extracted text content
         """
-        return chunk  # type: ignore
+        return str(chunk)
 
     def _generate_stream(
         self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    ) -> Iterator[str]:
         """
-        Simulate a streaming response by yielding tokens sequentially.
+        Simulate streaming response generation.
 
-        Demonstrates streaming behavior by splitting a fixed response into
-        word-based tokens and yielding them one at a time. This provides
-        a way to test streaming functionality without external dependencies.
+        This implementation shows how to:
+        1. Generate incremental response chunks
+        2. Handle streaming timeouts
+        3. Simulate network delays
+        4. Demonstrate token limits
 
         Args:
-            conversation (list[ConversationMessage]): The conversation history (unused)
+            conversation: List of conversation messages (unused in dummy implementation)
 
-        Returns:
-            Iterator[Any]: A stream of text tokens representing words and spaces
+        Yields:
+            str: Response text chunks
 
-        Note:
-            Uses regex to preserve spacing, creating a more realistic streaming simulation
+        Raises:
+            TimeoutError: On simulated timeout conditions
         """
-        response = (
-            "Hello! I'm a simple bot, pretending to stream a response, "
-            "regardless of what you say."
-        )
-        # Use regex to split and keep spaces as separate elements
-        tokens = re.findall(r"\S+(?:\s+)?", response)
+        # Select base response using temperature
+        response = self._generate_response(conversation)
 
-        yield from tokens
+        # Split into words while preserving spaces
+        chunks = re.findall(r"\S+\s*", response)
+
+        # Stream each chunk with simulated delay
+        for chunk in chunks:
+            # Simulate network delay
+            time.sleep(0.05)
+
+            # Simulate random timeout
+            if random.random() < 0.01:
+                raise TimeoutError("Simulated streaming timeout")
+
+            yield chunk

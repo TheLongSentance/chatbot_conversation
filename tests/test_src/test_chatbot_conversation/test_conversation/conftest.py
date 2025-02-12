@@ -103,7 +103,7 @@ def sample_conversation_config() -> ConversationConfig:
                 bot_name="Bot1",
                 bot_prompt="You are Bot1, an example bot.",
                 bot_type="DUMMY",
-                bot_version="None",
+                bot_version="tpg-o4-mini",
                 bot_params_opt=ChatbotParamsOptData(
                     temperature=0.7,
                     max_tokens=100,
@@ -113,7 +113,7 @@ def sample_conversation_config() -> ConversationConfig:
                 bot_name="Bot2",
                 bot_prompt="You are Bot2, an example bot.",
                 bot_type="DUMMY",
-                bot_version="None",
+                bot_version="tpg-o4-mini",
                 bot_params_opt=ChatbotParamsOptData(
                     temperature=0.9,
                     max_tokens=200,

@@ -148,7 +148,7 @@ def dummy_chatbot() -> DummyChatbot:
         system_prompt="You are a helpful assistant.",
         model=ChatbotModel(
             type="DUMMY",
-            version="None",
+            version="tpg-o4-mini",
         ),
     )
     return DummyChatbot(config)
@@ -160,7 +160,7 @@ def dummy_config_for_tests() -> ChatbotConfig:
     return ChatbotConfig(
         name="TestDummyBot",
         system_prompt="You are a test assistant.",
-        model=ChatbotModel(type="DUMMY", version="None"),
+        model=ChatbotModel(type="DUMMY", version="tpg-o4-mini"),
     )
 
 

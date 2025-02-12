@@ -39,7 +39,7 @@ class TestChatbotConfig:
             system_prompt="You are a helpful assistant.",
             model=ChatbotModel(
                 type=bot_class.__name__.replace("Chatbot", "").upper(),
-                version="None",
+                version="tpg-o4-mini",
                 params_opt=ChatbotParamsOpt(temperature=0.7, max_tokens=100),
             ),
         )
@@ -47,7 +47,7 @@ class TestChatbotConfig:
         assert bot.name == "TestBot"
         assert bot.system_prompt == "You are a helpful assistant."
         assert bot.model_type == bot_class.__name__.replace("Chatbot", "").upper()
-        assert bot.model_version == "None"
+        assert bot.model_version == "tpg-o4-mini"
         assert bot.model_temperature == 0.7
         assert bot.model_max_tokens == 100
         assert bot.model_timeout == config.timeout
@@ -65,7 +65,8 @@ class TestChatbotBaseValidation:
             name="ValidNameBot",
             system_prompt="test",
             model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="tpg-o4-mini",
             ),
         )
         bot = bot_class(config)
@@ -79,7 +80,7 @@ class TestChatbotBaseValidation:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                 ),
             )
             bot_class(config)
@@ -92,7 +93,7 @@ class TestChatbotBaseValidation:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                 ),
             )
             bot_class(config)
@@ -107,7 +108,7 @@ class TestChatbotBaseValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 )
                 bot_class(config)
@@ -122,7 +123,7 @@ class TestChatbotBaseValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 )
                 bot_class(config)
@@ -136,7 +137,7 @@ class TestChatbotBaseValidation:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                 ),
             )
             bot = bot_class(config)
@@ -148,7 +149,8 @@ class TestChatbotBaseValidation:
             name="DuplicateNameBot",
             system_prompt="test",
             model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="tpg-o4-mini",
             ),
         )
         bot_class(config)
@@ -172,7 +174,7 @@ class TestChatbotBaseMessageFormatting:
             system_prompt="You are a helpful assistant.",
             model=ChatbotModel(
                 type=bot_class.__name__.replace("Chatbot", "").upper(),
-                version="None",
+                version="tpg-o4-mini",
                 params_opt=ChatbotParamsOpt(temperature=0.7, max_tokens=100),
             ),
         )
@@ -218,7 +220,7 @@ class TestChatbotBaseTemperature:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                     params_opt=ChatbotParamsOpt(temperature=temp),
                 ),
             )
@@ -246,7 +248,7 @@ class TestChatbotBaseTemperature:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                         params_opt=ChatbotParamsOpt(temperature=temp),
                     ),
                 )
@@ -266,7 +268,7 @@ class TestChatbotBaseMaxTokens:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                     params_opt=ChatbotParamsOpt(max_tokens=tokens),
                 ),
             )
@@ -285,7 +287,7 @@ class TestChatbotBaseMaxTokens:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                         params_opt=ChatbotParamsOpt(max_tokens=tokens),
                     ),
                 )
@@ -306,7 +308,7 @@ class TestChatbotBaseCounter:
                 system_prompt="test",
                 model=ChatbotModel(
                     type=bot_class.__name__.replace("Chatbot", "").upper(),
-                    version="test",
+                    version="tpg-o4-mini",
                 ),
             )
             bot = bot_class(config)
@@ -346,7 +348,7 @@ class TestModelValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 ).timeout,
                 temperature=0.7,
@@ -364,7 +366,7 @@ class TestModelValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 ).timeout,
                 temperature=0.7,
@@ -382,7 +384,7 @@ class TestModelValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 ).timeout,
                 temperature=0.7,
@@ -400,7 +402,7 @@ class TestModelValidation:
                     system_prompt="test",
                     model=ChatbotModel(
                         type=bot_class.__name__.replace("Chatbot", "").upper(),
-                        version="test",
+                        version="tpg-o4-mini",
                     ),
                 ).timeout,
                 temperature=0.7,
@@ -420,7 +422,8 @@ class TestRetryBehavior:
             name="RetryBot",
             system_prompt="test",
             model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="tpg-o4-mini",
             ),
         )
         bot = bot_class(config)
@@ -452,7 +455,8 @@ class TestRetryBehavior:
             name="NoRetryBot",
             system_prompt="test",
             model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="tpg-o4-mini",
             ),
         )
         bot = bot_class(config)
@@ -479,7 +483,8 @@ class TestRetryBehavior:
             name="MaxRetryBot",
             system_prompt="test",
             model=ChatbotModel(
-                type=bot_class.__name__.replace("Chatbot", "").upper(), version="test"
+                type=bot_class.__name__.replace("Chatbot", "").upper(),
+                version="tpg-o4-mini",
             ),
         )
         bot = bot_class(config)
@@ -529,7 +534,7 @@ class TestChatbotBaseVersionValidation:
         """Test that invalid model versions are rejected"""
         versions = bot_class.available_versions()
         if versions is not None:
-            with pytest.raises(ValueError, match="Invalid model version"):
+            with pytest.raises(ValidationException, match="Invalid model version"):
                 config = ChatbotConfig(
                     name="InvalidVersionBot",
                     system_prompt="test",

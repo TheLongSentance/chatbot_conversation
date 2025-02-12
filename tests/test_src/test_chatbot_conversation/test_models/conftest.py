@@ -41,7 +41,7 @@ def dummy_config() -> ChatbotConfig:
         system_prompt="You are a test bot",
         model=ChatbotModel(
             type="DUMMY",  # This should match your dummy bot implementation
-            version="None",
+            version="tpg-o4-mini",
             params_opt=ChatbotParamsOpt(temperature=0.7, max_tokens=100),
         ),
         timeout=ChatbotTimeout(),

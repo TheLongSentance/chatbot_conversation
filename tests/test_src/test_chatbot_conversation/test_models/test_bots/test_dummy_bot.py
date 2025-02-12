@@ -4,7 +4,10 @@ from unittest.mock import patch
 
 from chatbot_conversation.models import ChatbotConfig, ChatbotModel
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ConversationMessage
-from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
+from chatbot_conversation.models.bots.dummy_bot import (
+    DummyChatbot, 
+    _EXAMPLE_RESPONSES  # pyright: ignore[reportPrivateUsage]
+)   
 
 
 def test_should_retry_on_exception() -> None:
@@ -12,7 +15,7 @@ def test_should_retry_on_exception() -> None:
     config = ChatbotConfig(
         name="TestBot",
         system_prompt="test",
-        model=ChatbotModel(type="DUMMY", version="test"),
+        model=ChatbotModel(type="DUMMY", version="tpg-o4-mini"),
     )
     bot = DummyChatbot(config)
 
@@ -33,7 +36,7 @@ def test_generate_response_uses_predefined_responses() -> None:
     config = ChatbotConfig(
         name="TestBot",
         system_prompt="test",
-        model=ChatbotModel(type="DUMMY", version="test"),
+        model=ChatbotModel(type="DUMMY", version="tpg-o4-mini"),
     )
     bot = DummyChatbot(config)
 
@@ -50,7 +53,7 @@ def test_generate_response_uses_predefined_responses() -> None:
         responses.add(response)
         assert (
             response
-            in bot._responses  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+            in _EXAMPLE_RESPONSES  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
         )
 
     # Verify we got multiple different responses
@@ -62,7 +65,7 @@ def test_generate_response_ignores_conversation() -> None:
     config = ChatbotConfig(
         name="TestBot",
         system_prompt="test",
-        model=ChatbotModel(type="DUMMY", version="test"),
+        model=ChatbotModel(type="DUMMY", version="tpg-o4-mini"),
     )
     bot = DummyChatbot(config)
 
@@ -88,10 +91,10 @@ def test_model_constants() -> None:
     config = ChatbotConfig(
         name="TestBot",
         system_prompt="test",
-        model=ChatbotModel(type="DUMMY", version="test"),
+        model=ChatbotModel(type="DUMMY", version="tpg-o4-mini"),
     )
     bot = DummyChatbot(config)
 
     assert bot.model_type == "DUMMY"
-    assert bot.model_default_temperature == 1.0
+    assert bot.model_default_temperature == 0.7
     assert bot.model_default_max_tokens == DEFAULT_MAX_TOKENS
