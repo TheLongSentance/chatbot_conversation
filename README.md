@@ -466,6 +466,26 @@ The following strings support the `{bot_name}` and `{max_tokens}` template varia
 
 These template variables allow for personalized system prompts and instructions for each bot.
 
+### Batch Updating Bot Configurations
+
+You can update bot_type and bot_version for all bots in a configuration file using the edit_config.py utility:
+
+   ```bash
+python .\src\chatbot_conversation\utils\edit_config.py .\config\tennis.config.json "CLAUDE" "claude-3-5-haiku-20241022"
+```
+
+Or by importing the function into another Python script:
+
+```python
+from edit_config import update_bot_config
+
+edit_config(
+    "config/robots.config.json",
+    "CLAUDE",
+    "claude-3-5-sonnet-20241022"
+)
+```
+
 ## Usage
 
 1. Set up environment variables (optionally set them in .env for convenience):

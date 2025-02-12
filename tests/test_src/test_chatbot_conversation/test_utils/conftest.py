@@ -4,6 +4,7 @@ import logging.config
 import os
 from pathlib import Path
 from typing import Any, Dict, Generator, List
+import json
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -214,3 +215,64 @@ def mock_config_dir(tmp_path: Path) -> Path:
     config_dir = tmp_path / "mock_config"
     config_dir.mkdir(parents=True)
     return config_dir
+
+
+@pytest.fixture
+def temp_bot_config(tmp_path: Path) -> Generator[str, None, None]:
+    """Create a temporary bot configuration file for testing.
+
+    Args:
+        tmp_path: PyTest's temporary path fixture
+
+    Yields:
+        str: Path to temporary config file
+    """
+    config: Dict[str, Any] = {
+        "author": "Test Author",
+        "conversation_seed": "Test seed",
+        "rounds": 2,
+        "core_prompt": "Test prompt {bot_name} {max_tokens}",
+        "bots": [
+            {
+                "bot_name": "TestBot1",
+                "bot_type": "old_type",
+                "bot_version": "old_version",
+                "bot_prompt": "Test prompt",
+            },
+            {
+                "bot_name": "TestBot2",
+                "bot_type": "old_type",
+                "bot_version": "old_version",
+                "bot_prompt": "Test prompt",
+            },
+        ],
+    }
+
+    config_file = tmp_path / "test_config.json"
+    with open(config_file, "w") as f:
+        json.dump(config, f, indent=4)
+
+    try:
+        yield str(config_file)
+    finally:
+        if config_file.exists():
+            config_file.unlink()
+
+
+@pytest.fixture
+def capture_stdout(monkeypatch: MonkeyPatch) -> Generator[List[str], None, None]:
+    """Capture stdout output for testing.
+
+    Args:
+        monkeypatch: PyTest's monkeypatch fixture
+
+    Yields:
+        List of captured output strings
+    """
+    output: List[str] = []
+
+    def mock_print(message: str) -> None:
+        output.append(message)
+
+    monkeypatch.setattr("builtins.print", mock_print)
+    yield output
