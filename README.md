@@ -164,7 +164,7 @@ If you plan to use Ollama models, you need to:
 ollama pull llama2
 ```
 
-### Using pip
+### Installation using pip
 
 ```bash
 # Clone the repository
@@ -189,7 +189,7 @@ This will:
 - Install the package in editable mode for development
 - Set up the CLI command specified in `pyproject.toml` so you can just enter `chatbot_conversation` at the command line instead of `python.exe ./src/chatbot_conversation/main.py`
 
-### Alternative: Using Conda
+### Installation using Conda
 
 You have two options when using Conda:
 
