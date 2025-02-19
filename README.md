@@ -172,8 +172,8 @@ git clone https://github.com/TheLongSentance/chatbot_conversation.git
 cd chatbot_conversation
 
 # Create and activate virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install build requirements
 pip install hatch hatchling
@@ -269,12 +269,12 @@ What to look for in the output:
 For example, a correctly configured environment might show:
 
 ```text
-/Users/username/projects/chatbot_conversation/venv/lib/python3.8/site-packages
+/Users/username/projects/chatbot_conversation/.venv/lib/python3.10/site-packages
 /Users/username/projects/chatbot_conversation/src
-/Users/username/projects/chatbot_conversation/venv/lib/python3.8/lib-dynload
-/usr/local/lib/python3.8
-/usr/local/lib/python3.8/lib-dynload
-/Users/username/projects/chatbot_conversation/venv/lib/python3.8/site-packages
+/Users/username/projects/chatbot_conversation/.venv/lib/python3.10/lib-dynload
+/usr/local/lib/python3.10
+/usr/local/lib/python3.10/lib-dynload
+/Users/username/projects/chatbot_conversation/.venv/lib/python3.10/site-packages
 ```
 
 You can also check just the `PYTHONPATH` environment variable:
