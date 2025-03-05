@@ -28,9 +28,7 @@ import json
 from typing import Any, Iterator, List, Optional, Type, TypedDict
 
 import google.api_core.exceptions
-
-# no stub file from google.generativeai so ignore for pylance etc
-import google.generativeai  # type: ignore
+import google.generativeai
 
 from chatbot_conversation.models.base import (
     ChatbotBase,
@@ -113,11 +111,10 @@ class GeminiChatbot(ChatbotBase):
         """
         if cls._available_versions_cache is None:
             try:
-                google.generativeai.configure()  # pyright: ignore
-                models = google.generativeai.list_models()  # pyright: ignore
+                google.generativeai.configure()
+                models = google.generativeai.list_models()
                 # extract version from model name "models/gemini-1.5-pro"
-                cls._available_versions_cache = \
-                    [model.name.split("/")[-1] for model in models]  # pyright: ignore
+                cls._available_versions_cache = [model.name.split("/")[-1] for model in models]
             except google.api_core.exceptions.GoogleAPIError as e:
                 error_msg = f"Failed to retrieve model versions from Gemini API: {e}"
                 raise APIException(
@@ -182,8 +179,7 @@ class GeminiChatbot(ChatbotBase):
         """
         super().__init__(config)
 
-        # no stub file from google.generativeai so ignore for pylance (-> pyright) etc
-        google.generativeai.configure()  # pyright: ignore[reportUnknownMemberType]
+        google.generativeai.configure()
 
         # initialise api here
         self._initialize_model_api()
@@ -209,9 +205,7 @@ class GeminiChatbot(ChatbotBase):
         """
         formatted_messages = self._format_conv_for_gemini_api(conversation)
 
-        message = self._model_api.generate_content(  # pyright: ignore[reportUnknownMemberType]
-            formatted_messages
-        )
+        message = self._model_api.generate_content(formatted_messages)
         response: str = message.text
         return response
 
@@ -282,9 +276,7 @@ class GeminiChatbot(ChatbotBase):
         """
         return chunk.text or ""
 
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
         """
         Generate streaming responses using the Gemini API.
 

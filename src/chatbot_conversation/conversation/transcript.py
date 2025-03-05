@@ -62,9 +62,7 @@ def save_transcript(
 
     # Get set of hidden moderator message rounds
     hidden_moderator_rounds: Set[int] = {
-        msg.round_number
-        for msg in config.moderator_messages_opt
-        if not msg.display_opt
+        msg.round_number for msg in config.moderator_messages_opt if not msg.display_opt
     }
 
     try:
@@ -88,13 +86,9 @@ def save_transcript(
                     file.write(f"{message['content']}\n\n---\n\n")
 
                     bot_round_count += 1  # count bots in round so far
-                    if (
-                        bot_round_count == num_bots
-                    ):  # if all bots have responded in round
+                    if bot_round_count == num_bots:  # if all bots have responded in round
                         round_num += 1  # increment round number
-                        announce_round = (
-                            True  # announce this new round in next iteration
-                        )
+                        announce_round = True  # announce this new round in next iteration
                         bot_round_count = 0  # reset bot count
 
                 # else must be a moderator message so immediately test whether to display

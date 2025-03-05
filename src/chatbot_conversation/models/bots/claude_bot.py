@@ -165,9 +165,7 @@ class ClaudeChatbot(ChatbotBase):
         message = self._model_api.messages.create(
             model=self.model_version,
             system=self.system_prompt,
-            messages=self._format_conv_for_api_util(
-                conversation, add_system_prompt=False
-            ),
+            messages=self._format_conv_for_api_util(conversation, add_system_prompt=False),
             timeout=self.model_timeout.api_timeout,
             max_tokens=self.model_max_tokens,
             temperature=self.model_temperature,
@@ -187,9 +185,7 @@ class ClaudeChatbot(ChatbotBase):
         """
         return chunk or ""
 
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
         """
         Generate streaming responses using the Claude API.
 
@@ -210,9 +206,7 @@ class ClaudeChatbot(ChatbotBase):
         stream_manager = self._model_api.messages.stream(
             model=self.model_version,
             system=self.system_prompt,
-            messages=self._format_conv_for_api_util(
-                conversation, add_system_prompt=False
-            ),
+            messages=self._format_conv_for_api_util(conversation, add_system_prompt=False),
             timeout=self.model_timeout.api_timeout,
             max_tokens=self.model_max_tokens,
             temperature=self.model_temperature,

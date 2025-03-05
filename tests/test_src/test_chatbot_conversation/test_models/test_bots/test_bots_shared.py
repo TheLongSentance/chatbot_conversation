@@ -41,17 +41,14 @@ class TestSharedBotParameters:
             name=f"TestBot_{bot_class}",
             system_prompt="Test prompt",
             model=ChatbotModel(
-                type=bot_class_obj._get_class_model_type(),  # pyright: ignore[reportPrivateUsage]
+                type=bot_class_obj._get_class_model_type(),
                 version=model_version,
             ),
         )
         bot = bot_class_obj(config)
 
         # Check temperature is set to default
-        assert (
-            bot.model_temperature
-            == bot.model_default_temperature  # pyright: ignore[reportPrivateUsage]
-        )
+        assert bot.model_temperature == bot.model_default_temperature
 
     def test_max_tokens_initialization(
         self,
@@ -69,7 +66,7 @@ class TestSharedBotParameters:
             name=f"TestBot_{bot_class}_Tokens",
             system_prompt="Test prompt",
             model=ChatbotModel(
-                type=bot_class_obj._get_class_model_type(),  # pyright: ignore[reportPrivateUsage]
+                type=bot_class_obj._get_class_model_type(),
                 version=model_version,
                 params_opt=ChatbotParamsOpt(max_tokens=test_tokens),
             ),
@@ -85,15 +82,11 @@ class TestSharedBotParameters:
 class TestLiveAPIResponses:
     """Test actual API responses from each bot implementation"""
 
-    def test_generate_response(
-        self, bot_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
+    def test_generate_response(self, bot_fixture: str, request: pytest.FixtureRequest) -> None:
 
         bot = request.getfixturevalue(bot_fixture)
         conversation = [
-            ConversationMessage(
-                bot_index=0, content="What is 2+2? Reply with just the number."
-            )
+            ConversationMessage(bot_index=0, content="What is 2+2? Reply with just the number.")
         ]
         response = bot.generate_response(conversation)
 
@@ -128,16 +121,12 @@ class TestLiveAPIStreamingResponses:
         response_chunks = list(bot.stream_response(conversation))
 
         assert response_chunks, "The response should not be empty"
-        assert (
-            len(response_chunks) > 1
-        ), "The response should be streamed in multiple chunks"
+        assert len(response_chunks) > 1, "The response should be streamed in multiple chunks"
 
         for chunk in response_chunks:
             print(chunk)
 
-    def test_streaming_max_tokens(
-        self, bot_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
+    def test_streaming_max_tokens(self, bot_fixture: str, request: pytest.FixtureRequest) -> None:
         """Test that streaming responses respect various token limits."""
         # Test cases: very small, medium, large, and default (None) limits
         test_cases: list[tuple[Optional[int], str]] = [
@@ -147,7 +136,9 @@ class TestLiveAPIStreamingResponses:
             (None, "default"),
         ]
 
-        system_prompt = "You are a test assistant, involved in testing max token limits for your api. "
+        system_prompt = (
+            "You are a test assistant, involved in testing max token limits for your api. "
+        )
 
         for max_tokens, size in test_cases:
             time.sleep(1)  # Try to avoid rate limiting
@@ -180,20 +171,14 @@ class TestLiveAPIStreamingResponses:
 
             # Check against expected limit
             expected_limit = (
-                max_tokens
-                if max_tokens is not None
-                else test_bot.model_default_max_tokens
+                max_tokens if max_tokens is not None else test_bot.model_default_max_tokens
             )
             assert (
                 estimated_tokens <= expected_limit * 1.25
             ), f"Token limit exceeded for {size} test"
-            assert (
-                estimated_tokens >= expected_limit * 0.75
-            ), f"Response too short for {size} test"
+            assert estimated_tokens >= expected_limit * 0.75, f"Response too short for {size} test"
 
-    def test_streaming_temperature(
-        self, bot_fixture: str, request: pytest.FixtureRequest
-    ) -> None:
+    def test_streaming_temperature(self, bot_fixture: str, request: pytest.FixtureRequest) -> None:
         """Test that streaming responses reflect different temperature settings."""
         # Test with different temperatures
         test_temps = [0.0, 0.5, 1.0]  # Low, medium, high temperatures

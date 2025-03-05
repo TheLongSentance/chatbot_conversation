@@ -98,9 +98,7 @@ class ChatbotConfigData(BaseConfigModel):
     bot_name: str = Field(..., min_length=1, description="Bot name cannot be empty")
     bot_prompt: str = Field(..., min_length=1, description="Bot prompt cannot be empty")
     bot_type: str = Field(..., min_length=1, description="Bot type cannot be empty")
-    bot_version: str = Field(
-        ..., min_length=1, description="Bot version cannot be empty"
-    )
+    bot_version: str = Field(..., min_length=1, description="Bot version cannot be empty")
     bot_params_opt: ChatbotParamsOptData = Field(
         default_factory=ChatbotParamsOptData,
         description="Optional parameters for the bot",
@@ -154,12 +152,8 @@ class ModeratorMessage(BaseConfigModel):
     """
 
     round_number: int = Field(gt=0, description="Round number must be positive")
-    content: str = Field(
-        ..., min_length=1, description="Message content cannot be empty"
-    )
-    display_opt: bool = Field(
-        default=False, description="Optional flag to control message display"
-    )
+    content: str = Field(..., min_length=1, description="Message content cannot be empty")
+    display_opt: bool = Field(default=False, description="Optional flag to control message display")
 
 
 class ConversationConfig(BaseConfigModel):
@@ -180,9 +174,7 @@ class ConversationConfig(BaseConfigModel):
         ..., min_length=1, description="Conversation seed cannot be empty"
     )
     rounds: int = Field(gt=0, description="Rounds must be a positive integer")
-    core_prompt: str = Field(
-        ..., min_length=1, description="Core prompt cannot be empty"
-    )
+    core_prompt: str = Field(..., min_length=1, description="Core prompt cannot be empty")
     moderator_messages_opt: List[ModeratorMessage] = Field(
         default_factory=list, description="Optional round-specific moderator messages"
     )
@@ -232,9 +224,7 @@ class ConversationConfig(BaseConfigModel):
 
     @field_validator("bots")
     @classmethod
-    def validate_unique_bot_names(
-        cls, v: List[ChatbotConfigData]
-    ) -> List[ChatbotConfigData]:
+    def validate_unique_bot_names(cls, v: List[ChatbotConfigData]) -> List[ChatbotConfigData]:
         """Validate that bot names are unique and properly formatted.
 
         Args:
@@ -249,9 +239,7 @@ class ConversationConfig(BaseConfigModel):
         bot_name_pattern = re.compile(BOT_NAME_PATTERN)
 
         # Check for invalid name formats
-        invalid_names = [
-            bot.bot_name for bot in v if not bot_name_pattern.match(bot.bot_name)
-        ]
+        invalid_names = [bot.bot_name for bot in v if not bot_name_pattern.match(bot.bot_name)]
         if invalid_names:
             error_msg = (
                 f"Invalid bot names (must be alphanumeric with optional underscores, "
@@ -267,13 +255,9 @@ class ConversationConfig(BaseConfigModel):
         # Check for duplicates
         names: List[str] = [bot.bot_name for bot in v]
         name_counts: Dict[str, int] = Counter(names)
-        duplicates: List[str] = [
-            name for name, count in name_counts.items() if count > 1
-        ]
+        duplicates: List[str] = [name for name, count in name_counts.items() if count > 1]
         if duplicates:
-            error_msg = (
-                f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
-            )
+            error_msg = f"Duplicate bot names found in configuration: {', '.join(duplicates)}"
             raise ValidationException(
                 message=error_msg,
                 user_message=f"{error_msg}, please check conversation configuration file",
@@ -314,9 +298,7 @@ class ConversationConfig(BaseConfigModel):
         # Check round numbers are unique
         round_nums: List[int] = [msg.round_number for msg in v]
         round_counts: Dict[int, int] = Counter(round_nums)
-        duplicates: List[int] = [
-            num for num, count in round_counts.items() if count > 1
-        ]
+        duplicates: List[int] = [num for num, count in round_counts.items() if count > 1]
         if duplicates:
             error_msg = (
                 "Duplicate round numbers found in moderator messages: "

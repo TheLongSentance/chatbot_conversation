@@ -14,9 +14,7 @@ import json
 import sys
 
 
-def update_bot_config(
-    config_file: str, new_bot_type: str, new_bot_version: str
-) -> None:
+def update_bot_config(config_file: str, new_bot_type: str, new_bot_version: str) -> None:
     """
     Update all bot_type and bot_version values in a config file.
 
@@ -43,7 +41,7 @@ def update_bot_config(
     """
     try:
         # Read the config file
-        with open(config_file, "r") as f:
+        with open(config_file, "r", encoding="utf-8") as f:
             config = json.load(f)
 
         # Update all bots
@@ -52,7 +50,7 @@ def update_bot_config(
             bot["bot_version"] = new_bot_version
 
         # Write the updated config back to file
-        with open(config_file, "w") as f:
+        with open(config_file, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4)
 
         print(f"Successfully updated {config_file}")
@@ -63,20 +61,22 @@ def update_bot_config(
     except json.JSONDecodeError:
         print(f"Error: Invalid JSON in '{config_file}'")
     except KeyError:
-        print(f"Error: Missing required 'bots' key in config file")
-    except Exception as e:
-        print(f"Error: {str(e)}")
+        print("Error: Missing required 'bots' key in config file")
+    except PermissionError:
+        print(f"Error: Permission denied when accessing '{config_file}'")
+    except OSError as e:
+        print(f"Error: Operating system error when accessing file: {str(e)}")
+    except TypeError as e:
+        print(f"Error: Invalid data type in configuration: {str(e)}")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print(
-            "Usage: python update_bot_config.py <config_file> <new_bot_type> <new_bot_version>"
-        )
+        print("Usage: python update_bot_config.py <config_file> <new_bot_type> <new_bot_version>")
         sys.exit(1)
 
-    config_file = sys.argv[1]
-    new_bot_type = sys.argv[2]
-    new_bot_version = sys.argv[3]
+    config_path = sys.argv[1]
+    new_type = sys.argv[2]
+    new_version = sys.argv[3]
 
-    update_bot_config(config_file, new_bot_type, new_bot_version)
+    update_bot_config(config_path, new_type, new_version)

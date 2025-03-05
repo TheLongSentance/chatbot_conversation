@@ -68,10 +68,7 @@ def test_save_transcript(
                 assert content in full_output, f"Missing content: {content}"
 
             # Config JSON verification
-            assert (
-                json.dumps(sample_conversation_config.model_dump(), indent=4)
-                in full_output
-            )
+            assert json.dumps(sample_conversation_config.model_dump(), indent=4) in full_output
 
 
 def test_transcript_with_hidden_moderator(

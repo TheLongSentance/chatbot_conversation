@@ -45,9 +45,7 @@ class APIConfig:  # pylint: disable=too-few-public-methods
             load_dotenv(dotenv_path=dotenv_path)
             logger.info("Loaded environment from: %s", dotenv_path)
         else:  # Only log info not debug message - environment could be set already
-            logger.info(
-                "No .env file found in current directory with path: %s", dotenv_path
-            )
+            logger.info("No .env file found in current directory with path: %s", dotenv_path)
 
         # Log available API-related environment variables without assuming which are required
         for env_var in os.environ:

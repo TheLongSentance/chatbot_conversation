@@ -12,9 +12,7 @@ class TestBotsInitializer:
     Tests for the BotsInitializer class and its functionality.
     """
 
-    def test_initialize_bots(
-        self, sample_conversation_config: ConversationConfig
-    ) -> None:
+    def test_initialize_bots(self, sample_conversation_config: ConversationConfig) -> None:
         """
         Test that initialize_bots returns a non-empty list of ChatbotBase instances.
         """

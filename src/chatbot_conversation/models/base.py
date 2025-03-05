@@ -213,8 +213,7 @@ class _Model:
             raise ValidationException(
                 message="Model type cannot be empty",
                 user_message=(
-                    "Model type cannot be empty, "
-                    "please check conversation configuration file"
+                    "Model type cannot be empty, please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
                 original_error=None,
@@ -223,8 +222,7 @@ class _Model:
             raise ValidationException(
                 message="Model version cannot be empty",
                 user_message=(
-                    "Model version cannot be empty, "
-                    "please check conversation configuration file"
+                    "Model version cannot be empty, please check conversation configuration file"
                 ),
                 severity=ErrorSeverity.ERROR,
                 original_error=None,
@@ -349,9 +347,7 @@ class ChatbotBase(ABC):
         retryable_types = cls._retryable_exceptions()
         # Logic below needed for potential nested exceptions
         if isinstance(exception, APIException):
-            if isinstance(
-                exception, retryable_types
-            ):  # pyright: ignore[reportUnnecessaryIsInstance]
+            if isinstance(exception, retryable_types):
                 return True
             if exception.original_error:  # checked wrapped exception
                 return isinstance(exception.original_error, retryable_types)
@@ -444,14 +440,9 @@ class ChatbotBase(ABC):
             )
         # Regex to match to reject special characters
         # and invalid underscore usage at start and end of the name
-        if (
-            re.search(r"[^a-zA-Z0-9_]", name)
-            or name.startswith("_")
-            or name.endswith("_")
-        ):
+        if re.search(r"[^a-zA-Z0-9_]", name) or name.startswith("_") or name.endswith("_"):
             error_msg = (
-                f"Bot name '{name}' contains "
-                "invalid characters or invalid underscore usage"
+                f"Bot name '{name}' contains " "invalid characters or invalid underscore usage"
             )
             raise ValidationException(
                 message=error_msg,
@@ -808,9 +799,7 @@ class ChatbotBase(ABC):
             ) from e
 
     @abstractmethod
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
         """Generate stream of chunks in model-specific format"""
         pass  # pylint: disable=unnecessary-pass
 
@@ -939,9 +928,7 @@ class ChatbotBase(ABC):
             messages.append({"role": "system", "content": self.system_prompt})
 
         for contribution in conversation:
-            role = (
-                "assistant" if contribution["bot_index"] == self.bot_index else "user"
-            )
+            role = "assistant" if contribution["bot_index"] == self.bot_index else "user"
             messages.append({"role": role, "content": contribution["content"]})
 
         self._log_debug(json.dumps(messages, indent=2))

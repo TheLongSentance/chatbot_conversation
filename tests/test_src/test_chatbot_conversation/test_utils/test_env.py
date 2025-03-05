@@ -67,7 +67,7 @@ GOOGLE_API_KEY=mock-google-key-12345678
     for key in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY"]:
         monkeypatch.delenv(key, raising=False)
 
-    APIConfig._load_config()  # pyright: ignore[reportPrivateUsage]
+    APIConfig._load_config()
 
     # Verify the environment variables were loaded
     assert os.getenv("OPENAI_API_KEY") == "mock-openai-key-12345678"

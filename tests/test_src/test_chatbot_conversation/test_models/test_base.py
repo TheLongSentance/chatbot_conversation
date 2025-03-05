@@ -9,15 +9,13 @@ import tenacity
 from pytest_mock import MockFixture
 
 from chatbot_conversation.models.base import (
-    _Model,  # pyright: ignore[reportPrivateUsage]
-)
-from chatbot_conversation.models.base import (
     ChatbotBase,
     ChatbotConfig,
     ChatbotModel,
     ChatbotParamsOpt,
     ChatMessage,
     ConversationMessage,
+    _Model,
 )
 
 # For now, only DummyChatbot is used for testing base class
@@ -52,7 +50,7 @@ class TestChatbotConfig:
         assert bot.model_max_tokens == 100
         assert bot.model_timeout == config.timeout
         assert bot.bot_index == ChatbotBase.get_total_bots()
-        assert bot._model_api is not None  # pyright: ignore[reportPrivateUsage]
+        assert bot._model_api is not None
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -180,11 +178,7 @@ class TestChatbotBaseMessageFormatting:
         )
         bot: ChatbotBase = bot_class(config)
 
-        messages: list[ChatMessage] = (
-            bot._format_conv_for_api_util(  # pyright: ignore[reportPrivateUsage]
-                basic_conversation
-            )
-        )
+        messages: list[ChatMessage] = bot._format_conv_for_api_util(basic_conversation)
 
         # Common format validation
         assert isinstance(messages, list)
@@ -193,9 +187,7 @@ class TestChatbotBaseMessageFormatting:
 
         # Log formatted messages for debugging
         formatted = json.dumps(messages, indent=2)
-        bot._log_debug(  # pyright: ignore[reportPrivateUsage]
-            f"Formatted messages:\n{formatted}"
-        )
+        bot._log_debug(f"Formatted messages:\n{formatted}")
 
 
 @pytest.mark.parametrize("bot_class", bot_classes)
@@ -240,9 +232,7 @@ class TestChatbotBaseTemperature:
             invalid_temps = [-0.1, 2.1]  # Outside standard range
 
         for temp in invalid_temps:
-            with pytest.raises(
-                ValidationException, match="(?i).*temperature.*must be between.*"
-            ):
+            with pytest.raises(ValidationException, match="(?i).*temperature.*must be between.*"):
                 config = ChatbotConfig(
                     name=f"TempBot{str(temp).replace('.', '_').replace('-', 'neg')}",
                     system_prompt="test",
@@ -279,9 +269,7 @@ class TestChatbotBaseMaxTokens:
         """Test that invalid max token values are rejected"""
         invalid_tokens = [0, -1, -100]
         for tokens in invalid_tokens:
-            with pytest.raises(
-                ValidationException, match="Max tokens.*must be greater than 0"
-            ):
+            with pytest.raises(ValidationException, match="Max tokens.*must be greater than 0"):
                 config = ChatbotConfig(
                     name=f"TokenBot{str(tokens).replace('-', 'neg')}",
                     system_prompt="test",
@@ -439,9 +427,7 @@ class TestRetryBehavior:
         )
         mock_generate = cast(MagicMock, mock_generate)  # Explicitly cast to MagicMock
 
-        conversation: list[ConversationMessage] = [
-            {"bot_index": 0, "content": "test message"}
-        ]
+        conversation: list[ConversationMessage] = [{"bot_index": 0, "content": "test message"}]
         response = bot.generate_response(conversation)
 
         assert response == "Success response"
@@ -469,15 +455,11 @@ class TestRetryBehavior:
             autospec=True,
         )
 
-        conversation: list[ConversationMessage] = [
-            {"bot_index": 0, "content": "test message"}
-        ]
+        conversation: list[ConversationMessage] = [{"bot_index": 0, "content": "test message"}]
         with pytest.raises(APIException):
             bot.generate_response(conversation)
 
-    def test_max_retries_exceeded(
-        self, bot_class: type[ChatbotBase], mocker: MockFixture
-    ) -> None:
+    def test_max_retries_exceeded(self, bot_class: type[ChatbotBase], mocker: MockFixture) -> None:
         """Test that max retries limit is enforced"""
         config = ChatbotConfig(
             name="MaxRetryBot",
@@ -493,15 +475,12 @@ class TestRetryBehavior:
         mock_generate = mocker.patch.object(
             bot,
             "_generate_response",
-            side_effect=[ConnectionError("Transient error")]
-            * (bot.model_timeout.max_retries + 1),
+            side_effect=[ConnectionError("Transient error")] * (bot.model_timeout.max_retries + 1),
             autospec=True,
         )
         mock_generate = cast(MagicMock, mock_generate)
 
-        conversation: list[ConversationMessage] = [
-            {"bot_index": 0, "content": "test message"}
-        ]
+        conversation: list[ConversationMessage] = [{"bot_index": 0, "content": "test message"}]
 
         with pytest.raises(APIException) as exc_info:
             bot.generate_response(conversation)

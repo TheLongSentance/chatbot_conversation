@@ -109,9 +109,7 @@ def test_template_variables_validation() -> None:
             }
         ],
     }
-    with pytest.raises(
-        ValidationException, match="Invalid template variables found: {'variable'}"
-    ):
+    with pytest.raises(ValidationException, match="Invalid template variables found: {'variable'}"):
         ConversationConfig(**config_data)
 
     # Test invalid variable in bot_prompt
@@ -270,9 +268,7 @@ def test_invalid_json_format(tmp_path: Path) -> None:
     with open(invalid_json_path, "w", encoding="utf-8") as f:
         f.write("{invalid json")
 
-    with pytest.raises(
-        ConfigurationException, match="Invalid JSON in configuration file:"
-    ):
+    with pytest.raises(ConfigurationException, match="Invalid JSON in configuration file:"):
         load_conversation_config(str(invalid_json_path))
 
 
@@ -364,9 +360,7 @@ def test_config_immutability() -> None:
     Tests the 'frozen=True' setting in BaseConfigModel.
     """
     # Test ChatbotParamsOptData immutability
-    bot_params: ChatbotParamsOptData = ChatbotParamsOptData(
-        temperature=1.0, max_tokens=100
-    )
+    bot_params: ChatbotParamsOptData = ChatbotParamsOptData(temperature=1.0, max_tokens=100)
     with pytest.raises(ValidationError, match="Instance is frozen"):
         bot_params.temperature = 0.5
 

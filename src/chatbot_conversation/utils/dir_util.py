@@ -52,9 +52,7 @@ def get_output_dir() -> Path:
     return _get_dir(OUTPUT_DIR_ENV_VAR, FILE_IN_PROJECT_ROOT, DEFAULT_OUTPUT_DIR)
 
 
-def _get_dir(
-    env_var: str, target_file: str, default_dir: str, create_dir: bool = True
-) -> Path:
+def _get_dir(env_var: str, target_file: str, default_dir: str, create_dir: bool = True) -> Path:
     """Locate or create a directory based on priority rules.
 
     Args:
@@ -104,17 +102,13 @@ def _get_dir(
         if (parent / target_file).exists():
             root_output = parent / default_dir
             if root_output.exists():
-                logger.info(
-                    "Using existing directory under project root: %s", root_output
-                )
+                logger.info("Using existing directory under project root: %s", root_output)
                 return root_output
             if create_dir:
                 root_output.mkdir(parents=True, exist_ok=True)
                 logger.info("Created directory under project root: %s", root_output)
                 return root_output
-            logger.warning(
-                "Project root directory %s does not contain %s", parent, default_dir
-            )
+            logger.warning("Project root directory %s does not contain %s", parent, default_dir)
 
     # Third priority: Use current directory
     logger.info("Using current directory: %s", current)

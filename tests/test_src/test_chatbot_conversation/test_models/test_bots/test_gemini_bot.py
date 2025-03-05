@@ -8,9 +8,10 @@ import pytest
 
 from chatbot_conversation.models.base import ChatbotConfig, ConversationMessage
 from chatbot_conversation.models.bots.gemini_bot import (
-    _GeminiMessage,  # pyright: ignore[reportPrivateUsage]
+    GEMINI_MODEL_TYPE,
+    GeminiChatbot,
+    _GeminiMessage,
 )
-from chatbot_conversation.models.bots.gemini_bot import GEMINI_MODEL_TYPE, GeminiChatbot
 from chatbot_conversation.utils import ValidationException
 
 
@@ -19,10 +20,7 @@ class TestGeminiChatbot:
 
     def test_model_type(self, gemini_chatbot: GeminiChatbot) -> None:
         """Test that Gemini model type constant is correctly used"""
-        assert (
-            gemini_chatbot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == GEMINI_MODEL_TYPE
-        )
+        assert gemini_chatbot._get_class_model_type() == GEMINI_MODEL_TYPE
         assert gemini_chatbot.model_type == GEMINI_MODEL_TYPE
 
     @pytest.mark.parametrize(
@@ -47,12 +45,7 @@ class TestGeminiChatbot:
         should_retry: bool,
     ) -> None:
         """Test retry logic for Gemini-specific exceptions"""
-        assert (
-            gemini_chatbot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-                exception
-            )
-            == should_retry
-        )
+        assert gemini_chatbot._should_retry_on_exception(exception) == should_retry
 
     @patch("google.generativeai.GenerativeModel")
     def test_api_call_parameters(
@@ -73,9 +66,7 @@ class TestGeminiChatbot:
         ]
 
         # Call the method
-        response = bot._generate_response(  # pyright: ignore[reportPrivateUsage]
-            conversation
-        )
+        response = bot._generate_response(conversation)
 
         # Verify response
         assert response == "Test response"
@@ -126,9 +117,7 @@ class TestGeminiChatbot:
         assert isinstance(versions, list)
         assert all(isinstance(v, str) for v in versions)
 
-    def test_bot_creation_with_valid_version(
-        self, gemini_config_for_tests: ChatbotConfig
-    ) -> None:
+    def test_bot_creation_with_valid_version(self, gemini_config_for_tests: ChatbotConfig) -> None:
         """Test that bot creation with valid version succeeds"""
         # Use the first available version from the API
         versions = GeminiChatbot.available_versions()
@@ -148,8 +137,8 @@ class TestGeminiChatbot:
     def test_version_caching(self) -> None:
         """Test that available versions are cached"""
         # Clear cache first
-        GeminiChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
-        
+        GeminiChatbot._available_versions_cache = None
+
         # First call should hit API
         versions1 = GeminiChatbot.available_versions()
 
@@ -157,5 +146,4 @@ class TestGeminiChatbot:
         versions2 = GeminiChatbot.available_versions()
 
         assert versions1 == versions2
-        assert GeminiChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]
-
+        assert GeminiChatbot._available_versions_cache == versions1

@@ -126,8 +126,8 @@ def gemini_chatbot() -> Generator[GeminiChatbot, None, None]:
     yield bot
     # Ensure proper cleanup
     if hasattr(bot, "_model_api"):
-        if hasattr(bot._model_api, "_channel"):  # pyright: ignore[reportPrivateUsage]
-            bot._model_api._channel.close()  # pyright: ignore[reportPrivateUsage]
+        if hasattr(bot._model_api, "_channel"):
+            bot._model_api._channel.close()
 
 
 @pytest.fixture
@@ -179,8 +179,8 @@ def mock_api_error() -> Exception:
 @pytest.fixture(autouse=True)
 def clear_version_cache() -> Generator[None, None, None]:
     """Clear the version cache before each test"""
-    ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
-    GPTChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
+    ClaudeChatbot._available_versions_cache = None
+    GPTChatbot._available_versions_cache = None
     yield
-    ClaudeChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
-    GPTChatbot._available_versions_cache = None # pyright: ignore[reportPrivateUsage]
+    ClaudeChatbot._available_versions_cache = None
+    GPTChatbot._available_versions_cache = None

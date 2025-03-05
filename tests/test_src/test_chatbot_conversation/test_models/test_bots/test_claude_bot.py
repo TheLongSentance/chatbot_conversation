@@ -20,10 +20,7 @@ class TestClaudeChatbot:
     def test_model_type(self, claude_config_for_tests: ChatbotConfig) -> None:
         """Test that Claude model type constant is correctly used"""
         bot = ClaudeChatbot(claude_config_for_tests)
-        assert (
-            bot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == CLAUDE_MODEL_TYPE
-        )
+        assert bot._get_class_model_type() == CLAUDE_MODEL_TYPE
         assert bot.model_type == CLAUDE_MODEL_TYPE
 
     @pytest.mark.parametrize(
@@ -44,12 +41,7 @@ class TestClaudeChatbot:
     ) -> None:
         """Test retry logic for Claude-specific exceptions"""
         bot = ClaudeChatbot(claude_config_for_tests)
-        assert (
-            bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-                exception
-            )
-            == should_retry
-        )
+        assert bot._should_retry_on_exception(exception) == should_retry
 
     @patch("chatbot_conversation.models.bots.claude_bot.anthropic.Anthropic")
     def test_api_call_parameters(
@@ -73,9 +65,7 @@ class TestClaudeChatbot:
         ]
 
         # Call the method that will use the mock chain to generate a response
-        response = bot._generate_response(  # pyright: ignore[reportPrivateUsage]
-            conversation
-        )
+        response = bot._generate_response(conversation)
 
         # Verify the response
         assert response == "Test response"
@@ -110,9 +100,7 @@ class TestClaudeChatbot:
         bot = ClaudeChatbot(claude_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(
-            ModelException, match=".*Model returned an empty string response.*"
-        ):
+        with pytest.raises(ModelException, match=".*Model returned an empty string response.*"):
             bot.generate_response(conversation)
 
     def test_available_versions_live(self) -> None:

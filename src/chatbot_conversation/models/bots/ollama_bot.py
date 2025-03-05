@@ -91,9 +91,7 @@ class OllamaChatbot(ChatbotBase):
                     str(model.model).split(":", maxsplit=1)[0] for model in models
                 ]
             except Exception as e:
-                error_msg = (
-                    f"Failed to retrieve installed model versions for Ollama: {e}"
-                )
+                error_msg = f"Failed to retrieve installed model versions for Ollama: {e}"
                 raise APIException(
                     message=error_msg,
                     user_message="Failed to retrieve installed model versions from Ollama API",
@@ -164,16 +162,14 @@ class OllamaChatbot(ChatbotBase):
             httpx.HTTPStatusError: On HTTP error responses
         """
         response_content: str = ""
-        response: ChatResponse = (
-            ollama.chat(  # pyright: ignore[reportUnknownMemberType]
-                model=self.model_version,
-                messages=self._format_conv_for_api_util(conversation),
-                stream=False,
-                options={
-                    "temperature": self.model_temperature,
-                    "num_predict": self.model_max_tokens,
-                },
-            )
+        response: ChatResponse = ollama.chat(
+            model=self.model_version,
+            messages=self._format_conv_for_api_util(conversation),
+            stream=False,
+            options={
+                "temperature": self.model_temperature,
+                "num_predict": self.model_max_tokens,
+            },
         )
         response_content = response["message"]["content"]
         return response_content
@@ -190,9 +186,7 @@ class OllamaChatbot(ChatbotBase):
         """
         return chunk.get("message", {}).get("content", "")  # type: ignore
 
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
         """
         Generate streaming responses using the Ollama API.
 
@@ -210,7 +204,7 @@ class OllamaChatbot(ChatbotBase):
             httpx.NetworkError: On network connectivity issues
             httpx.HTTPStatusError: On HTTP error responses
         """
-        return ollama.chat(  # pyright: ignore[reportUnknownMemberType]
+        return ollama.chat(
             model=self.model_version,
             messages=self._format_conv_for_api_util(conversation),
             stream=True,

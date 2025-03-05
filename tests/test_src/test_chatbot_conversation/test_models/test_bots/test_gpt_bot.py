@@ -16,10 +16,7 @@ class TestGPTChatbot:
     def test_model_type(self, gpt_config_for_tests: ChatbotConfig) -> None:
         """Test that GPT model type constant is correctly used"""
         bot = GPTChatbot(gpt_config_for_tests)
-        assert (
-            bot._get_class_model_type()  # pyright: ignore[reportPrivateUsage]
-            == GPT_MODEL_TYPE
-        )
+        assert bot._get_class_model_type() == GPT_MODEL_TYPE
         assert bot.model_type == GPT_MODEL_TYPE
 
     @pytest.mark.parametrize(
@@ -40,12 +37,7 @@ class TestGPTChatbot:
     ) -> None:
         """Test retry logic for OpenAI-specific exceptions"""
         bot = GPTChatbot(gpt_config_for_tests)
-        assert (
-            bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-                exception
-            )
-            == should_retry
-        )
+        assert bot._should_retry_on_exception(exception) == should_retry
 
     @patch("chatbot_conversation.models.bots.gpt_bot.OpenAI")
     def test_api_call_parameters(
@@ -69,9 +61,7 @@ class TestGPTChatbot:
         ]
 
         # Call the method that will use the mock chain to generate a response
-        response = bot._generate_response(  # pyright: ignore[reportPrivateUsage]
-            conversation
-        )
+        response = bot._generate_response(conversation)
 
         # Verify the response
         assert response == "Test response"
@@ -106,9 +96,7 @@ class TestGPTChatbot:
         bot = GPTChatbot(gpt_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(
-            ModelException, match="Model returned an empty string response"
-        ):
+        with pytest.raises(ModelException, match="Model returned an empty string response"):
             bot.generate_response(conversation)
 
     def test_available_versions_returns_valid_list(self) -> None:
@@ -122,9 +110,7 @@ class TestGPTChatbot:
         assert any("gpt-4" in v for v in versions)
         assert any("gpt-3.5" in v for v in versions)
 
-    def test_bot_creation_with_valid_version(
-        self, gpt_config_for_tests: ChatbotConfig
-    ) -> None:
+    def test_bot_creation_with_valid_version(self, gpt_config_for_tests: ChatbotConfig) -> None:
         """Test that bot creation with valid version succeeds"""
         # Use first available version from API
         versions = GPTChatbot.available_versions()
@@ -134,9 +120,7 @@ class TestGPTChatbot:
         bot = GPTChatbot(gpt_config_for_tests)
         assert bot.model_version == versions[0]
 
-    def test_bot_creation_with_invalid_version(
-        self, gpt_config_for_tests: ChatbotConfig
-    ) -> None:
+    def test_bot_creation_with_invalid_version(self, gpt_config_for_tests: ChatbotConfig) -> None:
         """Test that bot creation with invalid version fails"""
         gpt_config_for_tests.model.version = "invalid-model-version"
         with pytest.raises(ValidationException, match="Invalid model version"):
@@ -145,7 +129,7 @@ class TestGPTChatbot:
     def test_version_caching(self) -> None:
         """Test that available versions are cached"""
         # Clear cache first
-        GPTChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
+        GPTChatbot._available_versions_cache = None
 
         # First call should hit API
         versions1 = GPTChatbot.available_versions()
@@ -154,4 +138,4 @@ class TestGPTChatbot:
         versions2 = GPTChatbot.available_versions()
 
         assert versions1 == versions2
-        assert GPTChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]
+        assert GPTChatbot._available_versions_cache == versions1

@@ -151,9 +151,7 @@ class DummyChatbot(ChatbotBase):
 
         try:
             # Initialize API client with timeout from config
-            self._model_api = self.DummyAPIClient(
-                timeout=self.model_timeout.api_timeout
-            )
+            self._model_api = self.DummyAPIClient(timeout=self.model_timeout.api_timeout)
 
             # Establish initial connection
             self._model_api.connect()
@@ -305,9 +303,7 @@ class DummyChatbot(ChatbotBase):
         """
         return str(chunk)
 
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[str]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[str]:
         """
         Simulate streaming response generation.
 

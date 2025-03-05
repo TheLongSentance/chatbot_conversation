@@ -106,9 +106,7 @@ def test_get_config_dir_no_create(monkeypatch: MonkeyPatch, temp_dir: Path) -> N
     # Change working directory to temp_dir to avoid finding project root
     monkeypatch.chdir(temp_dir)
 
-    result = (
-        get_config_dir()
-    )  # Should fall back to cwd since no env dir or project root
+    result = get_config_dir()  # Should fall back to cwd since no env dir or project root
 
     assert result == Path(temp_dir)
     assert not config_path.exists()
@@ -201,9 +199,7 @@ def test_get_output_dir_creates_dirs(monkeypatch: MonkeyPatch, temp_dir: Path) -
 
 
 @pytest.mark.parametrize("dir_exists", [True, False])
-def test_directory_creation(
-    monkeypatch: MonkeyPatch, temp_dir: Path, dir_exists: bool
-) -> None:
+def test_directory_creation(monkeypatch: MonkeyPatch, temp_dir: Path, dir_exists: bool) -> None:
     """Test directory creation behavior for both config and output paths.
 
     Args:

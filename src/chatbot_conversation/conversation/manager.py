@@ -88,9 +88,7 @@ class ConversationManager:
         )
         self.display_manager.show_text(completion_message)
 
-        transcript_path: Path = save_transcript(
-            self.conversation, self.config, self.config_path
-        )
+        transcript_path: Path = save_transcript(self.conversation, self.config, self.config_path)
 
         self.display_manager.show_text(
             "Conversation transcript and configuration data saved to: "

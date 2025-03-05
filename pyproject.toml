@@ -24,6 +24,21 @@ dependencies = [
 [project.scripts]
 chatbot_conversation = "chatbot_conversation.main:main"
 
+[project.optional-dependencies]
+test = [
+    "black==24.10.0",
+    "isort==5.13.2",
+    "mypy==1.11.2",
+    "mypy-extensions==1.0.0",
+    "pipreqs==0.5.0",
+    "pylint==3.2.7",
+    "pytest==7.4.4",
+    "pytest-cov==6.0.0",
+    "pytest-mock==3.14.0",
+    "toml==0.10.2",
+    "tomlcheck==0.2.3"
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/chatbot_conversation"]
 
@@ -47,20 +62,56 @@ dependencies = [
     "tomlcheck==0.2.3"
 ]
 
+[tool.pyright]
+include = ["src"]
+exclude = ["**/__pycache__", "src/experimental"]
+defineConstant = { DEBUG = true }
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.10"
+pythonPlatform = "All"
+
+[[tool.pyright.overrides]]
+path = "tests/**"
+reportPrivateUsage = false
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3
 
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ['py310']
+
+[tool.pylint]
+
+# Basic configuration options
+max-line-length = 100
+py-version = "3.10"
+indent-string = "    "
+min-similarity-lines = 4
+
+# Require docstrings for modules, classes, methods, etc.
+docstring-min-length = 10
+
+# Class design checks
+min-public-methods = 1
+max-public-methods = 20
+max-args = 6
+max-attributes = 12
+
+# Disable specific error checking
+disable = [
+    "W0511",  # fixme (allows TODOs)
+]
+
 
 [tool.mypy]
 mypy_path = ["src"]
 packages = ["chatbot_conversation"]
 python_version = "3.10"
 strict = true
-ignore_missing_imports = false
+ignore_missing_imports = true
 explicit_package_bases = true
 disallow_untyped_defs = true
 check_untyped_defs = true

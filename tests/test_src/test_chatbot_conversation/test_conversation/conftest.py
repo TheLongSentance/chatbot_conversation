@@ -38,9 +38,7 @@ def test_config_empty_path() -> str:
     Returns:
         str: Path to empty test configuration file
     """
-    return os.path.join(
-        os.path.dirname(__file__), "../../../config/test_config_empty.json"
-    )
+    return os.path.join(os.path.dirname(__file__), "../../../config/test_config_empty.json")
 
 
 @pytest.fixture

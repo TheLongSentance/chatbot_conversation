@@ -31,8 +31,8 @@ def reset_chatbot_base() -> None:
     - _used_names: Set of used bot names
     """
     # Intentionally accessing protected members for testing purposes
-    ChatbotBase._total_count = 0  # pyright: ignore[reportPrivateUsage]
-    ChatbotBase._used_names.clear()  # pyright: ignore[reportPrivateUsage]
+    ChatbotBase._total_count = 0
+    ChatbotBase._used_names.clear()
 
 
 @pytest.fixture(autouse=True)

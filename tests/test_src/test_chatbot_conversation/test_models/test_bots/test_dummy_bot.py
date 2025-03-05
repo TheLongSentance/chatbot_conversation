@@ -4,10 +4,7 @@ from unittest.mock import patch
 
 from chatbot_conversation.models import ChatbotConfig, ChatbotModel
 from chatbot_conversation.models.base import DEFAULT_MAX_TOKENS, ConversationMessage
-from chatbot_conversation.models.bots.dummy_bot import (
-    _EXAMPLE_RESPONSES,  # pyright: ignore[reportPrivateUsage]
-)
-from chatbot_conversation.models.bots.dummy_bot import DummyChatbot
+from chatbot_conversation.models.bots.dummy_bot import _EXAMPLE_RESPONSES, DummyChatbot
 
 
 def test_should_retry_on_exception() -> None:
@@ -20,15 +17,9 @@ def test_should_retry_on_exception() -> None:
     bot = DummyChatbot(config)
 
     # Test with various exception types
-    assert not bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-        Exception()
-    )
-    assert not bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-        ValueError()
-    )
-    assert not bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-        RuntimeError()
-    )
+    assert not bot._should_retry_on_exception(Exception())
+    assert not bot._should_retry_on_exception(ValueError())
+    assert not bot._should_retry_on_exception(RuntimeError())
 
 
 def test_generate_response_uses_predefined_responses() -> None:
@@ -79,10 +70,7 @@ def test_generate_response_ignores_conversation() -> None:
 
     # Mock both random calls to ensure deterministic behavior
     with (
-        patch(
-            "chatbot_conversation.models.bots.dummy_bot.random.random", 
-            return_value=1.0
-        ),
+        patch("chatbot_conversation.models.bots.dummy_bot.random.random", return_value=1.0),
         patch(
             "chatbot_conversation.models.bots.dummy_bot.random.choice",
             return_value="Test response",

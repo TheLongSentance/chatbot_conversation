@@ -64,6 +64,4 @@ def test_logger_handlers(mock_logging_config: None) -> None:
     """
     logger = get_logger(LOGNAME_CONFIGURATION)
     assert len(logger.handlers) > 0
-    assert any(
-        isinstance(handler, logging.StreamHandler) for handler in logger.handlers
-    )
+    assert any(isinstance(handler, logging.StreamHandler) for handler in logger.handlers)

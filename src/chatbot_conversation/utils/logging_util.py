@@ -21,9 +21,7 @@ LOGNAME_VALIDATION = "validation"
 LOGGING_CONFIG: Dict[str, Any] = {
     "version": 1,
     "formatters": {
-        "defaultFormatter": {
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        }
+        "defaultFormatter": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"}
     },
     "handlers": {
         "consoleHandler": {

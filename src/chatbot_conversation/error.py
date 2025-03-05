@@ -60,9 +60,7 @@ def handle_error(error: Exception) -> int:
 
     if isinstance(error, ChatbotException):
         # Log the technical message
-        logger.error(
-            "Error occurred: %s", error.message, exc_info=error.original_error or error
-        )
+        logger.error("Error occurred: %s", error.message, exc_info=error.original_error or error)
 
         # # Display user-friendly message
         print(f"\nError: {error.user_message}")
@@ -78,7 +76,6 @@ def handle_error(error: Exception) -> int:
     # Unexpected error - log full details
     logger.error("An unexpected error occurred: %s", str(error), exc_info=True)
     print(
-        "\nAn unexpected error occurred please review the application "
-        "logs for more information."
+        "\nAn unexpected error occurred please review the application logs for more information."
     )
     return 4

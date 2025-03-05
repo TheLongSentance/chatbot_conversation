@@ -60,9 +60,7 @@ class TestOllamaChatbot:
                 model=ChatbotModel(
                     type="OLLAMA",
                     version="llama3.2",
-                    params_opt=ChatbotParamsOpt(
-                        temperature=OLLAMA_MAXIMUM_TEMPERATURE + 0.1
-                    ),
+                    params_opt=ChatbotParamsOpt(temperature=OLLAMA_MAXIMUM_TEMPERATURE + 0.1),
                 ),
             )
             OllamaChatbot(invalid_config)
@@ -75,9 +73,7 @@ class TestOllamaChatbot:
                 model=ChatbotModel(
                     type="OLLAMA",
                     version="llama3.2",
-                    params_opt=ChatbotParamsOpt(
-                        temperature=OLLAMA_MINIMUM_TEMPERATURE - 0.1
-                    ),
+                    params_opt=ChatbotParamsOpt(temperature=OLLAMA_MINIMUM_TEMPERATURE - 0.1),
                 ),
             )
             OllamaChatbot(invalid_config)
@@ -88,9 +84,7 @@ class TestOllamaChatbot:
             (httpx.TimeoutException("test"), True),
             (httpx.NetworkError("test"), True),
             (
-                httpx.HTTPStatusError(
-                    "test", request=MagicMock(), response=MagicMock()
-                ),
+                httpx.HTTPStatusError("test", request=MagicMock(), response=MagicMock()),
                 True,
             ),
             (ValueError("test"), False),
@@ -105,12 +99,7 @@ class TestOllamaChatbot:
     ) -> None:
         """Test retry logic for Ollama-specific exceptions"""
         bot = OllamaChatbot(ollama_config_for_tests)
-        assert (
-            bot._should_retry_on_exception(  # pyright: ignore[reportPrivateUsage]
-                exception
-            )
-            == should_retry
-        )
+        assert bot._should_retry_on_exception(exception) == should_retry
 
     @patch("chatbot_conversation.models.bots.ollama_bot.ollama")
     def test_api_call_parameters(
@@ -122,14 +111,10 @@ class TestOllamaChatbot:
         mock_ollama.chat.return_value = mock_response
 
         bot = OllamaChatbot(ollama_config_for_tests)
-        conversation: list[ConversationMessage] = [
-            {"bot_index": 0, "content": "Test message"}
-        ]
+        conversation: list[ConversationMessage] = [{"bot_index": 0, "content": "Test message"}]
 
         # Generate response using the mock
-        response = bot._generate_response(  # pyright: ignore[reportPrivateUsage]
-            conversation
-        )
+        response = bot._generate_response(conversation)
         assert response == "Test response"
 
         # Verify chat was called with correct parameters
@@ -165,9 +150,7 @@ class TestOllamaChatbot:
         bot = OllamaChatbot(ollama_config_for_tests)
         conversation: list[ConversationMessage] = [{"bot_index": 1, "content": "Hello"}]
 
-        with pytest.raises(
-            ModelException, match="Model returned an empty string response"
-        ):
+        with pytest.raises(ModelException, match="Model returned an empty string response"):
             bot.generate_response(conversation)
 
     def test_available_versions_returns_valid_list(self) -> None:
@@ -185,9 +168,7 @@ class TestOllamaChatbot:
         assert isinstance(versions, list)
         assert all(isinstance(v, str) for v in versions)
 
-    def test_bot_creation_with_valid_version(
-        self, ollama_config_for_tests: ChatbotConfig
-    ) -> None:
+    def test_bot_creation_with_valid_version(self, ollama_config_for_tests: ChatbotConfig) -> None:
         """
         Test that bot creation with valid version succeeds.
 
@@ -223,7 +204,7 @@ class TestOllamaChatbot:
         4. Cache contains expected values
         """
         # Clear cache first
-        OllamaChatbot._available_versions_cache = None  # pyright: ignore[reportPrivateUsage]
+        OllamaChatbot._available_versions_cache = None
 
         # First call should hit API
         versions1 = OllamaChatbot.available_versions()
@@ -232,4 +213,4 @@ class TestOllamaChatbot:
         versions2 = OllamaChatbot.available_versions()
 
         assert versions1 == versions2
-        assert OllamaChatbot._available_versions_cache == versions1  # pyright: ignore[reportPrivateUsage]
+        assert OllamaChatbot._available_versions_cache == versions1

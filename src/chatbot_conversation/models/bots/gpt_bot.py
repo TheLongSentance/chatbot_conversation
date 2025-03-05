@@ -197,9 +197,7 @@ class GPTChatbot(ChatbotBase):
         response_content = completion.choices[0].message.content
         return response_content
 
-    def _get_text_from_chunk(
-        self, chunk: Any
-    ) -> str:  # pyright: ignore[reportUnknownParameterType]
+    def _get_text_from_chunk(self, chunk: Any) -> str:
         """
         Extract text content from an OpenAI API streaming response chunk.
 
@@ -218,9 +216,7 @@ class GPTChatbot(ChatbotBase):
         """
         return chunk.choices[0].delta.content or ""
 
-    def _generate_stream(
-        self, conversation: list[ConversationMessage]
-    ) -> Iterator[Any]:
+    def _generate_stream(self, conversation: list[ConversationMessage]) -> Iterator[Any]:
         """
         Generate a streaming response using the OpenAI API.
 

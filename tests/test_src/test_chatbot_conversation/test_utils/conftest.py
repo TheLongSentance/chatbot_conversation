@@ -1,10 +1,10 @@
 """Fixtures for testing environment configuration."""
 
+import json
 import logging.config
 import os
 from pathlib import Path
 from typing import Any, Dict, Generator, List
-import json
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
@@ -106,9 +106,7 @@ def mock_logging_config() -> Generator[None, None, None]:
     # Configure test logging
     test_config: Dict[str, Any] = {
         "version": 1,
-        "formatters": {
-            "testFormatter": {"format": "%(name)s - %(levelname)s - %(message)s"}
-        },
+        "formatters": {"testFormatter": {"format": "%(name)s - %(levelname)s - %(message)s"}},
         "handlers": {
             "consoleHandler": {
                 "class": "logging.StreamHandler",
