@@ -78,20 +78,30 @@ def test_transcript_with_hidden_moderator(
 ) -> None:
     """Test that hidden moderator messages are not included in transcript."""
     config_path = Path("test_config.json")
+    output_dir = tmp_path / "output"
 
     # Add a hidden moderator message to conversation data
     hidden_msg = ConversationMessage(bot_index=0, content="Hidden message")
     conversation_data = sample_conversation_data + [hidden_msg]
 
-    with patch("builtins.open", mock_open()) as mocked_file:
-        save_transcript(
-            conversation=conversation_data,
-            config=sample_conversation_config,
-            config_path=config_path,
-        )
+    with patch(
+        "chatbot_conversation.conversation.transcript.get_output_dir",
+        return_value=output_dir,
+    ):
+        with patch("builtins.open", mock_open()) as mocked_file:
+            file_path = save_transcript(
+                conversation=conversation_data,
+                config=sample_conversation_config,
+                config_path=config_path,
+            )
 
-        handle = mocked_file()
-        write_calls = [call[0][0] for call in handle.write.call_args_list]
-        full_output = "".join(write_calls)
+            # Basic file checks mirroring the first test
+            assert file_path.parent == output_dir
+            assert file_path.name.startswith("transcript_")
+            assert file_path.suffix == ".md"
 
-        assert "Hidden message" not in full_output
+            handle = mocked_file()
+            write_calls = [call[0][0] for call in handle.write.call_args_list]
+            full_output = "".join(write_calls)
+
+            assert "Hidden message" not in full_output
