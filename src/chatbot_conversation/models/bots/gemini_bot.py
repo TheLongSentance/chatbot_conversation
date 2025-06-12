@@ -128,10 +128,10 @@ class GeminiChatbot(ChatbotBase):
     @classmethod
     def _get_class_model_type(cls) -> str:
         """
-        Get the model type identifier for GPT models.
+        Get the model type identifier for Gemini models.
 
         Returns:
-            str: "GPT" as the model type identifier
+            str: "GEMINI" as the model type identifier
         """
         return GEMINI_MODEL_TYPE
 
@@ -153,7 +153,7 @@ class GeminiChatbot(ChatbotBase):
     @classmethod
     def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Returns tuple of Claude-specific retryable exception types.
+        Returns tuple of Gemini-specific retryable exception types.
 
         Returns:
             tuple: Exception types that warrant retry attempts
