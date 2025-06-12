@@ -77,7 +77,13 @@ class TestSharedBotParameters:
 
 @pytest.mark.live_api
 @pytest.mark.parametrize(
-    "bot_fixture", ["gpt_chatbot", "claude_chatbot", "ollama_chatbot", "gemini_chatbot"]
+    "bot_fixture",
+    [
+        "gpt_chatbot",
+        "claude_chatbot",
+        pytest.param("ollama_chatbot", marks=pytest.mark.ollama),
+        "gemini_chatbot",
+    ],
 )
 class TestLiveAPIResponses:
     """Test actual API responses from each bot implementation"""
@@ -100,7 +106,7 @@ class TestLiveAPIResponses:
     [
         "gpt_chatbot",
         "claude_chatbot",
-        "ollama_chatbot",
+        pytest.param("ollama_chatbot", marks=pytest.mark.ollama),
         "gemini_chatbot",
     ],
 )
