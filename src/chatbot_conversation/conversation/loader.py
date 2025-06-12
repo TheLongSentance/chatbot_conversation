@@ -317,7 +317,7 @@ class ConversationConfig(BaseConfigModel):
         invalid_rounds: List[int] = [num for num in round_nums if num > total_rounds]
         if invalid_rounds:
             error_msg = (
-                "Round numbers exceed total rounds ({total_rounds}): "
+                f"Round numbers exceed total rounds ({total_rounds}): "
                 f"{', '.join(map(str, invalid_rounds))}"
             )
             # Just before the specific duplicated section:
