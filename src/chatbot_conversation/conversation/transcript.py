@@ -36,12 +36,11 @@ def save_transcript(
     """Save conversation transcript to a file.
 
     Args:
-        transcript_dir: Path to the transcript directory
-        conversation: List of conversation messages
-        author: Author of the conversation
-        num_rounds: Total number of conversation rounds
-        num_bots: Number of participating bots
-        config_path: Path to the configuration file
+        conversation (List[ConversationMessage]): Conversation history including
+            moderator messages.
+        config (ConversationConfig): Configuration used to generate the
+            conversation.
+        config_path (Path): Path to the configuration file
 
     Returns:
         Path to the saved transcript file
