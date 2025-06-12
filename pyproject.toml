@@ -18,7 +18,8 @@ dependencies = [
     "pydantic==2.10.5",
     "python-dotenv==1.0.1",
     "rich==13.9.4",
-    "tenacity==8.5.0"
+    "tenacity==8.5.0",
+    "httpx==0.0.27"
 ]
 
 [project.scripts]
