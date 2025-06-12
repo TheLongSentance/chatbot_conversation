@@ -24,6 +24,7 @@ dependencies:
   - pip:
     - anthropic==0.42.0
     - google-generativeai==0.8.3
+    - google-api-core==2.24.1
     - mypy==1.11.2
     - mypy-extensions==1.0.0
     - ollama==0.4.5
