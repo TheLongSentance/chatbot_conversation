@@ -190,7 +190,7 @@ class DummyChatbot(ChatbotBase):
             except Exception as e:
                 raise APIException(
                     message=f"Error during API cleanup: {str(e)}",
-                    user_message="Error during API cleansup, see log for more details",
+                    user_message="Error during API cleanup, see log for more details",
                     severity=ErrorSeverity.ERROR,
                     original_error=e,
                 ) from e
