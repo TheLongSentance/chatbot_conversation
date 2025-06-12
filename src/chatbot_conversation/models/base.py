@@ -329,9 +329,9 @@ class ChatbotBase(ABC):
     @classmethod
     def _should_retry_on_exception(cls, exception: BaseException) -> bool:
         """
-        Determine if an API call should be retried based on Claude-specific exceptions.
+        Determine if an API call should be retried based on model-specific exceptions.
 
-        Handles common Claude API errors that warrant retry attempts:
+        Handles common API errors that warrant retry attempts:
         - APIError: General API communication failures
         - APIConnectionError: Network connectivity issues
         - RateLimitError: API quota/throughput limits

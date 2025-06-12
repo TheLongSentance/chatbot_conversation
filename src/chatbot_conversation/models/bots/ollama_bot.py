@@ -128,7 +128,7 @@ class OllamaChatbot(ChatbotBase):
     @classmethod
     def _retryable_exceptions(cls) -> tuple[Type[Exception], ...]:
         """
-        Returns tuple of Claude-specific retryable exception types.
+        Returns tuple of Ollama-specific retryable exception types.
 
         Returns:
             tuple: Exception types that warrant retry attempts
